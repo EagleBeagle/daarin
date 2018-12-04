@@ -3,6 +3,7 @@ const Joi = require('joi')
 module.exports = {
   register (req, res, next) {
     const schema = {
+      username: Joi.string(),
       email: Joi.string().email(),
       password: Joi.string().regex(
         new RegExp('^[a-zA-Z0-9]{8,32}$')
@@ -24,6 +25,7 @@ module.exports = {
           })
           break
         default:
+          console.log(error.details)
           res.status(400).send({
             error: 'Invalid registration information'
           })
