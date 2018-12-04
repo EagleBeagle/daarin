@@ -1,0 +1,47 @@
+Dokumentumok:
+    User:
+        email
+        username
+        password
+        admin
+        avatar
+        rank
+        ownPosts(ref) -> OneToMany relationship, a User-hez kötjük
+                         referenciával, mivel sokszor végzünk olyan          
+                         lekérdezést, amikor egy user összes postját 
+                         lekérjük, viszont nem ágyazzuk be, mivel a 
+                         bejegyzésekhez közvetlenül is 
+                         sokszor hozzá kell férnünk
+        likedPosts(ref) -> denormalizáció, a jövőben elkészülő funkciókhoz
+                           statisztikát fogok vezetni a kedvelt posztokról,
+                           és sokkal kevesebb lekérés szükséges, ha a 
+                           felhasználónál is eltároljuk azokat
+        likedComments(ref) -> denormalizáció, a jövőben elkészülő funkciókhoz
+                              statisztikát fogok vezetni a kedvelt  
+                              posztokról, és sokkal kevesebb lekérés 
+                              szükséges, ha a felhasználónál is 
+                              eltároljuk azokat
+   
+    Post:
+        content(ImgSrc, vagy YouTue id)
+        createdAt
+        likes
+        categories(ref) -> fix számú kategória lesz, melyek
+                         a későbbiekben további, statisztikai jellemzőkkel   
+                         is bővülhetnek
+        comments(ref) -> gyakoriak az olyan lekérések, amikor egy post összes
+                        hozzászólását listázzuk
+
+    Comment:
+        text
+        createdAt
+        likes
+        owner(ref) -> egy felhasználóhoz rengeteg komment tartozhat, ezért
+                      hatékonyabb, ha itt tároljuk a referenciát
+       
+    Category:
+        name
+          
+    ...további mezőkkel bővülhetnek a fejlesztés során
+                         
+        
