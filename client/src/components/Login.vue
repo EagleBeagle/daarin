@@ -1,23 +1,16 @@
 <template>
   <v-layout justify-center>
     <v-flex xs3>
-      <panel title="Register">
+      <panel title="Login">
           <form
-            name ="register-form"
-            autocomplete="off">
+            name ="login-form"
+            autocomplete="on">
             <v-text-field
               label="Username"
-              :rules="[required]"
               v-model="username"
             ></v-text-field>
             <v-text-field
-              label="Email"
-              :rules="[required]"
-              v-model="email"
-            ></v-text-field>
-            <v-text-field
               type="password"
-              :rules="[required]"
               label="Password"
               v-model="password"
             ></v-text-field>
@@ -26,9 +19,10 @@
           <div class="danger-alert" v-html="error"/>
           <br>
           <v-btn
+            dark
             class="cyan"
-            @click="register">
-            Register
+            @click="login">
+            Login
           </v-btn>
       </panel>
     </v-flex>
@@ -41,24 +35,21 @@ export default {
   data () {
     return {
       username: null,
-      email: null,
       password: null,
-      error: null,
-      required: (value) => !!value || 'Required.'
+      error: null
     }
   },
   methods: {
-    async register () {
+    async login() {
       this.error = null
-      const areAllFieldsFilledIn = (this.username && this.email && this.password)
+      const areAllFieldsFilledIn = (this.username && this.password)
       if (!areAllFieldsFilledIn) {
         this.error = 'Please fill in all the required fields'
         return
       }
       try {
-        await AuthenticationService.register({
+        await AuthenticationService.login({
           username: this.username,
-          email: this.email,
           password: this.password
         })
         this.$router.push({
@@ -68,12 +59,12 @@ export default {
         this.error = error.response.data.error
       }
     }
-  }
+  } 
 }
 </script>
 
 <style scoped>
-.danger {
+.danger-alert {
   color: red;
 }
 </style>
