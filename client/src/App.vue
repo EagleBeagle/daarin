@@ -10,6 +10,7 @@
 
 <script>
 import PageHeader from '@/components/Header.vue'
+import 'material-design-icons-iconfont/dist/material-design-icons.css'
 export default {
   name: 'App',
   components: {

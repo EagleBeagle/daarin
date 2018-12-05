@@ -23,9 +23,11 @@ Dokumentumok:
                               eltároljuk azokat
    
     Post:
+        title        
         content(ImgSrc, vagy YouTue id)
         createdAt
         likes
+        tags
         categories(ref) -> fix számú kategória lesz, melyek
                          a későbbiekben további, statisztikai jellemzőkkel   
                          is bővülhetnek

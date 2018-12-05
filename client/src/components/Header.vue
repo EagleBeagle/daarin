@@ -1,52 +1,121 @@
 <template>
-  <v-toolbar fixed class="cyan" dark>
-    <v-toolbar-title darkclass="mr-4">
-      <router-link
-        flat
-        class="home"
-        :to="{ name: 'Home' }"
-        :style="{ cursor: 'pointer' }"
-        tag="span">
-        daarin
-        </router-link>
-    </v-toolbar-title>
+  <v-container>
+    <v-toolbar fixed class="light-blue accent-2" dark>
+      <v-toolbar-items>
+        <v-btn
+          flat
+          class="blue-grey"
+          v-on:click.stop="dialog = true">
+          <v-icon>add</v-icon>
+        </v-btn>
+      </v-toolbar-items>
+      <v-toolbar-title dark class="mr-4">
+        <router-link
+          flat
+          class="font-weight-light display-2"
+          :to="{ name: 'Home' }"
+          :style="{ cursor: 'pointer' }"
+          tag="span">
+          daarin
+          </router-link>
+      </v-toolbar-title>
+      <v-spacer></v-spacer>
+      <v-toolbar-items>
+        <v-btn
+          v-if="!$store.state.isUserLoggedIn"
+          flat
+          dark
+          :to="{
+            name: 'login'
+          }">
+          Login
+        </v-btn>
+        <v-btn
+          v-if="!$store.state.isUserLoggedIn"
+          flat
+          dark
+          :to="{
+            name: 'register'
+          }">
+          Sign Up
+        </v-btn>
 
-    <v-spacer></v-spacer>
-
-    <v-toolbar-items>
-      <v-btn
-        v-if="!$store.state.isUserLoggedIn"
-        flat
-        dark
-        :to="{
-          name: 'login'
-        }">
-        Login
-      </v-btn>
-
-      <v-btn
-        v-if="!$store.state.isUserLoggedIn"
-        flat
-        dark
-        :to="{
-          name: 'register'
-        }">
-        Sign Up
-      </v-btn>
-
-      <v-btn
-        v-if="$store.state.isUserLoggedIn"
-        flat
-        dark
-        @click="logout">
-        Log Out
-      </v-btn>
-    </v-toolbar-items>
-  </v-toolbar>
+        <v-btn
+          v-if="$store.state.isUserLoggedIn"
+          flat
+          dark
+          @click="logout">
+          Log Out
+        </v-btn>
+      </v-toolbar-items>
+    </v-toolbar>
+    <v-dialog v-model="dialog"  transition="scale-transition" origin="center center" width="30%">
+      <v-card>
+        <v-toolbar dark class="light-blue accent-2">
+          <v-btn icon @click.native="onClose" dark>
+            <v-icon>close</v-icon>
+          </v-btn>
+          <v-toolbar-title>Upload a Post</v-toolbar-title>
+          <v-spacer></v-spacer>
+          <v-toolbar-items>
+            <v-btn dark flat @click.native="dialog = false">Save</v-btn>
+          </v-toolbar-items>
+        </v-toolbar>
+        <div class="pl-5 pr-5 pt-3 pb-4">
+            <form
+              name ="register-form"
+              autocomplete="off">
+              <v-text-field
+                label="Title"
+                :rules="[required]"
+                v-model="title"
+              ></v-text-field>
+              <v-text-field
+                label="Description"
+                v-model="description"
+              ></v-text-field>
+              <v-layout justify-center fill-height>
+                <v-btn class="light-blue accent-2" @click="onClickUpload">Choose File</v-btn>
+                <br>
+                <div class="pt-2" >
+                  <h2>{{ filename }}</h2>
+                </div>
+              </v-layout>
+              <input
+                type="file"
+                style="display: none"
+                ref="fileInput"
+                accept="image/*"
+                @change="onFileChosen">
+            </form>
+        </div>
+        <img :src="imageUrl" height="150"/>
+        <!-- <v-card-actions>
+          <v-layout justify-center>
+          <v-btn flat dark class="red">category1</v-btn>
+          <v-btn flat class="orange">category2</v-btn>
+          <v-btn flat class="yellow">category3</v-btn>
+          <v-btn flat class="green">category4</v-btn>
+          <v-btn flat class="blue">category5</v-btn>
+          </v-layout>
+        </v-card-actions> -->
+      </v-card>
+    </v-dialog>
+  </v-container>
 </template>
 
 <script>
 export default {
+  data () {
+    return {
+      dialog: null,
+      filename: null,
+      title: null,
+      description: null,
+      imageUrl: null,
+      required: (value) => !!value || 'Required.'
+    }
+  },
   methods: {
     logout () {
       this.$store.dispatch('setToken', null)
@@ -54,6 +123,26 @@ export default {
       this.$router.push({
         name: 'Home'
       })
+    },
+    onClickUpload () {
+      this.$refs.fileInput.click()
+    },
+    onFileChosen (event) {
+      const files = event.target.files
+      this.filename = files[0].name
+      if (this.filename.lastIndexOf('.') <= 0) {
+        return alert('The given file is not valid') //  TODO
+      }
+      const fileReader = new FileReader()
+      fileReader.addEventListener('load', () => {
+        this.imageUrl = fileReader.result
+      })
+      fileReader.readAsDataURL(files[0])
+    },
+    onClose () {
+      this.dialog = false
+      this.filename = null
+      this.imageUrl = null
     }
   }
 
@@ -61,4 +150,7 @@ export default {
 </script>
 
 <style scoped>
+.upload_button {
+  color: white;
+}
 </style>

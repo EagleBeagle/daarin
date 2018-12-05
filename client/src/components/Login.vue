@@ -20,7 +20,7 @@
           <br>
           <v-btn
             dark
-            class="cyan"
+            class="light-blue accent-2"
             @click="login">
             Login
           </v-btn>

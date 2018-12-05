@@ -26,7 +26,7 @@
           <div class="danger-alert" v-html="error"/>
           <br>
           <v-btn
-            class="cyan"
+            class="light-blue accent-2"
             @click="register">
             Register
           </v-btn>

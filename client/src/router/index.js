@@ -29,8 +29,8 @@ const router = new Router({
 
 export default router
 
+//  tiltas
 router.beforeEach((to, from, next) => {
-  // redirect to login page if not logged in and trying to access a restricted page
   let restrictedPages = []
   if (store.state.user) {
     console.log('bejelentkezve')
