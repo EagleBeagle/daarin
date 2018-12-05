@@ -1,17 +1,18 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import HelloWorld from '@/components/HelloWorld'
+import Home from '@/components/Home'
 import Register from '@/components/Register'
 import Login from '@/components/Login'
+import store from '@/store/store'
 
 Vue.use(Router)
 
-export default new Router({
+const router = new Router({
   routes: [
     {
       path: '/',
-      name: 'HelloWorld',
-      component: HelloWorld
+      name: 'Home',
+      component: Home
     },
     {
       path: '/register',
@@ -24,4 +25,22 @@ export default new Router({
       component: Login
     }
   ]
+})
+
+export default router
+
+router.beforeEach((to, from, next) => {
+  // redirect to login page if not logged in and trying to access a restricted page
+  let restrictedPages = []
+  if (store.state.user) {
+    console.log('bejelentkezve')
+    restrictedPages = ['/Login', '/Register']
+  }
+  const unauthorized = restrictedPages.includes(to.path)
+
+  if (unauthorized) {
+    return next('/')
+  }
+
+  next()
 })

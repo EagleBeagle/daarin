@@ -16,7 +16,8 @@ module.exports = {
           error: 'This account is already in use.'
         })
       }
-      res.json({ success: true, msg: 'Succesfully created new user' })
+      let token = jwt.sign(newUser.toJSON(), config.secret)
+      res.json({ user: newUser, token: token })
     })
   },
 
@@ -37,7 +38,7 @@ module.exports = {
         user.comparePassword(req.body.password, function (err, isMatch) {
           if (isMatch && !err) {
             let token = jwt.sign(user.toJSON(), config.secret)
-            res.json({ success: true, token: 'JWT ' + token })
+            res.json({ success: true, token: token, user: user })
           } else {
             res.status(403).send({
               error: 'The login information was incorrect'

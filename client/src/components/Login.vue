@@ -40,7 +40,7 @@ export default {
     }
   },
   methods: {
-    async login() {
+    async login () {
       this.error = null
       const areAllFieldsFilledIn = (this.username && this.password)
       if (!areAllFieldsFilledIn) {
@@ -48,18 +48,20 @@ export default {
         return
       }
       try {
-        await AuthenticationService.login({
+        const response = await AuthenticationService.login({
           username: this.username,
           password: this.password
         })
+        this.$store.dispatch('setToken', response.data.token)
+        this.$store.dispatch('setUser', response.data.user)
         this.$router.push({
-          name: 'HelloWorld'
+          name: 'Home'
         })
       } catch (error) {
         this.error = error.response.data.error
       }
     }
-  } 
+  }
 }
 </script>
 

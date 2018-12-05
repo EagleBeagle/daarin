@@ -56,13 +56,15 @@ export default {
         return
       }
       try {
-        await AuthenticationService.register({
+        const response = await AuthenticationService.register({
           username: this.username,
           email: this.email,
           password: this.password
         })
+        this.$store.dispatch('setToken', response.data.token)
+        this.$store.dispatch('setUser', response.data.user)
         this.$router.push({
-          name: 'HelloWorld'
+          name: 'Home'
         })
       } catch (error) {
         this.error = error.response.data.error
@@ -73,7 +75,7 @@ export default {
 </script>
 
 <style scoped>
-.danger {
+.danger-alert {
   color: red;
 }
 </style>
