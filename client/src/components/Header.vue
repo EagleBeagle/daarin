@@ -58,7 +58,7 @@
           <v-toolbar-title>Upload a Post</v-toolbar-title>
           <v-spacer></v-spacer>
           <v-toolbar-items>
-            <v-btn dark flat @click.native="dialog = false">Save</v-btn>
+            <v-btn dark flat @click="submitImage">Save</v-btn>
           </v-toolbar-items>
         </v-toolbar>
         <div class="pl-5 pr-5 pt-3 pb-4">
@@ -89,7 +89,8 @@
                 @change="onFileChosen">
             </form>
         </div>
-        <img :src="imageUrl" height="150"/>
+        <div class="danger-alert" v-html="error"/>
+        <v-img v-if="imageUrl" :src="imageUrl" width="100%"/>
         <!-- <v-card-actions>
           <v-layout justify-center>
           <v-btn flat dark class="red">category1</v-btn>
@@ -105,6 +106,7 @@
 </template>
 
 <script>
+import UploadService from '@/services/UploadService'
 export default {
   data () {
     return {
@@ -113,6 +115,8 @@ export default {
       title: null,
       description: null,
       imageUrl: null,
+      image: null,
+      error: null,
       required: (value) => !!value || 'Required.'
     }
   },
@@ -134,15 +138,30 @@ export default {
         return alert('The given file is not valid') //  TODO
       }
       const fileReader = new FileReader()
-      fileReader.addEventListener('load', () => {
+
+      fileReader.readAsDataURL(files[0], function () {
         this.imageUrl = fileReader.result
       })
-      fileReader.readAsDataURL(files[0])
+      this.image = files[0]
     },
     onClose () {
       this.dialog = false
       this.filename = null
       this.imageUrl = null
+      this.image = null
+    },
+    async submitImage () {
+      this.dialog = false
+      this.imageUrl = null
+      this.filename = null
+      let formData = new FormData()
+      formData.append('image', this.image)
+      this.image = null
+      try {
+        await UploadService.upload(formData)
+      } catch (err) {
+        this.error = err.response.data.error
+      }
     }
   }
 

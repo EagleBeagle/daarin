@@ -23,7 +23,8 @@ Dokumentumok:
                               eltároljuk azokat
    
     Post:
-        title        
+        title
+        description        
         content(ImgSrc, vagy YouTue id)
         createdAt
         likes
