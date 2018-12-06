@@ -3,9 +3,17 @@
     <v-toolbar fixed class="light-blue accent-2" dark>
       <v-toolbar-items>
         <v-btn
+          v-if="$store.state.isUserLoggedIn"
           flat
           class="blue-grey"
           v-on:click.stop="dialog = true">
+          <v-icon>add</v-icon>
+        </v-btn>
+        <v-btn
+          v-else
+          flat
+          class="blue-grey"
+          v-on:click.stop="authDialog = true">
           <v-icon>add</v-icon>
         </v-btn>
       </v-toolbar-items>
@@ -89,8 +97,8 @@
                 @change="onFileChosen">
             </form>
         </div>
-        <div class="danger-alert" v-html="error"/>
-        <v-img v-if="imageUrl" :src="imageUrl" width="100%"/>
+        <div class="danger-alert pb-2" v-html="error"/>
+        <!-- <v-img :src="imageUrl"/> -->
         <!-- <v-card-actions>
           <v-layout justify-center>
           <v-btn flat dark class="red">category1</v-btn>
@@ -102,6 +110,31 @@
         </v-card-actions> -->
       </v-card>
     </v-dialog>
+    <v-dialog v-model="authDialog" transition="scale-transition" origin="center center" width="30%">
+      <v-card>
+        <v-card-title
+          class="headline light-blue accent-2"
+          dark>
+          Sign Up or Log In
+        </v-card-title>
+        <v-card-text>
+          You have to create an account before you can upload your own posts. Go ahead, it's quick and easy!
+        </v-card-text>
+
+        <v-divider></v-divider>
+
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn
+            class="light-blue accent-2"
+            flat
+            @click="authDialog = false"
+          >
+            Okay
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 </template>
 
@@ -111,6 +144,7 @@ export default {
   data () {
     return {
       dialog: null,
+      authDialog: null,
       filename: null,
       title: null,
       description: null,
@@ -149,19 +183,31 @@ export default {
       this.filename = null
       this.imageUrl = null
       this.image = null
+      this.title = null
+      this.description = null
+      this.error = null
     },
     async submitImage () {
-      this.dialog = false
+      this.error = null
       this.imageUrl = null
       this.filename = null
       let formData = new FormData()
       formData.append('image', this.image)
+      formData.append('title', this.title)
+      formData.append('description', this.description)
       this.image = null
+      if (!this.title) {
+        this.error = 'You have to give a title to your post'
+        return
+      }
       try {
         await UploadService.upload(formData)
       } catch (err) {
         this.error = err.response.data.error
       }
+      this.dialog = false
+      this.title = null
+      this.description = null
     }
   }
 
@@ -171,5 +217,8 @@ export default {
 <style scoped>
 .upload_button {
   color: white;
+}
+.danger-alert {
+  color: red;
 }
 </style>

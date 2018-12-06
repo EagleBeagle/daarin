@@ -2,7 +2,6 @@
   <v-layout justify-center>
     <v-flex xs4>
       <h1>LEL</h1>
-      <img src="../../../server/uploads/0dcd9eaf5d1fbcaddfe0eb3fe1cab333.png"/>
     </v-flex>
   </v-layout>
 </template>

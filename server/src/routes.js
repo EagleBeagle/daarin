@@ -2,8 +2,9 @@ const AuthenticationController = require('./controllers/AuthenticationController
 const AuthenticationControllerPolicy = require('./policies/AuthenticationControllerPolicy')
 const UploadController = require('./controllers/UploadController')
 const multer = require('multer')
+const storage = multer.memoryStorage()
 const upload = multer({
-  dest: 'uploads/'
+  storage: storage
 })
 
 module.exports = (app) => {

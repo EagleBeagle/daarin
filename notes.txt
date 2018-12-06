@@ -6,7 +6,7 @@ Dokumentumok:
         admin
         avatar
         rank
-        ownPosts(ref) -> OneToMany relationship, a User-hez kötjük
+     // ownPosts(ref) -> OneToMany relationship, a User-hez kötjük
                          referenciával, mivel sokszor végzünk olyan          
                          lekérdezést, amikor egy user összes postját 
                          lekérjük, viszont nem ágyazzuk be, mivel a 
@@ -26,6 +26,7 @@ Dokumentumok:
         title
         description        
         content(ImgSrc, vagy YouTue id)
+        createdBy
         createdAt
         likes
         tags

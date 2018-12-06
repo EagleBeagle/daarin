@@ -3,9 +3,10 @@ const Schema = mongoose.Schema
 const PostSchema = new Schema({
   title: { type: String, required: true },
   description: { type: String },
-  content: { type: String, unique: true, required: true },
-  createdAt: { type: String, required: true },
-  likes: { type: Boolean, default: false },
+  content: { type: String, required: true },
+  likes: { type: Schema.Types.Number, default: 0 },
+  createdAt: { type: Date, default: Date.now },
+  createdBy: { type: Schema.Types.ObjectId, ref: 'user' },
   tags: [
     { type: Schema.Types.ObjectId, ref: 'comment' }
   ],

@@ -6,8 +6,5 @@ export default {
   },
   login (credentials) {
     return Api().post('login', credentials)
-  },
-  upload (file) {
-    return Api().post('upload', file)
   }
 }
