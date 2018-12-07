@@ -4,23 +4,15 @@
       <div v-for="post in posts" :key="post.id">
         <v-flex class="pb-5">
           <v-card>
-            <!-- <v-card-title>
-              <h1>{{ post.title }}</h1>
-              <v-spacer></v-spacer>
-              <p>{{ post.createdBy.username }}</p><br>
-              <p>asdasdsa</p>
-              
-            </v-card-title> -->
-            <div class="pt-2">
+            <div>
               <h1 class="bold blue--text">{{ post.title }}</h1>
-              <p class="light-blue--text">{{ post.createdBy.username }}</p>
+              <p1 class="light-blue--text">{{ post.createdBy.username }}</p1>
             </div>
-            <v-divider></v-divider>
+            <v-divider/>
             <v-img :src="post.content" width="100%"/>
+            <v-divider/>
             <v-card-title>
-              <div>
-                <span class="light-blue--text">{{ post.description }}</span>
-              </div>
+                <h3 class="light-blue--text">{{ post.description }}</h3>
             </v-card-title>
           </v-card>
         </v-flex>
