@@ -9,13 +9,13 @@ const UserSchema = new Schema({
   avatar: String,
   rank: String,
   ownPosts: [
-    { type: Schema.Types.ObjectId, ref: 'post' }
+    { type: Schema.Types.ObjectId, ref: 'Post' }
   ],
   likedPosts: [
-    { type: Schema.Types.ObjectId, ref: 'post' }
+    { type: Schema.Types.ObjectId, ref: 'Post' }
   ],
   likedComments: [
-    { type: Schema.Types.ObjectId, ref: 'comment' }
+    { type: Schema.Types.ObjectId, ref: 'Comment' }
   ]
 })
 

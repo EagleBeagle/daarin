@@ -1,8 +1,11 @@
 import Api from '@/services/Api'
 
 export default {
+  index () {
+    return Api().get('')
+  },
   upload (formData) {
-    console.log('uploadService: ' + formData.get('image'))
+    console.log('uploadService: ' + formData.get('createdBy'))
     return Api().post('upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'

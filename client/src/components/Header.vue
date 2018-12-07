@@ -139,7 +139,7 @@
 </template>
 
 <script>
-import UploadService from '@/services/UploadService'
+import PostService from '@/services/PostService'
 export default {
   data () {
     return {
@@ -195,13 +195,14 @@ export default {
       formData.append('image', this.image)
       formData.append('title', this.title)
       formData.append('description', this.description)
+      formData.append('createdBy', this.$store.state.user._id)
       this.image = null
       if (!this.title) {
         this.error = 'You have to give a title to your post'
         return
       }
       try {
-        await UploadService.upload(formData)
+        await PostService.upload(formData)
       } catch (err) {
         this.error = err.response.data.error
       }
