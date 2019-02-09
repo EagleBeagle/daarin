@@ -2,7 +2,7 @@ import Api from '@/services/Api'
 
 export default {
   index () {
-    return Api().get('')
+    return Api().get('/home')
   },
   upload (formData) {
     console.log('uploadService: ' + formData.get('createdBy'))

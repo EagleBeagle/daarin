@@ -6,7 +6,7 @@
           <v-card>
             <div>
               <h1 class="bold blue--text">{{ post.title }}</h1>
-              <p1 class="light-blue--text">{{ post.createdBy.username }}</p1>
+              <p class="light-blue--text">{{ post.createdBy.username }}</p>
             </div>
             <v-divider/>
             <v-img :src="post.content" width="100%"/>

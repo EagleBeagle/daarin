@@ -8,7 +8,7 @@ const upload = multer({
 })
 
 module.exports = (app) => {
-  app.get('/',
+  app.get('/home',
     PostController.index)
 
   app.post('/register',

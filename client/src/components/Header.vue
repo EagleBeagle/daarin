@@ -21,7 +21,7 @@
         <router-link
           flat
           class="font-weight-light display-2"
-          :to="{ name: 'Home' }"
+          :to="{ name: 'home' }"
           :style="{ cursor: 'pointer' }"
           tag="span">
           daarin

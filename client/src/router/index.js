@@ -10,8 +10,8 @@ Vue.use(Router)
 const router = new Router({
   routes: [
     {
-      path: '/',
-      name: 'Home',
+      path: '/home',
+      name: 'home',
       component: Home
     },
     {
@@ -23,6 +23,10 @@ const router = new Router({
       path: '/login',
       name: 'login',
       component: Login
+    },
+    {
+      path: '*',
+      redirect: 'home'
     }
   ]
 })
@@ -39,7 +43,7 @@ router.beforeEach((to, from, next) => {
   const unauthorized = restrictedPages.includes(to.path)
 
   if (unauthorized) {
-    return next('/')
+    return next('/home')
   }
 
   next()
