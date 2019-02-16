@@ -15,9 +15,10 @@ module.exports = {
         res.status(400).send({
           error: 'This account is already in use.'
         })
+      } else {
+        let token = jwt.sign(newUser.toJSON(), config.secret)
+        res.status(201).json({ user: newUser, token: token })
       }
-      let token = jwt.sign(newUser.toJSON(), config.secret)
-      res.json({ user: newUser, token: token })
     })
   },
 
@@ -31,7 +32,7 @@ module.exports = {
         })
       }
       if (!user) {
-        res.status(403).send({
+        res.status(401).send({
           error: 'The login information was incorrect'
         })
       } else {
@@ -40,7 +41,7 @@ module.exports = {
             let token = jwt.sign(user.toJSON(), config.secret)
             res.json({ success: true, token: token, user: user })
           } else {
-            res.status(403).send({
+            res.status(401).send({
               error: 'The login information was incorrect'
             })
           }
