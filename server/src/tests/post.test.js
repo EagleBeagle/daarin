@@ -59,7 +59,7 @@ describe('Posting content', () => {
           //  expect(res.body).to.be.not.empty
         })
     })
-    
+
     it('should succesfully upload "png" image', async () => {
       await setDefaultPost()
       return request.post('/upload')
