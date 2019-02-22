@@ -174,7 +174,7 @@ export default {
       const fileReader = new FileReader()
 
       fileReader.readAsDataURL(files[0], function () {
-        this.imageUrl = fileReader.result
+        this.imageUrl = fileReader.result //  ??
       })
       this.image = files[0]
     },
@@ -185,7 +185,7 @@ export default {
       this.image = null
       this.title = null
       this.description = null
-      this.error = null
+      //  this.error = null
     },
     async submitImage () {
       this.error = null
@@ -196,17 +196,15 @@ export default {
       formData.append('title', this.title)
       formData.append('description', this.description)
       formData.append('createdBy', this.$store.state.user._id)
-      this.image = null
-      if (!this.title) {
-        this.error = 'You have to give a title to your post'
-        return
-      }
       try {
         await PostService.upload(formData)
-      } catch (err) {
-        this.error = err.response.data.error
+        this.dialog = false
+      } catch (error) {
+        this.error = error.response.data.error
+        return
       }
-      this.dialog = false
+      this.image = null
+      //  this.dialog = false
       this.title = null
       this.description = null
     }

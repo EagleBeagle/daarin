@@ -12,9 +12,16 @@ module.exports = {
 
     newUser.save(function (err) {
       if (err) {
-        res.status(400).send({
-          error: 'This account is already in use.'
-        })
+        if (err.name === 'MongoError') {
+          res.status(400).send({
+            error: 'This account is already in use.'
+          })
+        } else {
+          console.log(err)
+          res.status(400).send({
+            error: 'An error has occured creating the account.'
+          })
+        }
       } else {
         let token = jwt.sign(newUser.toJSON(), config.secret)
         res.status(201).json({ user: newUser, token: token })

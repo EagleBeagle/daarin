@@ -10,7 +10,7 @@ module.exports = {
       )
     }
 
-    const { error, value } = Joi.validate(req.body, schema) //eslint-disable-line
+    const { error, value } = Joi.validate(req.body, schema) //  eslint-disable-line
 
     if (error) {
       switch (error.details[0].context.key) {

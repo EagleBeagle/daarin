@@ -31,7 +31,7 @@ module.exports = {
           error: 'An error occured during the upload.'
         })
       }
-      res.json({ post: newPost })
+      res.status(201).json({ post: newPost })
     })
   }
 }

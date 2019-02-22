@@ -10,10 +10,6 @@ export default {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
-    }).then(function () {
-      console.log('SUCCESS')
-    }).catch(function () {
-      console.log('FAILURE')
     })
   }
 }
