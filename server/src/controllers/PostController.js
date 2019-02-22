@@ -8,7 +8,6 @@ module.exports = {
       posts = await Post.find().populate('createdBy', 'username').sort('-createdAt')
       for (let key in posts) {
         posts[key].populate('createdBy')
-        console.log(posts[key].createdBy)
       }
       res.send(posts)
     } catch (err) {

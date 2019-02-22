@@ -13,13 +13,17 @@ mongoose.connect('mongodb://localhost:27017/daarindb', {
   useNewUrlParser: true,
   promiseLibrary: require('bluebird')
 })
-  .then(() => console.log('MongoDB connection succesful'))
+  .then(() => {
+    if (process.env.NODE_ENV !== 'test') {
+      console.log('MongoDB connection succesful')
+    }
+  })
   .catch((err) => console.error(err))
 
-  if (process.env.NODE_ENV != 'test') {
-    app.use(morgan('combined'))
-  }
-  
+if (process.env.NODE_ENV !== 'test') {
+  app.use(morgan('combined'))
+}
+
 app.use(bodyParser.json())
 app.use(cors())
 
