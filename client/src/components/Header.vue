@@ -78,10 +78,6 @@
                 :rules="[required]"
                 v-model="title"
               ></v-text-field>
-              <v-text-field
-                label="Description"
-                v-model="description"
-              ></v-text-field>
               <v-layout justify-center fill-height>
                 <v-btn class="light-blue accent-2" @click="onClickUpload">Choose File</v-btn>
                 <br>
@@ -147,7 +143,6 @@ export default {
       authDialog: null,
       filename: null,
       title: null,
-      description: null,
       imageUrl: null,
       image: null,
       error: null,
@@ -184,7 +179,6 @@ export default {
       this.imageUrl = null
       this.image = null
       this.title = null
-      this.description = null
       //  this.error = null
     },
     async submitImage () {
@@ -194,7 +188,6 @@ export default {
       let formData = new FormData()
       formData.append('image', this.image)
       formData.append('title', this.title)
-      formData.append('description', this.description)
       formData.append('createdBy', this.$store.state.user._id)
       try {
         await PostService.upload(formData)
@@ -206,7 +199,6 @@ export default {
       this.image = null
       //  this.dialog = false
       this.title = null
-      this.description = null
     }
   }
 

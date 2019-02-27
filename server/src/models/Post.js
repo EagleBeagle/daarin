@@ -2,7 +2,6 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 const PostSchema = new Schema({
   title: { type: String, required: true },
-  description: { type: String, default: ' ' },
   content: { type: String, required: true },
   likes: { type: Schema.Types.Number, default: 0 },
   createdAt: { type: Date, default: Date.now },

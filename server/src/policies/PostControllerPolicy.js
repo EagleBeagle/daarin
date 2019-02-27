@@ -5,8 +5,7 @@ const imageType = require('image-type')
 module.exports = {
   upload (req, res, next) { //  TODO: CreatedBy (authenticatio)
     const schema = {
-      title: Joi.string().invalid(['null']).required(),
-      description: Joi.string().max(250),
+      title: Joi.string().invalid(['null']).required().max(250),
       createdBy: Joi.string(),
       image: Joi.binary()
     }
@@ -18,11 +17,6 @@ module.exports = {
         case 'title':
           res.status(400).send({
             error: 'You must provide a valid title'
-          })
-          break
-        case 'description':
-          res.status(400).send({
-            error: 'The description provided is invalid'
           })
           break
         case 'createdBy':

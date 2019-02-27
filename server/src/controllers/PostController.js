@@ -20,7 +20,6 @@ module.exports = {
     const encoded = req.file.buffer.toString('base64')
     let newPost = new Post({
       title: req.body.title,
-      description: req.body.description,
       createdBy: req.body.createdBy,
       content: 'data:image/png;base64, ' + encoded
     })

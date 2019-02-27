@@ -12,7 +12,7 @@
             <v-img :src="post.content" width="100%"/>
             <v-divider/>
             <v-card-title>
-                <h3 class="light-blue--text">{{ post.description }}</h3>
+                <h3 class="light-blue--text">buttons come here</h3>
             </v-card-title>
           </v-card>
         </v-flex>

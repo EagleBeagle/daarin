@@ -19,7 +19,6 @@ const setDefaultPost = async () => {
   const userId = await User.findOne({ 'email': defaultUser.email }, { '_id': 1 })
   defaultPost = {
     title: 'testImage',
-    description: 'test description',
     createdBy: userId._id.toString(),
     content: 'lelelel'
   }
@@ -47,21 +46,6 @@ describe('Posting content', () => {
       await setDefaultPost()
       return request.post('/upload')
         .field('title', '')
-        .field('description', defaultPost.description)
-        .field('createdBy', defaultPost.createdBy)
-        .attach('image', 'src/tests/assets/test_png.png')
-        .set('Authorization', 'Bearer ' + token)
-        .then((res) => {
-          expect(res.statusCode).to.be.equal(400)
-          //  expect(res.body).to.be.not.empty
-        })
-    })
-
-    it('should not upload with invalid description', async () => {
-      await setDefaultPost()
-      return request.post('/upload')
-        .field('title', defaultPost.title)
-        .field('description', 'testDescription'.repeat(100))
         .field('createdBy', defaultPost.createdBy)
         .attach('image', 'src/tests/assets/test_png.png')
         .set('Authorization', 'Bearer ' + token)
@@ -75,7 +59,6 @@ describe('Posting content', () => {
       await setDefaultPost()
       return request.post('/upload')
         .field('title', defaultPost.title)
-        .field('description', 'testDescription'.repeat(100))
         .field('createdBy', defaultPost.createdBy)
         .attach('image', 'src/tests/assets/test_png.png')
         .then((res) => {
@@ -88,7 +71,6 @@ describe('Posting content', () => {
       await setDefaultPost()
       return request.post('/upload')
         .field('title', defaultPost.title)
-        .field('description', defaultPost.description)
         .field('createdBy', defaultPost.createdBy)
         .attach('image', 'src/tests/assets/test_png.png')
         .set('Authorization', 'Bearer ' + token)
@@ -102,7 +84,6 @@ describe('Posting content', () => {
       await setDefaultPost()
       return request.post('/upload')
         .field('title', defaultPost.title)
-        .field('description', defaultPost.description)
         .field('createdBy', defaultPost.createdBy)
         .attach('image', 'src/tests/assets/test_jpg.jpg')
         .set('Authorization', 'Bearer ' + token)
@@ -116,7 +97,6 @@ describe('Posting content', () => {
       await setDefaultPost()
       return request.post('/upload')
         .field('title', defaultPost.title)
-        .field('description', defaultPost.description)
         .field('createdBy', defaultPost.createdBy)
         .attach('image', 'src/tests/assets/test_jpeg.jpeg')
         .set('Authorization', 'Bearer ' + token)
@@ -130,7 +110,6 @@ describe('Posting content', () => {
       await setDefaultPost()
       return request.post('/upload')
         .field('title', defaultPost.title)
-        .field('description', defaultPost.description)
         .field('createdBy', defaultPost.createdBy)
         .attach('image', 'src/tests/assets/test_gif.gif')
         .set('Authorization', 'Bearer ' + token)
@@ -144,7 +123,6 @@ describe('Posting content', () => {
       await setDefaultPost()
       return request.post('/upload')
         .field('title', defaultPost.title)
-        .field('description', defaultPost.description)
         .field('createdBy', defaultPost.createdBy)
         .set('Authorization', 'Bearer ' + token)
         .then((res) => {
@@ -157,7 +135,6 @@ describe('Posting content', () => {
       await setDefaultPost()
       return request.post('/upload')
         .field('title', defaultPost.title)
-        .field('description', defaultPost.description)
         .field('createdBy', defaultPost.createdBy)
         .attach('image', 'src/tests/assets/empty_file.asd')
         .set('Authorization', 'Bearer ' + token)
@@ -171,7 +148,6 @@ describe('Posting content', () => {
       await setDefaultPost()
       return request.post('/upload')
         .field('title', defaultPost.title)
-        .field('description', defaultPost.description)
         .field('createdBy', defaultPost.createdBy)
         .attach('image', 'src/tests/assets/invalid_image.png')
         .set('Authorization', 'Bearer ' + token)
@@ -185,7 +161,6 @@ describe('Posting content', () => {
       await setDefaultPost()
       return request.post('/upload')
         .field('title', defaultPost.title)
-        .field('description', defaultPost.description)
         .field('createdBy', defaultPost.createdBy)
         .attach('image', 'src/tests/assets/test_big.png')
         .set('Authorization', 'Bearer ' + token)
