@@ -1,23 +1,26 @@
+const passport = require('passport')
+const User = require('../models/User')
+
 const JwtStrategy = require('passport-jwt').Strategy
 const ExtractJwt = require('passport-jwt').ExtractJwt
 
-const User = require('../models/User')
-const config = require('../config/config')
+const config = require('./config')
 
-module.exports = function (passport) {
-  var opts = {}
-  opts.jwtFromRequest = ExtractJwt.fromAuthHeaderWithScheme('jwt')
-  opts.secretOrKey = config.secret
-  passport.use(new JwtStrategy(opts, function (jwtPayload, done) {
-    User.findOne({ id: jwtPayload.id }, function (err, user) {
-      if (err) {
-        return done(err, false)
+passport.use(
+  new JwtStrategy({
+    jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+    secretOrKey: config.secret
+  }, async function (jwtPayload, done) {
+    try {
+      const user = await User.findOne({ '_id': jwtPayload._id })
+      if (!user) {
+        return done(new Error(), false)
       }
-      if (user) {
-        done(null, user)
-      } else {
-        done(null, false)
-      }
-    })
-  }))
-}
+      return done(null, user)
+    } catch (err) {
+      return done(new Error(), false)
+    }
+  })
+)
+
+module.exports = null

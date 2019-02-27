@@ -27,6 +27,7 @@ if (process.env.NODE_ENV !== 'test') {
 app.use(bodyParser.json())
 app.use(cors())
 
+require('./config/passport')
 require('./routes')(app)
 
 module.exports = app

@@ -13,6 +13,7 @@ const defaultUser = {
   'password': 'testPassword'
 }
 let defaultPost = {}
+let token
 
 const setDefaultPost = async () => {
   const userId = await User.findOne({ 'email': defaultUser.email }, { '_id': 1 })
@@ -27,6 +28,14 @@ const setDefaultPost = async () => {
 describe('Posting content', () => {
   before('Cleaning database', async () => {
     await Post.deleteMany({})
+    return request.post('/login')
+      .send({
+        username: defaultUser.username,
+        password: defaultUser.password
+      })
+      .then((res) => {
+        token = res.body.token
+      })
   })
 
   after('Cleaning database', async () => {
@@ -41,6 +50,7 @@ describe('Posting content', () => {
         .field('description', defaultPost.description)
         .field('createdBy', defaultPost.createdBy)
         .attach('image', 'src/tests/assets/test_png.png')
+        .set('Authorization', 'Bearer ' + token)
         .then((res) => {
           expect(res.statusCode).to.be.equal(400)
           //  expect(res.body).to.be.not.empty
@@ -54,8 +64,22 @@ describe('Posting content', () => {
         .field('description', 'testDescription'.repeat(100))
         .field('createdBy', defaultPost.createdBy)
         .attach('image', 'src/tests/assets/test_png.png')
+        .set('Authorization', 'Bearer ' + token)
         .then((res) => {
           expect(res.statusCode).to.be.equal(400)
+          //  expect(res.body).to.be.not.empty
+        })
+    })
+
+    it('should not allow unauthorized upload', async () => {
+      await setDefaultPost()
+      return request.post('/upload')
+        .field('title', defaultPost.title)
+        .field('description', 'testDescription'.repeat(100))
+        .field('createdBy', defaultPost.createdBy)
+        .attach('image', 'src/tests/assets/test_png.png')
+        .then((res) => {
+          expect(res.statusCode).to.be.equal(403)
           //  expect(res.body).to.be.not.empty
         })
     })
@@ -67,6 +91,7 @@ describe('Posting content', () => {
         .field('description', defaultPost.description)
         .field('createdBy', defaultPost.createdBy)
         .attach('image', 'src/tests/assets/test_png.png')
+        .set('Authorization', 'Bearer ' + token)
         .then((res) => {
           expect(res.statusCode).to.be.equal(201)
           //  expect(res.body).to.be.not.empty
@@ -80,6 +105,7 @@ describe('Posting content', () => {
         .field('description', defaultPost.description)
         .field('createdBy', defaultPost.createdBy)
         .attach('image', 'src/tests/assets/test_jpg.jpg')
+        .set('Authorization', 'Bearer ' + token)
         .then((res) => {
           expect(res.statusCode).to.be.equal(201)
           //  expect(res.body).to.be.not.empty
@@ -93,6 +119,7 @@ describe('Posting content', () => {
         .field('description', defaultPost.description)
         .field('createdBy', defaultPost.createdBy)
         .attach('image', 'src/tests/assets/test_jpeg.jpeg')
+        .set('Authorization', 'Bearer ' + token)
         .then((res) => {
           expect(res.statusCode).to.be.equal(201)
           //  expect(res.body).to.be.not.empty
@@ -106,6 +133,7 @@ describe('Posting content', () => {
         .field('description', defaultPost.description)
         .field('createdBy', defaultPost.createdBy)
         .attach('image', 'src/tests/assets/test_gif.gif')
+        .set('Authorization', 'Bearer ' + token)
         .then((res) => {
           expect(res.statusCode).to.be.equal(201)
           //  expect(res.body).to.be.not.empty
@@ -118,6 +146,7 @@ describe('Posting content', () => {
         .field('title', defaultPost.title)
         .field('description', defaultPost.description)
         .field('createdBy', defaultPost.createdBy)
+        .set('Authorization', 'Bearer ' + token)
         .then((res) => {
           expect(res.statusCode).to.be.equal(400)
           //  expect(res.body).to.be.not.empty
@@ -131,6 +160,7 @@ describe('Posting content', () => {
         .field('description', defaultPost.description)
         .field('createdBy', defaultPost.createdBy)
         .attach('image', 'src/tests/assets/empty_file.asd')
+        .set('Authorization', 'Bearer ' + token)
         .then((res) => {
           expect(res.statusCode).to.be.equal(400)
           //  expect(res.body).to.be.not.empty
@@ -144,6 +174,7 @@ describe('Posting content', () => {
         .field('description', defaultPost.description)
         .field('createdBy', defaultPost.createdBy)
         .attach('image', 'src/tests/assets/invalid_image.png')
+        .set('Authorization', 'Bearer ' + token)
         .then((res) => {
           expect(res.statusCode).to.be.equal(400)
           //  expect(res.body).to.be.not.empty
@@ -157,6 +188,7 @@ describe('Posting content', () => {
         .field('description', defaultPost.description)
         .field('createdBy', defaultPost.createdBy)
         .attach('image', 'src/tests/assets/test_big.png')
+        .set('Authorization', 'Bearer ' + token)
         .then((res) => {
           expect(res.statusCode).to.be.equal(400)
           //  expect(res.body).to.be.not.empty
