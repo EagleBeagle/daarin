@@ -13,6 +13,10 @@ module.exports = (app) => {
   app.get('/home',
     PostController.index)
 
+  app.get('/poststream',
+    IsAuthenticated.check,
+    PostController.postStream)
+
   app.post('/register',
     AuthenticationControllerPolicy.register,
     AuthenticationController.register)
@@ -22,8 +26,24 @@ module.exports = (app) => {
 
   app.post('/upload',
     upload.single('image'),
-    IsAuthenticated,
+    IsAuthenticated.restrict,
     PostControllerPolicy.upload,
     PostControllerPolicy.imageValidation,
     PostController.upload)
+
+  app.put('/posts/:postId/upvote',
+    IsAuthenticated.restrict,
+    PostController.upvote)
+
+  app.put('/posts/:postId/downvote',
+    IsAuthenticated.restrict,
+    PostController.downvote)
+
+  app.delete('/posts/:postId/upvote',
+    IsAuthenticated.restrict,
+    PostController.unUpvote)
+
+  app.delete('/posts/:postId/downvote',
+    IsAuthenticated.restrict,
+    PostController.unDownvote)
 }

@@ -1,4 +1,5 @@
 const express = require('express')
+const sse = require('./config/sse')
 const bodyParser = require('body-parser')
 const cors = require('cors')
 const morgan = require('morgan')
@@ -26,6 +27,7 @@ if (process.env.NODE_ENV !== 'test') {
 
 app.use(bodyParser.json())
 app.use(cors())
+app.use(sse)
 
 require('./config/passport')
 require('./routes')(app)

@@ -11,5 +11,19 @@ export default {
         'Content-Type': 'multipart/form-data'
       }
     })
+  },
+  upvote (postId) {
+    console.log(postId)
+    return Api().put(`/posts/${postId}/upvote`)
+  },
+  unUpvote (postId) {
+    console.log(postId)
+    return Api().delete(`/posts/${postId}/upvote`)
+  },
+  downvote (postId) {
+    return Api().put(`/posts/${postId}/downvote`)
+  },
+  unDownvote (postId) {
+    return Api().delete(`/posts/${postId}/downvote`)
   }
 }
