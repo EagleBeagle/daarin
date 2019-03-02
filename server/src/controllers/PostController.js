@@ -18,12 +18,18 @@ module.exports = {
   },
   async postStream (req, res) {
     let posts = null
+    console.log('sse start?')
     try {
-      posts = await Post.find()
       res.sseSetup()
-      setInterval(function () {
+      setInterval(async function () {
+        posts = await Post.find().populate('createdBy', 'username').sort('-createdAt')
         res.sseSend(posts)
-      }, 1000)
+        req.on('close', () => {
+          clearInterval(this)
+          console.log('stopped sending post events')
+          res.end()
+        })
+      }, 5000)
     } catch (err) {
       res.status(500).send({
         error: 'an error has occured trying to stream post data'

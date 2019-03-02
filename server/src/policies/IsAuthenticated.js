@@ -26,6 +26,6 @@ module.exports = {
         req.user = user
         next()
       }
-    })
+    })(req, res, next)
   }
 }

@@ -28,56 +28,23 @@ export default {
   },
   async mounted () {
     this.posts = (await PostService.index()).data
+    this.setupStream()
   },
   methods: {
-    /*  async upvote (post) {
-      if (!this.isUserLoggedIn) {
-        return
-      }
-      try {
-        if (this.isUpvoted(post)) {
-          await PostService.unUpvote(post._id)
-        } else {
-          await PostService.upvote(post._id)
+    setupStream () {
+      let es = new EventSource('http://localhost:8081/poststream')
+      es.addEventListener('message', event => {
+        let posts = JSON.parse(event.data)
+        console.log(posts)
+        this.posts = posts
+      })
+      es.addEventListener('error', event => {
+        if (event.readyState === EventSource.CLOSED) {
+          console.log('Event was closed')
+          console.log(EventSource)
         }
-      } catch (err) {
-        console.log(err)
-      }
-    },
-    async downvote (post) {
-      if (!this.isUserLoggedIn) {
-        return
-      }
-      try {
-        if (this.isDownvoted(post)) {
-          await PostService.unDownvote(post._id)
-        } else {
-          await PostService.downvote(post._id)
-        }
-      } catch (err) {
-        console.log(err)
-      }
-    },
-    isUpvoted (post) {
-      if (!this.isUserLoggedIn) {
-        return
-      }
-      if (post.likes.includes(this.$store.state.user._id)) {
-        return true
-      } else {
-        return false
-      }
-    },
-    isDownvoted (post) {
-      if (!this.isUserLoggedIn) {
-        return
-      }
-      if (post.dislikes.includes(this.$store.state.user._id)) {
-        return true
-      } else {
-        return false
-      }
-    } */
+      }, false)
+    }
   },
   components: {
     Post
