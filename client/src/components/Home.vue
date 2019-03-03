@@ -17,8 +17,12 @@ import Post from './Post'
 export default {
   data () {
     return {
-      posts: null
+      posts: null,
+      eventSource: null
     }
+  },
+  beforeDestroy () {
+    this.eventSource.close()
   },
   computed: {
     ...mapState([
@@ -32,18 +36,18 @@ export default {
   },
   methods: {
     setupStream () {
-      let es = new EventSource('http://localhost:8081/poststream')
-      es.addEventListener('message', event => {
+      this.eventSource = new EventSource('http://localhost:8081/poststream')
+      this.eventSource.addEventListener('message', event => {
         let posts = JSON.parse(event.data)
         console.log(posts)
         this.posts = posts
-      })
-      es.addEventListener('error', event => {
+      }) /*
+      this.eventSource.addEventListener('error', event => {
         if (event.readyState === EventSource.CLOSED) {
           console.log('Event was closed')
           console.log(EventSource)
         }
-      }, false)
+      }, false) */
     }
   },
   components: {

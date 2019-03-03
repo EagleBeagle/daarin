@@ -19,22 +19,17 @@ module.exports = {
   async postStream (req, res) {
     let posts = null
     console.log('sse start?')
-    try {
-      res.sseSetup()
-      setInterval(async function () {
-        posts = await Post.find().populate('createdBy', 'username').sort('-createdAt')
-        res.sseSend(posts)
-        req.on('close', () => {
-          clearInterval(this)
-          console.log('stopped sending post events')
-          res.end()
-        })
-      }, 5000)
-    } catch (err) {
-      res.status(500).send({
-        error: 'an error has occured trying to stream post data'
-      })
-    }
+    res.sseSetup()
+    const dataStream = setInterval(async function () { // TODO: jó lenne más megoldást találni (pl SetTimeout-tal)
+      posts = await Post.find().populate('createdBy', 'username').sort('-createdAt')
+      res.sseSend(posts)
+    }, 2000)
+
+    req.on('close', async () => {
+      await clearInterval(dataStream)
+      console.log('befejezve')
+      res.end()
+    })
   },
   upload (req, res) {
     const encoded = req.file.buffer.toString('base64')
