@@ -37,7 +37,7 @@ module.exports = {
         let dataToSend = null
         if (!sseConnections[userId]) {
           userId = 'message'
-          dataToSend = 'kuraavnyad'
+          dataToSend = ''
         } else {
           dataToSend = await sseConnections[userId].exec()
         }
