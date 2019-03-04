@@ -8,8 +8,9 @@ module.exports = function (req, res, next) {
     })
   }
 
-  res.sseSend = function (data) {
-    res.write('data: ' + JSON.stringify(data) + '\n\n')
+  res.sseSend = function (event, data) {
+    res.write(`event: ${event}\n`)
+    res.write(`data: ${JSON.stringify(data)}\n\n`)
   }
 
   next()

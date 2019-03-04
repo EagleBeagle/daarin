@@ -11,10 +11,10 @@ const upload = multer({
 
 module.exports = (app) => {
   app.get('/home',
+    IsAuthenticated.check,
     PostController.index)
 
   app.get('/poststream',
-    IsAuthenticated.check,
     PostController.postStream)
 
   app.post('/register',

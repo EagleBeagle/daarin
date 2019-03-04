@@ -1,11 +1,18 @@
 const Post = require('../models/Post.js')
+const { setIntervalSync } = require('../utils/common.js')
 //  const User = require('../models/User.js')
+let sseConnections = {}
 
 module.exports = {
   async index (req, res) {
     let posts = null
+    let userId = req.user ? req.user._id : null
+    console.log('eza id:' + userId)
     try {
-      posts = await Post.find().populate('createdBy', 'username').sort('-createdAt')
+      let query = Post.find().populate('createdBy', 'username').sort('-createdAt') // ez query-t ad vissza mert nem kezeljük le a promise-t
+      if (userId) sseConnections[userId] = query
+      posts = await query.exec()
+      // console.log(await sseDbQuery.exec())
       for (let key in posts) {
         posts[key].populate('createdBy')
       }
@@ -17,16 +24,39 @@ module.exports = {
     }
   },
   async postStream (req, res) {
-    let posts = null
-    console.log('sse start?')
+    console.log('sse start')
     res.sseSetup()
-    const dataStream = setInterval(async function () { // TODO: jó lenne más megoldást találni (pl SetTimeout-tal)
-      posts = await Post.find().populate('createdBy', 'username').sort('-createdAt')
-      res.sseSend(posts)
+    let userId = req.query.user
+    console.log('usasdasoidjadisa: ' + userId)
+    /* if (userId && !(userId in sseConnections)) {
+      console.log('vanuserid és még nincs coneccekben')
+      sseConnections[userId] = null
+    } */
+    const intervalClear = setIntervalSync(async function () {
+      try {
+        let dataToSend = null
+        if (!sseConnections[userId]) {
+          userId = 'message'
+          dataToSend = 'kuraavnyad'
+        } else {
+          dataToSend = await sseConnections[userId].exec()
+        }
+        console.log(userId + ' ' + (userId in sseConnections))
+        res.sseSend(userId, dataToSend)
+      } catch (err) {
+        console.log(err)
+        res.sseSend('error', {
+          error: 'an error has occured while fetching data'
+        })
+        await intervalClear()
+        delete sseConnections[userId]
+        res.end()
+      }
     }, 2000)
 
     req.on('close', async () => {
-      await clearInterval(dataStream)
+      await intervalClear()
+      delete sseConnections[userId]
       console.log('befejezve')
       res.end()
     })
@@ -52,6 +82,7 @@ module.exports = {
     try {
       await Post.findOneAndUpdate({ '_id': req.params.postId }, { $push: { 'likes': req.user.id } })
       res.status(204).json({ success: true })
+      sseConnections[req.user._id] = Post.find({ 'title': 'das' }).populate('createdBy', 'username').sort('-createdAt')
     } catch (err) { //  TODO
       console.log(err)
       res.status(500)

@@ -26,7 +26,7 @@ const router = new Router({
     },
     {
       path: '*',
-      redirect: '/home'
+      redirect: 'home'
     }
   ]
 })

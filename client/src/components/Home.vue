@@ -31,24 +31,34 @@ export default {
     ])
   },
   async mounted () {
-    this.posts = (await PostService.index()).data
     this.setupStream()
+    this.posts = (await PostService.index()).data
   },
   methods: {
     setupStream () {
-      this.eventSource = new EventSource('http://localhost:8081/poststream')
-      this.eventSource.addEventListener('message', event => {
-        let posts = JSON.parse(event.data)
-        console.log(posts)
-        this.posts = posts
-      }) /*
+      if (this.user) {
+        this.eventSource = new EventSource(`http://localhost:8081/poststream?user=${this.user._id}`)
+        this.eventSource.addEventListener(this.user._id, event => {
+          let posts = JSON.parse(event.data)
+          console.log(posts)
+          this.posts = posts
+        })
+      } else {
+        this.eventSource = new EventSource(`http://localhost:8081/poststream`)
+        this.eventSource.addEventListener('messages', event => {
+          let posts = JSON.parse(event.data)
+          console.log(posts)
+          this.posts = posts
+        })
+      }
+    }
+    /*
       this.eventSource.addEventListener('error', event => {
         if (event.readyState === EventSource.CLOSED) {
           console.log('Event was closed')
           console.log(EventSource)
         }
       }, false) */
-    }
   },
   components: {
     Post
