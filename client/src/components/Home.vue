@@ -33,18 +33,19 @@ export default {
   async mounted () {
     this.setupStream()
     this.posts = (await PostService.index()).data
+    console.log('cookie: ' + this.$cookies.get('user_sid'))
   },
   methods: {
     setupStream () {
       if (this.user) {
-        this.eventSource = new EventSource(`http://localhost:8081/poststream?user=${this.user._id}`)
+        this.eventSource = new EventSource(`http://localhost:8081/poststream?user=${this.user._id}`, { withCredentials: true })
         this.eventSource.addEventListener(this.user._id, event => {
           let posts = JSON.parse(event.data)
           console.log(posts)
           this.posts = posts
         })
       } else {
-        this.eventSource = new EventSource(`http://localhost:8081/poststream`)
+        this.eventSource = new EventSource(`http://localhost:8081/poststream`, { withCredentials: true })
         this.eventSource.addEventListener('messages', event => {
           let posts = JSON.parse(event.data)
           console.log(posts)

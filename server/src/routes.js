@@ -24,6 +24,9 @@ module.exports = (app) => {
   app.post('/login',
     AuthenticationController.login)
 
+  app.get('/logout',
+    AuthenticationController.logout)
+
   app.post('/upload',
     upload.single('image'),
     IsAuthenticated.restrict,

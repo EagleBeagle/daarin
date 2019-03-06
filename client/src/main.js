@@ -8,10 +8,15 @@ import { sync } from 'vuex-router-sync'
 import store from '@/store/store'
 import 'vuetify/dist/vuetify.min.css'
 import Panel from '@/components/globals/Panel'
+import * as Cookies from 'js-cookie'
+// import VueCookie from 'vue-cookie'
 
 Vue.config.productionTip = false
 
 Vue.use(Vuetify)
+Vue.prototype.$cookies = Cookies
+
+// Vue.use(VueCookie)
 
 Vue.component('panel', Panel)
 

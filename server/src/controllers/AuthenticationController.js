@@ -24,6 +24,8 @@ module.exports = {
         }
       } else {
         let token = jwt.sign(newUser.toJSON(), config.secret)
+        req.session.username = newUser.username
+        console.log('WQEWQOIJDQW9IDHWQDIQWHDW: ' + req.session.user)
         res.status(201).json({ user: newUser, token: token })
       }
     })
@@ -46,7 +48,13 @@ module.exports = {
         user.comparePassword(req.body.password, function (err, isMatch) {
           if (isMatch && !err) {
             let token = jwt.sign(user.toJSON(), config.secret)
-            res.json({ success: true, token: token, user: user })
+            req.session.username = user.username
+            res.json({
+              success: true,
+              session: req.session.id,
+              token: token,
+              user: user
+            })
           } else {
             res.status(401).send({
               error: 'The login information was incorrect'
@@ -55,5 +63,16 @@ module.exports = {
         })
       }
     })
+  },
+
+  logout (req, res) {
+    console.log('LOGOOOOTT: ' + req.session.username)
+    if (req.session.username && req.cookies.user_sid) {
+      console.log('cookie deleted')
+      res.clearCookie('user_sid')
+      res.status(200).send({
+        success: 'Logged out'
+      })
+    }
   }
 }

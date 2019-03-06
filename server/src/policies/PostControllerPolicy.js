@@ -4,6 +4,7 @@ const imageType = require('image-type')
 
 module.exports = {
   upload (req, res, next) { //  TODO: CreatedBy (authenticatio)
+    console.log('UPLOADKOKUKUKUKUUKUKUI: ' + req.session.username)
     const schema = {
       title: Joi.string().invalid(['null']).required().max(250),
       createdBy: Joi.string(),

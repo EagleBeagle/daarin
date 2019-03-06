@@ -136,6 +136,7 @@
 
 <script>
 import PostService from '@/services/PostService'
+import AuthenticationService from '@/services/AuthenticationService'
 export default {
   data () {
     return {
@@ -150,11 +151,12 @@ export default {
     }
   },
   methods: {
-    logout () {
+    async logout () {
       this.$store.dispatch('setToken', null)
       this.$store.dispatch('setUser', null)
+      await AuthenticationService.logout()
       this.$router.push({
-        name: 'Home'
+        name: 'home'
       })
     },
     onClickUpload () {

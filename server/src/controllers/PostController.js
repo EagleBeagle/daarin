@@ -7,7 +7,7 @@ module.exports = {
   async index (req, res) {
     let posts = null
     let userId = req.user ? req.user._id : null
-    console.log('eza id:' + userId)
+    console.log('KUKUKUKUKUKUI: ' + req.session.id)
     try {
       let query = Post.find().populate('createdBy', 'username').sort('-createdAt') // ez query-t ad vissza mert nem kezeljük le a promise-t
       if (userId) sseConnections[userId] = query
@@ -41,7 +41,7 @@ module.exports = {
         } else {
           dataToSend = await sseConnections[userId].exec()
         }
-        console.log(userId + ' ' + (userId in sseConnections))
+        console.log(userId + ' ' + (userId in sseConnections) + ', cookie: ' + req.session.id)
         res.sseSend(userId, dataToSend)
       } catch (err) {
         console.log(err)
@@ -68,7 +68,6 @@ module.exports = {
       createdBy: req.body.createdBy,
       content: 'data:image/png;base64, ' + encoded
     })
-
     newPost.save(function (err) {
       if (err) {
         res.status(500).send({
