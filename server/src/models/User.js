@@ -16,7 +16,8 @@ const UserSchema = new Schema({
   ],
   likedComments: [
     { type: Schema.Types.ObjectId, ref: 'Comment' }
-  ]
+  ],
+  sseId: { type: String }
 })
 
 UserSchema.pre('save', function (next) {

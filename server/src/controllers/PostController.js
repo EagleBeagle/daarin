@@ -1,18 +1,16 @@
 const Post = require('../models/Post.js')
 const { setIntervalSync } = require('../utils/common.js')
-//  const User = require('../models/User.js')
+// const User = require('../models/User.js')
 let sseConnections = {}
 
 module.exports = {
   async index (req, res) {
     let posts = null
-    let userId = req.user ? req.user._id : null
-    console.log('eza id:' + userId)
+    let sseId = req.user ? req.user.sseId : null
     try {
       let query = Post.find().populate('createdBy', 'username').sort('-createdAt') // ez query-t ad vissza mert nem kezeljük le a promise-t
-      if (userId) sseConnections[userId] = query
+      if (sseId) sseConnections[sseId] = query
       posts = await query.exec()
-      // console.log(await sseDbQuery.exec())
       for (let key in posts) {
         posts[key].populate('createdBy')
       }
@@ -24,42 +22,64 @@ module.exports = {
     }
   },
   async postStream (req, res) {
-    console.log('sse start')
+    console.log('SSE connection initialized')
     res.sseSetup()
-    let userId = req.query.user
-    console.log('usasdasoidjadisa: ' + userId)
-    /* if (userId && !(userId in sseConnections)) {
-      console.log('vanuserid és még nincs coneccekben')
-      sseConnections[userId] = null
-    } */
+    let sseId = req.query.id
+
     const intervalClear = setIntervalSync(async function () {
       try {
-        let dataToSend = null
-        if (!sseConnections[userId]) {
-          userId = 'message'
-          dataToSend = ''
+        if (!(sseId in sseConnections)) {
+          res.sseSend('message', null)
         } else {
-          dataToSend = await sseConnections[userId].exec()
+          let data = await sseConnections[sseId].exec()
+          res.sseSend('message', data)
         }
-        console.log(userId + ' ' + (userId in sseConnections))
-        res.sseSend(userId, dataToSend)
       } catch (err) {
         console.log(err)
         res.sseSend('error', {
-          error: 'an error has occured while fetching data'
+          error: 'an error has occured while streaming data'
         })
         await intervalClear()
-        delete sseConnections[userId]
+        delete sseConnections[sseId]
         res.end()
       }
     }, 2000)
 
     req.on('close', async () => {
       await intervalClear()
-      delete sseConnections[userId]
-      console.log('befejezve')
+      delete sseConnections[sseId]
+      console.log('SSE Connection closed')
       res.end()
     })
+
+    /* const intervalClear = setIntervalSync(async function () {
+      try {
+        let dataToSend = null
+        if (!(sseId in sseConnections)) {
+          sseId = 'message'
+          dataToSend = ''
+        } else {
+          dataToSend = await sseConnections[sseId].exec()
+        }
+        console.log(sseId + ' ' + (sseId in sseConnections))
+        res.sseSend('message', dataToSend)
+      } catch (err) {
+        console.log(err)
+        res.sseSend('error', {
+          error: 'an error has occured while fetching data'
+        })
+        await intervalClear()
+        delete sseConnections[sseId]
+        res.end()
+      }
+    }, 2000)
+
+    req.on('close', async () => {
+      await intervalClear()
+      delete sseConnections[sseId]
+      console.log('befejezve')
+      res.end()
+    }) */
   },
   upload (req, res) {
     const encoded = req.file.buffer.toString('base64')
@@ -82,7 +102,7 @@ module.exports = {
     try {
       await Post.findOneAndUpdate({ '_id': req.params.postId }, { $push: { 'likes': req.user.id } })
       res.status(204).json({ success: true })
-      sseConnections[req.user._id] = Post.find({ 'title': 'das' }).populate('createdBy', 'username').sort('-createdAt')
+      sseConnections[req.user.sseId] = Post.find({ limit: 1 })
     } catch (err) { //  TODO
       console.log(err)
       res.status(500)

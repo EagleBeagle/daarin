@@ -1,6 +1,5 @@
 module.exports = function (req, res, next) {
   res.sseSetup = function () {
-    console.log('appended data to SSE')
     res.writeHead(200, {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',

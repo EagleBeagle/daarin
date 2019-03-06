@@ -1,13 +1,15 @@
 const jwt = require('jsonwebtoken')
 const config = require('../config/config')
 const User = require('../models/User.js')
+const uuidv4 = require('uuid/v4')
 
 module.exports = {
   register (req, res) {
     let newUser = new User({
       username: req.body.username,
       email: req.body.email,
-      password: req.body.password
+      password: req.body.password,
+      sseId: uuidv4()
     })
 
     newUser.save(function (err) {
@@ -29,7 +31,7 @@ module.exports = {
     })
   },
 
-  login (req, res) {
+  async login (req, res) {
     User.findOne({
       username: req.body.username
     }, function (err, user) {
@@ -43,8 +45,10 @@ module.exports = {
           error: 'The login information was incorrect'
         })
       } else {
-        user.comparePassword(req.body.password, function (err, isMatch) {
+        user.comparePassword(req.body.password, async function (err, isMatch) {
           if (isMatch && !err) {
+            user.sseId = uuidv4()
+            await user.save()
             let token = jwt.sign(user.toJSON(), config.secret)
             res.json({ success: true, token: token, user: user })
           } else {
