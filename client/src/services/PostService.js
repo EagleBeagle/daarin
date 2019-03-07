@@ -1,8 +1,14 @@
 import Api from '@/services/Api'
+import querystring from 'querystring'
 
 export default {
-  index () {
-    return Api().get('/home')
+  index (lastPost, limit) {
+    let query = ''
+    if (lastPost) {
+      let createdAt = querystring.stringify({ created: lastPost.createdAt })
+      query = `?${createdAt}&limit=${limit}`
+    }
+    return Api().get(`/home${query}`)
   },
   upload (formData) {
     console.log('uploadService: ' + formData.get('createdBy'))

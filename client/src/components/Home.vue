@@ -33,6 +33,7 @@ export default {
   async mounted () {
     this.setupStream()
     this.posts = (await PostService.index()).data
+    this.scroll()
   },
   methods: {
     setupStream () {
@@ -51,14 +52,23 @@ export default {
           this.posts = posts
         })
       }
-    }
-    /*
-      this.eventSource.addEventListener('error', event => {
-        if (event.readyState === EventSource.CLOSED) {
-          console.log('Event was closed')
-          console.log(EventSource)
+    },
+    scroll () {
+      window.onscroll = async () => {
+        let bottomOfWindow = document.documentElement.scrollTop + window.innerHeight === document.documentElement.offsetHeight
+        if (bottomOfWindow) {
+          let lastPost = this.posts[Object.keys(this.posts).length - 1]
+          // console.log(lastPost)
+          let morePosts = (await PostService.index(lastPost, 5)).data
+          // console.log(morePosts)
+          for (let newPost of morePosts) {
+            this.posts.push(newPost)
+          }
+          // this.posts.push(morePosts)
+          console.log(this.posts)
         }
-      }, false) */
+      }
+    }
   },
   components: {
     Post

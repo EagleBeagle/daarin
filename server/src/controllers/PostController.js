@@ -7,20 +7,36 @@ module.exports = {
   async index (req, res) {
     let posts = null
     let sseId = req.user ? req.user.sseId : null
+    let query = null
     try {
-      let query = Post.find().populate('createdBy', 'username').sort('-createdAt') // ez query-t ad vissza mert nem kezeljük le a promise-t
-      if (sseId) sseConnections[sseId] = query
-      posts = await query.exec()
+      if (!req.query.created || !req.query.limit) {
+        query = Post.find().populate('createdBy', 'username').sort('-createdAt').limit(5) // ez query-t ad vissza mert nem kezeljük le a promise-t
+        if (sseId) sseConnections[sseId] = query
+        posts = await query.exec()
+      } else {
+        posts = await Post.find({ 'createdAt': { $lt: req.query.created } })
+          .populate('createdBy', 'username')
+          .sort('-createdAt')
+          .limit(Number(req.query.limit))
+        let lastPost = posts[Object.keys(posts).length - 1] // ha üres akkor nincs több post
+        if (sseId && lastPost) {
+          sseConnections[sseId] = Post.find({ 'createdAt': { $gte: lastPost.createdAt } })
+            .populate('createdBy', 'username')
+            .sort('-createdAt')
+        }
+      }
       for (let key in posts) {
         posts[key].populate('createdBy')
       }
       res.send(posts)
     } catch (err) {
+      console.log(err)
       res.status(500).send({
         error: 'an error has occured trying to fetch the posts'
       })
     }
   },
+
   async postStream (req, res) {
     console.log('SSE connection initialized')
     res.sseSetup()
@@ -32,6 +48,7 @@ module.exports = {
           res.sseSend('message', null)
         } else {
           let data = await sseConnections[sseId].exec()
+          console.log(Object.keys(data).length)
           res.sseSend('message', data)
         }
       } catch (err) {
