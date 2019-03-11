@@ -12,7 +12,10 @@ const UserSchema = new Schema({
     { type: Schema.Types.ObjectId, ref: 'Post' }
   ],
   likedPosts: [
-    { type: Schema.Types.ObjectId, ref: 'Post' }
+    { type: Schema.Types.ObjectId, ref: 'Post', unique: true }
+  ],
+  dislikedPosts: [
+    { type: Schema.Types.ObjectId, ref: 'Post', unique: true }
   ],
   likedComments: [
     { type: Schema.Types.ObjectId, ref: 'Comment' }

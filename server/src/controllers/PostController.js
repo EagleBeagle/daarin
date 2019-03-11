@@ -1,6 +1,6 @@
 const Post = require('../models/Post.js')
 const { setIntervalSync } = require('../utils/common.js')
-// const User = require('../models/User.js')
+const User = require('../models/User.js')
 let sseConnections = {}
 
 module.exports = {
@@ -48,7 +48,6 @@ module.exports = {
           res.sseSend('message', null)
         } else {
           let data = await sseConnections[sseId].exec()
-          console.log(Object.keys(data).length)
           res.sseSend('message', data)
         }
       } catch (err) {
@@ -115,11 +114,12 @@ module.exports = {
       res.status(201).json({ post: newPost })
     })
   },
+  // TODO: ÚJRAGONDOLNI AZ UPVOTOK TÁROLÁSÁT
   async upvote (req, res) {
     try {
       await Post.findOneAndUpdate({ '_id': req.params.postId }, { $push: { 'likes': req.user.id } })
+      await User.findOneAndUpdate({ '_id': req.user.id }, { $push: { 'likedPosts': req.params.postId } })
       res.status(204).json({ success: true })
-      sseConnections[req.user.sseId] = Post.find({ limit: 1 })
     } catch (err) { //  TODO
       console.log(err)
       res.status(500)
@@ -128,6 +128,7 @@ module.exports = {
   async unUpvote (req, res) {
     try {
       await Post.findOneAndUpdate({ '_id': req.params.postId }, { $pull: { 'likes': req.user.id } })
+      await User.findOneAndUpdate({ '_id': req.user.id }, { $pull: { 'likedPosts': req.params.postId } })
       res.status(204).json({ success: true })
     } catch (err) { //  TODO
       console.log(err)
@@ -137,6 +138,7 @@ module.exports = {
   async downvote (req, res) {
     try {
       await Post.findOneAndUpdate({ '_id': req.params.postId }, { $push: { 'dislikes': req.user.id } })
+      await User.findOneAndUpdate({ '_id': req.user.id }, { $push: { 'dislikedPosts': req.params.postId } })
       res.status(204).json({ success: true })
     } catch (err) { //  TODO
       console.log(err)
@@ -146,6 +148,7 @@ module.exports = {
   async unDownvote (req, res) {
     try {
       await Post.findOneAndUpdate({ '_id': req.params.postId }, { $pull: { 'dislikes': req.user.id } })
+      await User.findOneAndUpdate({ '_id': req.user.id }, { $pull: { 'dislikedPosts': req.params.postId } })
       res.status(204).json({ success: true })
     } catch (err) { //  TODO
       console.log(err)

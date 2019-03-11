@@ -9,11 +9,11 @@
     <v-divider/>
     <v-card-title>
         <v-btn
-          @click="upvote(post)">
-          <v-icon class="light-blue--text">arrow_upward</v-icon></v-btn>
+          @click="upvote()">
+          <v-icon :class="[ upvoted ? 'light-blue--text' : 'grey--text' ]">arrow_upward</v-icon></v-btn>
         <v-btn
-          @click="downvote(post)">
-          <v-icon class="light-blue--text">arrow_downward</v-icon></v-btn>
+          @click="downvote()">
+          <v-icon :class="[ downvoted ? 'light-blue--text' : 'grey--text' ]">arrow_downward</v-icon></v-btn>
         <h3>{{ post.likes.length - post.dislikes.length }}</h3>
     </v-card-title>
   </v-card>
@@ -53,52 +53,44 @@ export default {
     }
   },
   methods: {
-    async upvote (post) {
+    async upvote () {
       if (!this.isUserLoggedIn) {
         return
       }
       try {
         if (this.upvoted) {
-          await PostService.unUpvote(post._id)
+          // console.log (this.post.likes)
+          // this.upvoted = false
+          this.post.likes = this.post.likes.filter(upvoter => upvoter !== this.user._id) // azonnali eredmény
+          await PostService.unUpvote(this.post._id)
         } else {
-          await PostService.upvote(post._id)
+          if (this.downvoted) {
+            await this.downvote()
+          }
+          this.post.likes.push(this.user._id)
+          await PostService.upvote(this.post._id)
         }
       } catch (err) {
         console.log(err)
       }
     },
-    async downvote (post) {
+    async downvote () {
       if (!this.isUserLoggedIn) {
         return
       }
       try {
         if (this.downvoted) {
-          await PostService.unDownvote(post._id)
+          this.post.dislikes = this.post.dislikes.filter(downvoter => downvoter !== this.user._id) // azonnali eredmény
+          await PostService.unDownvote(this.post._id)
         } else {
-          await PostService.downvote(post._id)
+          if (this.upvoted) {
+            await this.upvote()
+          }
+          this.post.dislikes.push(this.user._id)
+          await PostService.downvote(this.post._id)
         }
       } catch (err) {
         console.log(err)
-      }
-    },
-    isUpvoted (post) {
-      if (!this.isUserLoggedIn) {
-        return
-      }
-      if (post.likes.includes(this.user._id)) {
-        return true
-      } else {
-        return false
-      }
-    },
-    isDownvoted (post) {
-      if (!this.isUserLoggedIn) {
-        return
-      }
-      if (post.dislikes.includes(this.user._id)) {
-        return true
-      } else {
-        return false
       }
     }
   }

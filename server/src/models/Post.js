@@ -6,10 +6,10 @@ const PostSchema = new Schema({
   createdAt: { type: Date, default: Date.now },
   createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
   likes: [
-    { type: Schema.Types.ObjectId, ref: 'User' }
+    { type: Schema.Types.ObjectId, ref: 'User', unique: true }
   ],
   dislikes: [
-    { type: Schema.Types.ObjectId, ref: 'User' }
+    { type: Schema.Types.ObjectId, ref: 'User', unique: true }
   ],
   tags: [
     { type: Schema.Types.ObjectId, ref: 'Comment' }
