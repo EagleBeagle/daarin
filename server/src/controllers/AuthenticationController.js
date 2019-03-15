@@ -4,42 +4,34 @@ const User = require('../models/User.js')
 const uuidv4 = require('uuid/v4')
 
 module.exports = {
-  register (req, res) {
+  async register (req, res) {
     let newUser = new User({
       username: req.body.username,
       email: req.body.email,
       password: req.body.password,
       sseId: uuidv4()
     })
-
-    newUser.save(function (err) {
-      if (err) {
-        if (err.name === 'MongoError') {
-          res.status(400).send({
-            error: 'This account is already in use.'
-          })
-        } else {
-          console.log(err)
-          res.status(400).send({
-            error: 'An error has occured creating the account.'
-          })
-        }
+    try {
+      await newUser.save()
+      let token = jwt.sign(newUser.toJSON(), config.secret)
+      res.status(201).json({ user: newUser, token: token })
+    } catch (err) {
+      if (err.name === 'MongoError') {
+        res.status(400).send({
+          error: 'This account is already in use.'
+        })
       } else {
-        let token = jwt.sign(newUser.toJSON(), config.secret)
-        res.status(201).json({ user: newUser, token: token })
+        console.log(err)
+        res.status(400).send({
+          error: 'An error has occured creating the account.'
+        })
       }
-    })
+    }
   },
 
   async login (req, res) {
-    User.findOne({
-      username: req.body.username
-    }, function (err, user) {
-      if (err) {
-        res.status(500).send({
-          error: 'An error has ocured trying to log in'
-        })
-      }
+    try {
+      let user = await User.findOne({ username: req.body.username })
       if (!user) {
         res.status(401).send({
           error: 'The login information was incorrect'
@@ -58,6 +50,10 @@ module.exports = {
           }
         })
       }
-    })
+    } catch (err) {
+      res.status(500).send({
+        error: 'An error has ocured trying to log in'
+      })
+    }
   }
 }

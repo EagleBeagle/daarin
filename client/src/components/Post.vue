@@ -5,7 +5,7 @@
       <p class="light-blue--text">{{ post.createdBy.username }}</p>
     </div>
     <v-divider/>
-    <v-img :src="post.content" width="100%"/>
+    <v-img :src="post.url" width="100%"/>
     <v-divider/>
     <v-card-title>
         <v-btn

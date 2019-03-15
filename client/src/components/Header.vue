@@ -143,7 +143,6 @@ export default {
       authDialog: null,
       filename: null,
       title: null,
-      imageUrl: null,
       image: null,
       error: null,
       required: (value) => !!value || 'Required.'
@@ -160,18 +159,14 @@ export default {
     onClickUpload () {
       this.$refs.fileInput.click()
     },
-    onFileChosen (event) {
+    async onFileChosen (event) {
       const files = event.target.files
       this.filename = files[0].name
       if (this.filename.lastIndexOf('.') <= 0) {
         return alert('The given file is not valid') //  TODO
       }
-      const fileReader = new FileReader()
-
-      fileReader.readAsDataURL(files[0], function () {
-        this.imageUrl = fileReader.result //  ??
-      })
       this.image = files[0]
+      console.log(files[0].path)
     },
     onClose () {
       this.dialog = false

@@ -10,10 +10,11 @@ const User = require('../models/User.js')
 const defaultUser = {
   'email': 'test@test.com',
   'username': 'testUser',
-  'password': 'testPassword'
+  'password': 'testPassword',
+  'sseId': '00000'
 }
 let defaultPost = {}
-let token
+let token = null
 
 const setDefaultPost = async () => {
   const userId = await User.findOne({ 'email': defaultUser.email }, { '_id': 1 })
@@ -180,12 +181,21 @@ describe('Posting content', () => {
         })
     })
 
+    it('should set SSE query to', async () => {
+      return request.get('/home')
+        .set('Authorization', 'Bearer ' + token)
+        .then((res) => {
+          expect(res.statusCode).to.be.equal(200)
+          expect(res.body).to.not.be.empty
+        })
+    })
+
     it('should have empty response body in case of no posts', async () => {
       await Post.deleteMany({})
       return request.get('/home')
         .then((res) => {
           expect(res.statusCode).to.be.equal(200)
-          expect(res.body).to.be.empty
+          expect(res.body.posts).to.be.empty
         })
     })
   })

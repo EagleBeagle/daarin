@@ -1,7 +1,16 @@
+const cloudinary = require('cloudinary')
+const Datauri = require('datauri')
+const path = require('path')
 const Post = require('../models/Post.js')
 const { setIntervalSync } = require('../utils/common.js')
 const User = require('../models/User.js')
 let sseConnections = {}
+
+cloudinary.config({
+  cloud_name: 'daarin',
+  api_key: '744822548765916',
+  api_secret: 'KTogd86JwWJzB0HJUYXI-puj084'
+})
 
 module.exports = {
   async index (req, res) {
@@ -10,7 +19,10 @@ module.exports = {
     let query = null
     try {
       if (!req.query.created || !req.query.limit) {
-        query = Post.find().populate('createdBy', 'username').sort('-createdAt').limit(5) // ez query-t ad vissza mert nem kezeljük le a promise-t
+        query = Post.find()
+          .populate('createdBy', 'username')
+          .sort('-createdAt')
+          .limit(5) // ez query-t ad vissza mert nem kezeljük le a promise-t
         if (sseId) sseConnections[sseId] = query
         posts = await query.exec()
       } else {
@@ -25,10 +37,7 @@ module.exports = {
             .sort('-createdAt')
         }
       }
-      for (let key in posts) {
-        posts[key].populate('createdBy')
-      }
-      res.send(posts)
+      res.status(200).send(posts)
     } catch (err) {
       console.log(err)
       res.status(500).send({
@@ -97,22 +106,25 @@ module.exports = {
       res.end()
     }) */
   },
-  upload (req, res) {
-    const encoded = req.file.buffer.toString('base64')
-    let newPost = new Post({
-      title: req.body.title,
-      createdBy: req.body.createdBy,
-      content: 'data:image/png;base64, ' + encoded
-    })
+  async upload (req, res) {
+    const dUri = new Datauri()
+    dUri.format(path.extname(req.file.originalname).toString(), req.file.buffer)
 
-    newPost.save(function (err) {
-      if (err) {
-        res.status(500).send({
-          error: 'An error occured during the upload.'
-        })
+    try {
+      let result = await cloudinary.v2.uploader.upload(dUri.content)
+      let newPost = {
+        title: req.body.title,
+        createdBy: req.body.createdBy,
+        url: result.url
       }
+      await Post.create(newPost)
       res.status(201).json({ post: newPost })
-    })
+    } catch (err) {
+      console.log(err)
+      res.status(500).send({
+        error: 'An error occured during the upload.'
+      })
+    }
   },
   // TODO: ÚJRAGONDOLNI AZ UPVOTOK TÁROLÁSÁT
   async upvote (req, res) {

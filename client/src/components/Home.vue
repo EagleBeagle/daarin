@@ -2,6 +2,7 @@
   <v-layout justify-center>
     <v-flex xs4>
       <div v-for="post in posts" :key="post.id">
+        {{ post.id }}
         <v-flex class="pb-5">
           <post :post="post" />
         </v-flex>
@@ -32,7 +33,8 @@ export default {
   },
   async mounted () {
     this.setupStream()
-    this.posts = (await PostService.index()).data
+    let result = await PostService.index()
+    this.posts = result.data
     this.scroll()
   },
   methods: {
