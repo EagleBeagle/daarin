@@ -21,7 +21,10 @@ module.exports = {
           error: 'Error during user authentication'
         })
       } else if (!user) {
-        next()
+        try {
+          next()
+        } catch (err) {
+        }
       } else {
         req.user = user
         next()
