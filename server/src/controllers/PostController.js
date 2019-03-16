@@ -23,7 +23,7 @@ module.exports = {
           .populate('createdBy', 'username')
           .sort('-createdAt')
           .limit(5) // ez query-t ad vissza mert nem kezeljük le a promise-t
-        if (sseId) sseConnections[sseId] = query
+        if (sseId) sseConnections[sseId] = Post.find({}, 'likes dislikes').sort('-createdAt').limit(5)
         posts = await query.exec()
       } else {
         posts = await Post.find({ 'createdAt': { $lt: req.query.created } })
@@ -32,9 +32,7 @@ module.exports = {
           .limit(Number(req.query.limit))
         let lastPost = posts[Object.keys(posts).length - 1] // ha üres akkor nincs több post
         if (sseId && lastPost) {
-          sseConnections[sseId] = Post.find({ 'createdAt': { $gte: lastPost.createdAt } })
-            .populate('createdBy', 'username')
-            .sort('-createdAt')
+          sseConnections[sseId] = Post.find({ 'createdAt': { $gte: lastPost.createdAt } }, 'likes dislikes')
         }
       }
       res.status(200).send(posts)
@@ -76,36 +74,8 @@ module.exports = {
       console.log('SSE Connection closed')
       res.end()
     })
-
-    /* const intervalClear = setIntervalSync(async function () {
-      try {
-        let dataToSend = null
-        if (!(sseId in sseConnections)) {
-          sseId = 'message'
-          dataToSend = ''
-        } else {
-          dataToSend = await sseConnections[sseId].exec()
-        }
-        console.log(sseId + ' ' + (sseId in sseConnections))
-        res.sseSend('message', dataToSend)
-      } catch (err) {
-        console.log(err)
-        res.sseSend('error', {
-          error: 'an error has occured while fetching data'
-        })
-        await intervalClear()
-        delete sseConnections[sseId]
-        res.end()
-      }
-    }, 2000)
-
-    req.on('close', async () => {
-      await intervalClear()
-      delete sseConnections[sseId]
-      console.log('befejezve')
-      res.end()
-    }) */
   },
+
   async upload (req, res) {
     const dUri = new Datauri()
     dUri.format(path.extname(req.file.originalname).toString(), req.file.buffer)
