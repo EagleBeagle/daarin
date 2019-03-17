@@ -195,7 +195,7 @@ describe('Posting content', () => {
       return request.get('/home')
         .then((res) => {
           expect(res.statusCode).to.be.equal(200)
-          expect(res.body.posts).to.be.empty
+          expect(res.body).to.be.empty
         })
     })
   })

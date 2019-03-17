@@ -2,8 +2,6 @@
 process.env.NODE_ENV = 'test'
 const chai = require('chai')
 const app = require('../../app.js')
-const supertest = require('supertest')
-const request = supertest(app)
 const sinon = require('sinon')
 const sinonChai = require('sinon-chai')
 chai.use(sinonChai)
@@ -16,46 +14,27 @@ const Post = require('../../models/Post.js')
 const User = require('../../models/User.js')
 let PostController = require('../../controllers/PostController.js')
 let PostControllerPolicy = rewire('../../policies/PostControllerPolicy.js')
-const defaultUser = {
-  'email': 'test@test.com',
-  'username': 'testUser',
-  'password': 'testPassword',
-  'sseId': '00000'
-}
-let defaultPost = {}
-let token = null
 
-const setDefaultPost = async () => {
-  const userId = await User.findOne({ 'email': defaultUser.email }, { '_id': 1 })
-  defaultPost = {
-    title: 'testImage',
-    createdBy: userId._id.toString(),
-    url: 'www.testUrl.com'
-  }
-}
+
+
 
 describe('Posting content', () => {
   let cloudinaryStub
 
   before('Cleaning database', async () => {
-    await Post.deleteMany({})
     cloudinaryStub = sinon.stub(cloudinary.v2.uploader, 'upload').returns({
       url: 'www.testUrl.com'
     })
-    return request.post('/login')
-      .send({
-        username: defaultUser.username,
-        password: defaultUser.password
-      })
-      .then((res) => {
-        token = res.body.token
-      })
   })
 
   after('Cleaning database', async () => {
-    await Post.deleteMany({})
     cloudinaryStub.restore()
   })
+
+  afterEach(async () => {
+    PostControllerPolicy = rewire('../../policies/PostControllerPolicy.js')
+  })
+
   describe('PostControllerPolicy', () => {
     describe('upload', () => {
       it('should not validate post if no title given', async () => {
@@ -126,7 +105,6 @@ describe('Posting content', () => {
         let next = sinon.spy()
         PostControllerPolicy.imageValidation(req, res, next)
         expect(next).to.have.been.called
-        PostControllerPolicy = rewire('../../policies/PostControllerPolicy.js')
       })
 
       it('should not validate image with unsupported type', async () => {
@@ -146,7 +124,7 @@ describe('Posting content', () => {
         expect(next).to.not.have.been.called
       })
 
-      it('should not validate image with correct format metadata, but incorrect file content', async () => {
+      it('should not validate image with incorrect file content', async () => {
         let req = mockRequest({
           file: {
             buffer: 'FFD80000'
@@ -176,7 +154,6 @@ describe('Posting content', () => {
           mime: 'image/jpeg'
         }))
         PostControllerPolicy.imageValidation(req, res, next)
-        PostControllerPolicy = rewire('../../policies/PostControllerPolicy.js')
         expect(res.status).to.have.been.calledWith(400)
         expect(res.send).to.have.been.calledWith({
           error: "You can't upload files larger than 5MB"
@@ -185,12 +162,10 @@ describe('Posting content', () => {
       })
     })
   })
-})
 
-describe('Listing posts', () => {
   describe('PostController', () => {
     describe('index', () => {
-      it('should list posts in case any exists and no query parameters where given', async () => {
+      it('should list posts if no query parameters where given', async () => {
         let req = mockRequest()
         let res = mockResponse()
         let queryMock = sinon.mock(Post)
@@ -203,3 +178,4 @@ describe('Listing posts', () => {
     })
   })
 })
+
