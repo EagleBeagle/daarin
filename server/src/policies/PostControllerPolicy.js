@@ -6,10 +6,13 @@ module.exports = {
   upload (req, res, next) { //  TODO: CreatedBy (authenticatio)
     const schema = {
       title: Joi.string().invalid(['null']).required().max(250),
-      createdBy: Joi.string(),
-      image: Joi.binary()
+      createdBy: Joi.string().alphanum().length(24)
     }
-
+    if (!req.body) {
+      res.status(500).send({
+        error: 'No data provided'
+      })
+    }
     const { error, value } = Joi.validate(req.body, schema) //  eslint-disable-line
 
     if (error) {
