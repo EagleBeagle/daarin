@@ -32,7 +32,6 @@
     "passport": "^0.4.0",
     "passport-jwt": "^4.0.0",
     "read-chunk": "^3.0.0",
-    "sinon-mongoose": "^2.2.1",
     "uuid": "^3.3.2",
     "webpack-dev-server": ">=3.1.11"
   },
@@ -52,6 +51,7 @@
     "rewire": "^4.0.1",
     "sinon": "^7.2.7",
     "sinon-chai": "^3.3.0",
+    "sinon-mongoose": "^2.2.1",
     "supertest": "^3.4.2"
   }
 }
