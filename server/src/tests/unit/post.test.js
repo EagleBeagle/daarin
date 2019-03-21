@@ -1,7 +1,6 @@
 /* eslint no-unused-expressions: 0 */
 process.env.NODE_ENV = 'test'
 const chai = require('chai')
-const app = require('../../app.js')
 const sinon = require('sinon')
 const sinonChai = require('sinon-chai')
 chai.use(sinonChai)
@@ -21,13 +20,13 @@ let PostControllerPolicy = rewire('../../policies/PostControllerPolicy.js')
 describe('Posting content', () => {
   let cloudinaryStub
 
-  before('Cleaning database', async () => {
+  before('Creating test doubles', async () => {
     cloudinaryStub = sinon.stub(cloudinary.v2.uploader, 'upload').returns({
       url: 'www.testUrl.com'
     })
   })
 
-  after('Cleaning database', async () => {
+  after('Restoring test doubles', async () => {
     cloudinaryStub.restore()
   })
 
@@ -73,10 +72,23 @@ describe('Posting content', () => {
         let res = mockResponse()
         let next = sinon.spy()
         PostControllerPolicy.upload(req, res, next)
-        expect(res.status).to.have.been.calledWith(500)
+        expect(res.status).to.have.been.calledWith(400)
         expect(res.send).to.be.calledWith({
           error: 'No data provided'
         })
+      })
+
+      it('should validate post if post details are correctly given', async () => {
+        let req = mockRequest({
+          body: {
+            title: 'testTitle',
+            createdBy: '000000000000000000000000'
+          }
+        })
+        let next = sinon.spy()
+        let res = mockResponse()
+        PostControllerPolicy.upload(req, res, next)
+        expect(next).to.have.been.called
       })
     })
     describe('imageValidation', () => {
@@ -169,10 +181,13 @@ describe('Posting content', () => {
         let req = mockRequest()
         let res = mockResponse()
         let queryMock = sinon.mock(Post)
-        queryMock.expects('find').chain('exec').resolves('testdata')
+        queryMock.expects('find')
+          .chain('exec')
+          .resolves('testdata')
         await PostController.index(req, res)
         expect(res.status).to.have.been.calledWith(200)
         expect(res.send).to.have.been.calledWith('testdata')
+        queryMock.verify()
         queryMock.restore()
       })
     })

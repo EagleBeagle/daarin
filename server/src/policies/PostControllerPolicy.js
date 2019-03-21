@@ -9,7 +9,7 @@ module.exports = {
       createdBy: Joi.string().alphanum().length(24)
     }
     if (!req.body) {
-      res.status(500).send({
+      res.status(400).send({
         error: 'No data provided'
       })
     }

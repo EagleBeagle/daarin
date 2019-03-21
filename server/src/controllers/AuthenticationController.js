@@ -22,7 +22,7 @@ module.exports = {
         })
       } else {
         console.log(err)
-        res.status(400).send({
+        res.status(500).send({
           error: 'An error has occured creating the account.'
         })
       }
@@ -42,7 +42,11 @@ module.exports = {
             user.sseId = uuidv4()
             await user.save()
             let token = jwt.sign(user.toJSON(), config.secret)
-            res.json({ success: true, token: token, user: user })
+            res.status(200).send({
+              success: true,
+              token: token,
+              user: user
+            })
           } else {
             res.status(401).send({
               error: 'The login information was incorrect'
@@ -51,8 +55,9 @@ module.exports = {
         })
       }
     } catch (err) {
+      console.log(err)
       res.status(500).send({
-        error: 'An error has ocured trying to log in'
+        error: 'An error has occured trying to log in'
       })
     }
   }
