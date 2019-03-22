@@ -1,5 +1,3 @@
-// const { setIntervalSync } = require('../utils/common.js')
-// let connections = []
 module.exports = {
   sseMiddleware (req, res, next) {
     res.sseSetup = function () {

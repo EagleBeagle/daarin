@@ -2,9 +2,8 @@ const cloudinary = require('cloudinary')
 const Datauri = require('datauri')
 const path = require('path')
 const Post = require('../models/Post.js')
-const { setIntervalSync } = require('../utils/common.js')
 const User = require('../models/User.js')
-let sseConnections = {}
+const SSEConnectionHandler = require('../utils/SSEConnectionHandler.js')
 
 cloudinary.config({
   cloud_name: 'daarin',
@@ -16,64 +15,34 @@ module.exports = {
   async index (req, res) {
     let posts = null
     let sseId = req.user ? req.user.sseId : null
-    let query = null
     try {
       if (!req.query.created || !req.query.limit) {
-        query = Post.find()
+        posts = await Post.find()
           .populate('createdBy', 'username')
           .sort('-createdAt')
           .limit(5) // ez query-t ad vissza mert nem kezeljük le a promise-t
-        if (sseId) sseConnections[sseId] = Post.find({}, 'likes dislikes').sort('-createdAt').limit(5)
-        posts = await query.exec()
+        // if (sseId) sseConnections[sseId] = Post.find({}, 'likes dislikes').sort('-createdAt').limit(5)
+        let sseQuery = Post.find({}, 'likes dislikes')
+          .sort('-createdAt')
+          .limit(5)
+        SSEConnectionHandler.setConnectionQuery('post', sseId, sseQuery)
       } else {
         posts = await Post.find({ 'createdAt': { $lt: req.query.created } })
           .populate('createdBy', 'username')
           .sort('-createdAt')
           .limit(Number(req.query.limit))
         let lastPost = posts[Object.keys(posts).length - 1] // ha üres akkor nincs több post
-        if (sseId && lastPost) {
-          sseConnections[sseId] = Post.find({ 'createdAt': { $gte: lastPost.createdAt } }, 'likes dislikes')
+        if (lastPost) {
+          let sseQuery = Post.find({ 'createdAt': { $gte: lastPost.createdAt } }, 'likes dislikes')
+          SSEConnectionHandler.setConnectionQuery('post', sseId, sseQuery)
         }
       }
       res.status(200).send(posts)
     } catch (err) {
-      console.log(err)
       res.status(500).send({
         error: 'an error has occured trying to fetch the posts'
       })
     }
-  },
-
-  async postStream (req, res) {
-    console.log('SSE connection initialized')
-    res.sseSetup()
-    let sseId = req.query.id
-
-    const intervalClear = setIntervalSync(async function () {
-      try {
-        if (!(sseId in sseConnections)) {
-          res.sseSend('message', null)
-        } else {
-          let data = await sseConnections[sseId].exec()
-          res.sseSend('message', data)
-        }
-      } catch (err) {
-        console.log(err)
-        res.sseSend('error', {
-          error: 'an error has occured while streaming data'
-        })
-        await intervalClear()
-        delete sseConnections[sseId]
-        res.end()
-      }
-    }, 2000)
-
-    req.on('close', async () => {
-      await intervalClear()
-      delete sseConnections[sseId]
-      console.log('SSE Connection closed')
-      res.end()
-    })
   },
 
   async upload (req, res) {

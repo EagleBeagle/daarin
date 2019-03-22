@@ -34,16 +34,16 @@ export default {
     ])
   },
   async mounted () {
+    this.setupStream()
     let result = await PostService.index()
     this.posts = result.data
-    this.setupStream()
     this.scroll()
   },
   methods: {
     setupStream () {
       if (this.user) {
         this.eventSource = new EventSource(`http://localhost:8081/poststream?id=${this.user.sseId}`)
-        this.eventSource.addEventListener('message', event => {
+        this.eventSource.addEventListener('post', event => {
           let streamedPosts = JSON.parse(event.data)
           this.posts.forEach(function (post) {
             let streamedPost = streamedPosts.find(streamedPost => streamedPost._id === post._id)
@@ -61,7 +61,7 @@ export default {
         })
       } else {
         this.eventSource = new EventSource(`http://localhost:8081/poststream`)
-        this.eventSource.addEventListener('messages', event => {
+        this.eventSource.addEventListener('message', event => {
           let posts = JSON.parse(event.data)
           console.log(posts)
         })

@@ -3,6 +3,7 @@ const AuthenticationControllerPolicy = require('./policies/AuthenticationControl
 const PostController = require('./controllers/PostController')
 const PostControllerPolicy = require('./policies/PostControllerPolicy')
 const IsAuthenticated = require('./policies/IsAuthenticated')
+const SSEController = require('./controllers/SSEController')
 const multer = require('multer')
 const storage = multer.memoryStorage()
 const upload = multer({
@@ -15,7 +16,7 @@ module.exports = (app) => {
     PostController.index)
 
   app.get('/poststream',
-    PostController.postStream)
+    SSEController.stream)
 
   app.post('/register',
     AuthenticationControllerPolicy.register,

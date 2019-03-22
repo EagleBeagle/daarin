@@ -13,6 +13,7 @@ const Post = require('../../models/Post.js')
 const User = require('../../models/User.js')
 let PostController = require('../../controllers/PostController.js')
 let PostControllerPolicy = rewire('../../policies/PostControllerPolicy.js')
+const SSEConnectionHandler = require('../../utils/SSEConnectionHandler.js')
 
 describe('Posting content', () => {
   let cloudinaryStub
@@ -179,15 +180,94 @@ describe('Posting content', () => {
         let res = mockResponse()
         let queryMock = sinon.mock(Post)
         queryMock.expects('find')
-          .chain('exec')
-          .resolves('testdata')
+          .chain('populate')
+          .chain('sort')
+          .chain('limit')
+          .resolves('ok')
+        queryMock.expects('find')
+        .chain('sort')
+        .chain('limit')
+        .resolves('ok')
         await PostController.index(req, res)
+        queryMock.restore()
         expect(res.status).to.have.been.calledWith(200)
-        expect(res.send).to.have.been.calledWith('testdata')
-        queryMock.verify()
+        expect(res.send).to.have.been.calledWith('ok')
+      }),
+
+      it('should set SSE post query to correct value in case of no query parameters', async () => {
+        let req = mockRequest({
+          user: {
+            sseId: 'sse_id'
+          }
+        })
+        let res = mockResponse()
+        let queryMock = sinon.mock(Post)
+        queryMock.expects('find')
+          .chain('populate')
+          .chain('sort')
+          .chain('limit')
+          .resolves('ok')
+        queryMock.expects('find').withArgs({}, 'likes dislikes')
+        .chain('sort')
+        .chain('limit')
+        .returns('sse_data')
+        let sseHandlerSpy = sinon.spy(SSEConnectionHandler, 'setConnectionQuery')
+        await PostController.index(req, res)
+        expect(sseHandlerSpy).to.have.been.calledOnceWithExactly('post', req.user.sseId, 'sse_data')
+        sseHandlerSpy.restore()
+        queryMock.restore()
+      }),
+
+      it('should list posts with query parameters', async () => {
+        let req = mockRequest({
+          query: {
+            created: 'date',
+            limit: 5
+          }
+        })
+        let res = mockResponse()
+        let queryMock = sinon.mock(Post)
+        queryMock.expects('find').withArgs({ 'createdAt': { $lt: req.query.created } })
+          .chain('populate')
+          .chain('sort')
+          .chain('limit').withArgs(5)
+          .resolves('ok')
+        queryMock.expects('find')
+        .chain('sort')
+        .chain('limit')
+        .resolves('ok')
+        await PostController.index(req, res)
+        queryMock.restore()
+        expect(res.status).to.have.been.calledWith(200)
+        expect(res.send).to.have.been.calledWith('ok')
+      }), 
+
+      it('should set SSE post query to correct value in case of query parameters', async () => {
+        let req = mockRequest({
+          query: {
+            created: 'date',
+            limit: 5
+          },
+          user: {
+            sseId: 'sse_id  '
+          }
+        })
+        let res = mockResponse()
+        let queryMock = sinon.mock(Post)
+        queryMock.expects('find').withArgs({ 'createdAt': { $lt: req.query.created } })
+          .chain('populate')
+          .chain('sort')
+          .chain('limit').withArgs(5)
+          .resolves('ok')
+        queryMock.expects('find')
+        .returns('sse_data')
+        let sseHandlerSpy = sinon.spy(SSEConnectionHandler, 'setConnectionQuery')
+        await PostController.index(req, res)
+        expect(sseHandlerSpy).to.have.been.calledOnceWithExactly('post', req.user.sseId, 'sse_data')
+        sseHandlerSpy.restore()
         queryMock.restore()
       })
-    })
+    }),
     describe('upvote', () => {
       it('should proceed to put upvote to db', async () => {
         let req = mockRequest({
