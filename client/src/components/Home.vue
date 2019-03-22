@@ -42,7 +42,7 @@ export default {
   methods: {
     setupStream () {
       if (this.user) {
-        this.eventSource = new EventSource(`http://localhost:8081/poststream?id=${this.user.sseId}`)
+        this.eventSource = new EventSource(`http://localhost:8081/stream?id=${this.user.sseId}`)
         this.eventSource.addEventListener('post', event => {
           let streamedPosts = JSON.parse(event.data)
           this.posts.forEach(function (post) {
@@ -60,7 +60,7 @@ export default {
           console.log(streamedPosts)
         })
       } else {
-        this.eventSource = new EventSource(`http://localhost:8081/poststream`)
+        this.eventSource = new EventSource(`http://localhost:8081/stream`)
         this.eventSource.addEventListener('message', event => {
           let posts = JSON.parse(event.data)
           console.log(posts)

@@ -15,7 +15,7 @@ module.exports = (app) => {
     IsAuthenticated.check,
     PostController.index)
 
-  app.get('/poststream',
+  app.get('/stream',
     SSEController.stream)
 
   app.post('/register',

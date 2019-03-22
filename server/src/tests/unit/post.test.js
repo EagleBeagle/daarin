@@ -185,14 +185,14 @@ describe('Posting content', () => {
           .chain('limit')
           .resolves('ok')
         queryMock.expects('find')
-        .chain('sort')
-        .chain('limit')
-        .resolves('ok')
+          .chain('sort')
+          .chain('limit')
+          .resolves('ok')
         await PostController.index(req, res)
         queryMock.restore()
         expect(res.status).to.have.been.calledWith(200)
         expect(res.send).to.have.been.calledWith('ok')
-      }),
+      })
 
       it('should set SSE post query to correct value in case of no query parameters', async () => {
         let req = mockRequest({
@@ -208,15 +208,15 @@ describe('Posting content', () => {
           .chain('limit')
           .resolves('ok')
         queryMock.expects('find').withArgs({}, 'likes dislikes')
-        .chain('sort')
-        .chain('limit')
-        .returns('sse_data')
+          .chain('sort')
+          .chain('limit')
+          .returns('sse_data')
         let sseHandlerSpy = sinon.spy(SSEConnectionHandler, 'setConnectionQuery')
         await PostController.index(req, res)
         expect(sseHandlerSpy).to.have.been.calledOnceWithExactly('post', req.user.sseId, 'sse_data')
         sseHandlerSpy.restore()
         queryMock.restore()
-      }),
+      })
 
       it('should list posts with query parameters', async () => {
         let req = mockRequest({
@@ -233,14 +233,14 @@ describe('Posting content', () => {
           .chain('limit').withArgs(5)
           .resolves('ok')
         queryMock.expects('find')
-        .chain('sort')
-        .chain('limit')
-        .resolves('ok')
+          .chain('sort')
+          .chain('limit')
+          .resolves('ok')
         await PostController.index(req, res)
         queryMock.restore()
         expect(res.status).to.have.been.calledWith(200)
         expect(res.send).to.have.been.calledWith('ok')
-      }), 
+      })
 
       it('should set SSE post query to correct value in case of query parameters', async () => {
         let req = mockRequest({
@@ -260,14 +260,15 @@ describe('Posting content', () => {
           .chain('limit').withArgs(5)
           .resolves('ok')
         queryMock.expects('find')
-        .returns('sse_data')
+          .returns('sse_data')
         let sseHandlerSpy = sinon.spy(SSEConnectionHandler, 'setConnectionQuery')
         await PostController.index(req, res)
         expect(sseHandlerSpy).to.have.been.calledOnceWithExactly('post', req.user.sseId, 'sse_data')
         sseHandlerSpy.restore()
         queryMock.restore()
       })
-    }),
+    })
+
     describe('upvote', () => {
       it('should proceed to put upvote to db', async () => {
         let req = mockRequest({

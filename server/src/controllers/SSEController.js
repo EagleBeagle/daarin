@@ -14,7 +14,6 @@ const SSEConnectionHandler = require('../utils/SSEConnectionHandler')
 
 module.exports = {
   async stream (req, res) {
-    console.log('SSE connection initialized')
     res.sseSetup()
     let sseId = req.query.id
     SSEConnectionHandler.createNewConnection(sseId)
@@ -25,7 +24,7 @@ module.exports = {
 
     const intervalClear = setIntervalSync(async function () {
       try {
-        if (sseId in SSEConnectionHandler.connections) {
+        if (sseId) {
           let connection = SSEConnectionHandler.connections[sseId]
           if (connection.postQuery) {
             postData = await connection.postQuery.exec()
