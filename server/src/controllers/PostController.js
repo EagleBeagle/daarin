@@ -96,15 +96,24 @@ module.exports = {
       })
     }
   },
-  // TODO: ÚJRAGONDOLNI AZ UPVOTOK TÁROLÁSÁT
+
   async upvote (req, res) {
     try {
-      await Post.findOneAndUpdate({ '_id': req.params.postId }, { $push: { 'likes': req.user.id } })
-      await User.findOneAndUpdate({ '_id': req.user.id }, { $push: { 'likedPosts': req.params.postId } })
+      await Post.findOneAndUpdate({ '_id': req.params.postId }, { $addToSet: { 'likes': req.user.id } })
+      await User.findOneAndUpdate({ '_id': req.user.id }, { $addToSet: { 'likedPosts': req.params.postId } })
+      await Post.findOneAndUpdate({ '_id': req.params.postId }, { $pull: { 'dislikes': req.user.id } })
+      await User.findOneAndUpdate({ '_id': req.user.id }, { $pull: { 'dislikedPosts': req.params.postId } })
       res.status(204).json({ success: true })
     } catch (err) { //  TODO
-      console.log(err)
-      res.status(500)
+      if (err.name === 'CastError') {
+        res.status(400).send({
+          error: 'Invalid post'
+        })
+      } else {
+        res.status(500).send({
+          error: 'An error occured trying to upvote'
+        })
+      }
     }
   },
   async unUpvote (req, res) {
@@ -113,18 +122,34 @@ module.exports = {
       await User.findOneAndUpdate({ '_id': req.user.id }, { $pull: { 'likedPosts': req.params.postId } })
       res.status(204).json({ success: true })
     } catch (err) { //  TODO
-      console.log(err)
-      res.status(500)
+      if (err.name === 'CastError') {
+        res.status(400).send({
+          error: 'Invalid post'
+        })
+      } else {
+        res.status(500).send({
+          error: 'An error occured trying to remove the upvote'
+        })
+      }
     }
   },
   async downvote (req, res) {
     try {
-      await Post.findOneAndUpdate({ '_id': req.params.postId }, { $push: { 'dislikes': req.user.id } })
-      await User.findOneAndUpdate({ '_id': req.user.id }, { $push: { 'dislikedPosts': req.params.postId } })
+      await Post.findOneAndUpdate({ '_id': req.params.postId }, { $addToSet: { 'dislikes': req.user.id } })
+      await User.findOneAndUpdate({ '_id': req.user.id }, { $addToSet: { 'dislikedPosts': req.params.postId } })
+      await Post.findOneAndUpdate({ '_id': req.params.postId }, { $pull: { 'likes': req.user.id } })
+      await User.findOneAndUpdate({ '_id': req.user.id }, { $pull: { 'likedPosts': req.params.postId } })
       res.status(204).json({ success: true })
     } catch (err) { //  TODO
-      console.log(err)
-      res.status(500)
+      if (err.name === 'CastError') {
+        res.status(400).send({
+          error: 'Invalid post'
+        })
+      } else {
+        res.status(500).send({
+          error: 'An error occured trying to downvote'
+        })
+      }
     }
   },
   async unDownvote (req, res) {
@@ -133,8 +158,15 @@ module.exports = {
       await User.findOneAndUpdate({ '_id': req.user.id }, { $pull: { 'dislikedPosts': req.params.postId } })
       res.status(204).json({ success: true })
     } catch (err) { //  TODO
-      console.log(err)
-      res.status(500)
+      if (err.name === 'CastError') {
+        res.status(400).send({
+          error: 'Invalid post'
+        })
+      } else {
+        res.status(500).send({
+          error: 'An error occured trying to remove the downvote'
+        })
+      }
     }
   }
 }

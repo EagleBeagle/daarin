@@ -8,60 +8,11 @@ require('sinon-mongoose')
 const { mockRequest, mockResponse } = require('mock-req-res')
 let AuthenticationController = require('../../controllers/AuthenticationController.js')
 let AuthenticationControllerPolicy = require('../../policies/AuthenticationControllerPolicy.js')
-const app = require('../../app.js')
-const supertest = require('supertest')
-const request = supertest(app)
 const expect = chai.expect
 const User = require('../../models/User.js')
-const defaultUser = { 'email': 'test@test.com', 'username': 'testUser', 'password': 'testPassword' }
 const jwt = require('jsonwebtoken')
 
-/*  const createUser = async () => {
-  const UserModel = new User(defaultUser)
-  await UserModel.save()
-}
-
- const getDefaultUser = async () => {
-  let users = await User.find({ 'username': defaultUser.username })
-  if (users.length === 0) {
-    await createUser()
-    return getDefaultUser()
-  } else {
-    return users[0]
-  }
-}
-
-const cleanExceptDefaultUser = async () => {
-  let user = await getDefaultUser()
-  await User.deleteMany({ 'username': { $ne: user.username } })
-} */
-
-const createDefaultUser = async () => {
-  let user = await User.findOne({ 'username': defaultUser.username })
-  if (user == null) {
-    console.log('anyád')
-    const UserModel = new User(defaultUser)
-    await UserModel.save()
-  }
-}
-
 describe('User Authentication', () => {
-  let newUser = { 'email': 'newUser@email.com', 'username': 'newUser', 'password': 'newuserPassword' }
-
-  before('Creating default user', done => {
-    createDefaultUser()
-    done()
-  })
-
-  beforeEach(done => {
-    newUser = { 'email': 'newUser@email.com', 'username': 'newUser', 'password': 'newuserPassword' }
-    done()
-  })
-
-  after('Cleaning database', async () => {
-    await User.deleteMany({ 'username': { $ne: 'testUser' } })
-  })
-
   describe('AuthenticationControllerPolicy', () => {
     describe('register', () => {
       it('should not validate registration input with invalid email', async () => {
@@ -112,7 +63,7 @@ describe('User Authentication', () => {
       })
     })
   })
-  
+
   describe('AuthenticationController', () => {
     describe('register', () => {
       it('should proceed to create new user with correct information', async () => {
@@ -125,13 +76,13 @@ describe('User Authentication', () => {
         })
         let res = mockResponse()
         let queryMock = sinon.mock(User.prototype)
-        queryMock.expects('save')
+        queryMock.expects('save').resolves('ok')
         await AuthenticationController.register(req, res)
         expect(res.status).to.have.been.calledWith(201)
         queryMock.verify()
         queryMock.restore()
       })
-  
+
       it('should not proceed to create new user with existing credentials or other db related issues', async () => {
         let req = mockRequest({
           body: {
@@ -197,7 +148,7 @@ describe('User Authentication', () => {
         saveStub.restore()
         expect(res.status).to.have.been.calledWith(401)
       })
-  
+
       it('should not login non-existent user', async () => {
         let req = mockRequest()
         let res = mockResponse()

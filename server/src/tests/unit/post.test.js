@@ -14,9 +14,6 @@ const User = require('../../models/User.js')
 let PostController = require('../../controllers/PostController.js')
 let PostControllerPolicy = rewire('../../policies/PostControllerPolicy.js')
 
-
-
-
 describe('Posting content', () => {
   let cloudinaryStub
 
@@ -156,7 +153,7 @@ describe('Posting content', () => {
       it('should not validate images bigger than 5MB', async () => {
         let req = mockRequest({
           file: {
-            buffer: '0'.repeat(5*1024*1025)
+            buffer: '0'.repeat(5 * 1024 * 1025)
           }
         })
         let res = mockResponse()
@@ -177,7 +174,7 @@ describe('Posting content', () => {
 
   describe('PostController', () => {
     describe('index', () => {
-      it('should list posts if no query parameters where given', async () => {
+      it('should list posts with no query parameters', async () => {
         let req = mockRequest()
         let res = mockResponse()
         let queryMock = sinon.mock(Post)
@@ -191,6 +188,252 @@ describe('Posting content', () => {
         queryMock.restore()
       })
     })
+    describe('upvote', () => {
+      it('should proceed to put upvote to db', async () => {
+        let req = mockRequest({
+          params: {
+            postId: null
+          },
+          user: {
+            id: null
+          }
+        })
+        let res = mockResponse()
+        let postStub = await sinon.stub(Post, 'findOneAndUpdate').resolves('ok')
+        let userStub = await sinon.stub(User, 'findOneAndUpdate').resolves('ok')
+        await PostController.upvote(req, res)
+        expect(res.status).to.have.been.calledWith(204)
+        expect(postStub).to.have.been.called
+        expect(userStub).to.have.been.called
+        postStub.restore()
+        userStub.restore()
+      })
+      it('should return error if post id is found to be invalid', async () => {
+        let req = mockRequest({
+          params: {
+            postId: null
+          },
+          user: {
+            id: null
+          }
+        })
+        let res = mockResponse()
+        let postStub = await sinon.stub(Post, 'findOneAndUpdate').throws('CastError')
+        let userStub = await sinon.stub(User, 'findOneAndUpdate').throws('CastError')
+        await PostController.upvote(req, res)
+        expect(res.status).to.have.been.calledWith(400)
+        expect(res.send).to.have.been.calledWith({
+          error: 'Invalid post'
+        })
+        postStub.restore()
+        userStub.restore()
+      })
+      it('should return error in case of any other kind of error', async () => {
+        let req = mockRequest({
+          params: {
+            postId: null
+          },
+          user: {
+            id: null
+          }
+        })
+        let res = mockResponse()
+        let postStub = await sinon.stub(Post, 'findOneAndUpdate').throws()
+        let userStub = await sinon.stub(User, 'findOneAndUpdate').throws()
+        await PostController.upvote(req, res)
+        expect(res.status).to.have.been.calledWith(500)
+        expect(res.send).to.have.been.calledWith({
+          error: 'An error occured trying to upvote'
+        })
+        postStub.restore()
+        userStub.restore()
+      })
+    })
+
+    describe('unUpvote', () => {
+      it('should proceed to remove upvote from db', async () => {
+        let req = mockRequest({
+          params: {
+            postId: null
+          },
+          user: {
+            id: null
+          }
+        })
+        let res = mockResponse()
+        let postStub = await sinon.stub(Post, 'findOneAndUpdate').resolves('ok')
+        let userStub = await sinon.stub(User, 'findOneAndUpdate').resolves('ok')
+        await PostController.unUpvote(req, res)
+        expect(res.status).to.have.been.calledWith(204)
+        expect(postStub).to.have.been.called
+        expect(userStub).to.have.been.called
+        postStub.restore()
+        userStub.restore()
+      })
+      it('should return error if post id is found to be invalid', async () => {
+        let req = mockRequest({
+          params: {
+            postId: null
+          },
+          user: {
+            id: null
+          }
+        })
+        let res = mockResponse()
+        let postStub = await sinon.stub(Post, 'findOneAndUpdate').throws('CastError')
+        let userStub = await sinon.stub(User, 'findOneAndUpdate').throws('CastError')
+        await PostController.unUpvote(req, res)
+        expect(res.status).to.have.been.calledWith(400)
+        expect(res.send).to.have.been.calledWith({
+          error: 'Invalid post'
+        })
+        postStub.restore()
+        userStub.restore()
+      })
+      it('should return error in case of any other kind of error', async () => {
+        let req = mockRequest({
+          params: {
+            postId: null
+          },
+          user: {
+            id: null
+          }
+        })
+        let res = mockResponse()
+        let postStub = await sinon.stub(Post, 'findOneAndUpdate').throws()
+        let userStub = await sinon.stub(User, 'findOneAndUpdate').throws()
+        await PostController.unUpvote(req, res)
+        expect(res.status).to.have.been.calledWith(500)
+        expect(res.send).to.have.been.calledWith({
+          error: 'An error occured trying to remove the upvote'
+        })
+        postStub.restore()
+        userStub.restore()
+      })
+    })
+
+    describe('downvote', () => {
+      it('should proceed to put downvote to db', async () => {
+        let req = mockRequest({
+          params: {
+            postId: null
+          },
+          user: {
+            id: null
+          }
+        })
+        let res = mockResponse()
+        let postStub = await sinon.stub(Post, 'findOneAndUpdate').resolves('ok')
+        let userStub = await sinon.stub(User, 'findOneAndUpdate').resolves('ok')
+        await PostController.downvote(req, res)
+        expect(res.status).to.have.been.calledWith(204)
+        expect(postStub).to.have.been.called
+        expect(userStub).to.have.been.called
+        postStub.restore()
+        userStub.restore()
+      })
+      it('should return error if post id is found to be invalid', async () => {
+        let req = mockRequest({
+          params: {
+            postId: null
+          },
+          user: {
+            id: null
+          }
+        })
+        let res = mockResponse()
+        let postStub = await sinon.stub(Post, 'findOneAndUpdate').throws('CastError')
+        let userStub = await sinon.stub(User, 'findOneAndUpdate').throws('CastError')
+        await PostController.downvote(req, res)
+        expect(res.status).to.have.been.calledWith(400)
+        expect(res.send).to.have.been.calledWith({
+          error: 'Invalid post'
+        })
+        postStub.restore()
+        userStub.restore()
+      })
+      it('should return error in case of any other kind of error', async () => {
+        let req = mockRequest({
+          params: {
+            postId: null
+          },
+          user: {
+            id: null
+          }
+        })
+        let res = mockResponse()
+        let postStub = await sinon.stub(Post, 'findOneAndUpdate').throws()
+        let userStub = await sinon.stub(User, 'findOneAndUpdate').throws()
+        await PostController.downvote(req, res)
+        expect(res.status).to.have.been.calledWith(500)
+        expect(res.send).to.have.been.calledWith({
+          error: 'An error occured trying to downvote'
+        })
+        postStub.restore()
+        userStub.restore()
+      })
+    })
+
+    describe('unUpvote', () => {
+      it('should proceed to remove downvote from db', async () => {
+        let req = mockRequest({
+          params: {
+            postId: null
+          },
+          user: {
+            id: null
+          }
+        })
+        let res = mockResponse()
+        let postStub = await sinon.stub(Post, 'findOneAndUpdate').resolves('ok')
+        let userStub = await sinon.stub(User, 'findOneAndUpdate').resolves('ok')
+        await PostController.unDownvote(req, res)
+        expect(res.status).to.have.been.calledWith(204)
+        expect(postStub).to.have.been.called
+        expect(userStub).to.have.been.called
+        postStub.restore()
+        userStub.restore()
+      })
+      it('should return error if post id is found to be invalid', async () => {
+        let req = mockRequest({
+          params: {
+            postId: null
+          },
+          user: {
+            id: null
+          }
+        })
+        let res = mockResponse()
+        let postStub = await sinon.stub(Post, 'findOneAndUpdate').throws('CastError')
+        let userStub = await sinon.stub(User, 'findOneAndUpdate').throws('CastError')
+        await PostController.unDownvote(req, res)
+        expect(res.status).to.have.been.calledWith(400)
+        expect(res.send).to.have.been.calledWith({
+          error: 'Invalid post'
+        })
+        postStub.restore()
+        userStub.restore()
+      })
+      it('should return error in case of any other kind of error', async () => {
+        let req = mockRequest({
+          params: {
+            postId: null
+          },
+          user: {
+            id: null
+          }
+        })
+        let res = mockResponse()
+        let postStub = await sinon.stub(Post, 'findOneAndUpdate').throws()
+        let userStub = await sinon.stub(User, 'findOneAndUpdate').throws()
+        await PostController.unDownvote(req, res)
+        expect(res.status).to.have.been.calledWith(500)
+        expect(res.send).to.have.been.calledWith({
+          error: 'An error occured trying to remove the downvote'
+        })
+        postStub.restore()
+        userStub.restore()
+      })
+    })
   })
 })
-
