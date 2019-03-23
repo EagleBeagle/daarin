@@ -16,7 +16,9 @@ module.exports = {
   async stream (req, res) {
     res.sseSetup()
     let sseId = req.query.id
-    SSEConnectionHandler.createNewConnection(sseId)
+    if (sseId) {
+      SSEConnectionHandler.createNewConnection(sseId)
+    }
     let postData = null
     let userData = null
     let popupData = null
@@ -42,7 +44,6 @@ module.exports = {
           res.sseSend('message', null)
         }
       } catch (err) {
-        console.log(err)
         errorData = {
           error: 'an error has occured while streaming data'
         }

@@ -8,26 +8,6 @@ const expect = chai.expect
 const User = require('../models/User.js')
 const defaultUser = { 'email': 'test@test.com', 'username': 'testUser', 'password': 'testPassword' }
 
-/*  const createUser = async () => {
-  const UserModel = new User(defaultUser)
-  await UserModel.save()
-}
-
- const getDefaultUser = async () => {
-  let users = await User.find({ 'username': defaultUser.username })
-  if (users.length === 0) {
-    await createUser()
-    return getDefaultUser()
-  } else {
-    return users[0]
-  }
-}
-
-const cleanExceptDefaultUser = async () => {
-  let user = await getDefaultUser()
-  await User.deleteMany({ 'username': { $ne: user.username } })
-} */
-
 const createDefaultUser = async () => {
   let user = await User.findOne({ 'username': defaultUser.username })
   if (user == null) {
@@ -97,9 +77,6 @@ describe('User Authentication', () => {
         .then(res => {
           expect(res.statusCode).to.be.equal(200)
           expect(res.body.token).to.exist
-          /*  res.status.should.equal(200)
-          res.body.success.should.be.true
-          res.body.token.should.not.be.empty  */
         })
     })
 

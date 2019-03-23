@@ -52,7 +52,6 @@ describe('Posting content', () => {
         .set('Authorization', 'Bearer ' + token)
         .then((res) => {
           expect(res.statusCode).to.be.equal(400)
-          //  expect(res.body).to.be.not.empty
         })
     })
 
@@ -64,7 +63,6 @@ describe('Posting content', () => {
         .attach('image', 'src/tests/assets/test_png.png')
         .then((res) => {
           expect(res.statusCode).to.be.equal(403)
-          //  expect(res.body).to.be.not.empty
         })
     })
 
@@ -77,7 +75,6 @@ describe('Posting content', () => {
         .set('Authorization', 'Bearer ' + token)
         .then((res) => {
           expect(res.statusCode).to.be.equal(201)
-          //  expect(res.body).to.be.not.empty
         })
     })
 
@@ -90,7 +87,6 @@ describe('Posting content', () => {
         .set('Authorization', 'Bearer ' + token)
         .then((res) => {
           expect(res.statusCode).to.be.equal(201)
-          //  expect(res.body).to.be.not.empty
         })
     })
 
@@ -103,7 +99,6 @@ describe('Posting content', () => {
         .set('Authorization', 'Bearer ' + token)
         .then((res) => {
           expect(res.statusCode).to.be.equal(201)
-          //  expect(res.body).to.be.not.empty
         })
     })
 
@@ -116,7 +111,6 @@ describe('Posting content', () => {
         .set('Authorization', 'Bearer ' + token)
         .then((res) => {
           expect(res.statusCode).to.be.equal(201)
-          //  expect(res.body).to.be.not.empty
         })
     })
 
@@ -128,7 +122,6 @@ describe('Posting content', () => {
         .set('Authorization', 'Bearer ' + token)
         .then((res) => {
           expect(res.statusCode).to.be.equal(400)
-          //  expect(res.body).to.be.not.empty
         })
     })
 
@@ -141,7 +134,6 @@ describe('Posting content', () => {
         .set('Authorization', 'Bearer ' + token)
         .then((res) => {
           expect(res.statusCode).to.be.equal(400)
-          //  expect(res.body).to.be.not.empty
         })
     })
 
@@ -154,7 +146,6 @@ describe('Posting content', () => {
         .set('Authorization', 'Bearer ' + token)
         .then((res) => {
           expect(res.statusCode).to.be.equal(400)
-          //  expect(res.body).to.be.not.empty
         })
     })
 
@@ -167,7 +158,6 @@ describe('Posting content', () => {
         .set('Authorization', 'Bearer ' + token)
         .then((res) => {
           expect(res.statusCode).to.be.equal(400)
-          //  expect(res.body).to.be.not.empty
         })
     })
   })
