@@ -27,6 +27,7 @@ module.exports = {
     const intervalClear = setIntervalSync(async function () {
       try {
         if (sseId) {
+          console.log(sseId)
           let connection = SSEConnectionHandler.connections[sseId]
           if (connection.postQuery) {
             postData = await connection.postQuery.exec()
@@ -41,6 +42,7 @@ module.exports = {
             res.sseSend('popup', popupData)
           }
         } else {
+          console.log('null')
           res.sseSend('message', null)
         }
       } catch (err) {

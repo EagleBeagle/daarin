@@ -63,6 +63,7 @@ export default {
         })
         this.$store.dispatch('setToken', response.data.token)
         this.$store.dispatch('setUser', response.data.user)
+        await this.$store.dispatch('updateEventSource')
         this.$router.push({
           name: 'home'
         })

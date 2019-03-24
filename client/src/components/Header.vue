@@ -148,12 +148,15 @@ export default {
       required: (value) => !!value || 'Required.'
     }
   },
+  async mounted () {
+  },
   methods: {
-    logout () {
+    async logout () {
       this.$store.dispatch('setToken', null)
       this.$store.dispatch('setUser', null)
+      await this.$store.dispatch('updateEventSource')
       this.$router.push({
-        name: 'Home'
+        name: 'home'
       })
     },
     onClickUpload () {

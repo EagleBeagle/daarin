@@ -13,7 +13,9 @@ export default new Vuex.Store({
     token: null,
     user: null,
     sseId: null,
-    isUserLoggedIn: false
+    isUserLoggedIn: false,
+    eventSource: null,
+    eventSourceChanged: false
   },
   mutations: {
     setToken (state, token) {
@@ -25,6 +27,15 @@ export default new Vuex.Store({
     },
     setUser (state, user) {
       state.user = user
+    },
+    updateEventSource (state, eventSource) {
+      state.eventSource = eventSource
+    },
+    closeEventSource (state) {
+      state.eventSource = null
+    },
+    setEventSourceChanged (state) {
+      state.eventSourceChanged = !state.eventSourceChanged
     }
   },
   actions: {
@@ -36,6 +47,24 @@ export default new Vuex.Store({
     },
     setUser ({commit}, user) {
       commit('setUser', user)
+    },
+    async updateEventSource ({commit}) { // le kell kezelni, hogy ne csináljon többet
+      let eventSource = null
+      if (this.state.eventSource instanceof EventSource) { // instanceof, mert valamiért nem állítódik nullra
+        await this.state.eventSource.close()
+        commit('closeEventSource')
+      }
+      if (this.state.user) {
+        eventSource = await new EventSource(`http://localhost:8081/stream?id=${this.state.user.sseId}`)
+      } else {
+        eventSource = await new EventSource(`http://localhost:8081/stream`)
+      }
+      commit('setEventSourceChanged')
+      commit('updateEventSource', eventSource)
+    },
+    async closeEventSource ({commit}) {
+      await this.state.eventSource.close()
+      commit('closeEventSource')
     }
   }
 })

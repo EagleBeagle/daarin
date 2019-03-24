@@ -20,30 +20,42 @@ export default {
   data () {
     return {
       posts: null,
-      eventSource: null,
+      postStreamCb: null,
+      postStreamEvent: null, // később több is lehet belőle
       isNewPostAvailable: false // TODO
     }
   },
   beforeDestroy () {
-    this.eventSource.close()
+    this.eventSource.removeEventListener(this.postStreamEvent, this.postStreamCb)
+    window.onscroll = () => {}
   },
   computed: {
     ...mapState([
       'isUserLoggedIn',
-      'user'
+      'user',
+      'eventSource',
+      'eventSourceChanged'
     ])
   },
+  watch: {
+    async eventSourceChanged (val, oldVal) {
+      console.log('EVENT SOURCE VÁLTOZOTT, reloadolunk')
+      await this.addSSEListeners()
+    }
+  },
   async mounted () {
-    this.setupStream()
+    // await this.$store.dispatch('setEventSource')
+    // this.$store.dispatch('unsetEventSourceChanged')
     let result = await PostService.index()
+    await this.addSSEListeners()
     this.posts = result.data
     this.scroll()
   },
   methods: {
-    setupStream () {
+    async addSSEListeners () {
+      // await this.$store.dispatch('setEventSource')
       if (this.user) {
-        this.eventSource = new EventSource(`http://localhost:8081/stream?id=${this.user.sseId}`)
-        this.eventSource.addEventListener('post', event => {
+        this.postStreamCb = (event) => {
           let streamedPosts = JSON.parse(event.data)
           this.posts.forEach(function (post) {
             let streamedPost = streamedPosts.find(streamedPost => streamedPost._id === post._id)
@@ -58,14 +70,18 @@ export default {
             console.log('VAN ÚJ')
           }
           console.log(streamedPosts)
-        })
+        }
+        this.postStreamEvent = 'post'
+        this.eventSource.addEventListener(this.postStreamEvent, this.postStreamCb)
       } else {
-        this.eventSource = new EventSource(`http://localhost:8081/stream`)
-        this.eventSource.addEventListener('message', event => {
-          let posts = JSON.parse(event.data)
-          console.log(posts)
-        })
+        this.postStreamCb = (event) => {
+          let data = JSON.parse(event.data)
+          console.log(data)
+        }
+        this.postStreamEvent = 'message'
+        this.$store.state.eventSource.addEventListener(this.postStreamEvent, this.postStreamCb)
       }
+      // this.$store.dispatch('closeEventSource')
     },
     scroll () {
       window.onscroll = async () => {
