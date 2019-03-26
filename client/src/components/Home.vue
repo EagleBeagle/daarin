@@ -1,21 +1,16 @@
 <template>
-  <v-layout justify-center>
-    <v-flex xs4>
-      <h1 v-if="isNewPostAvailable" class="bold blue--text">See new posts</h1>
-      <div v-for="post in posts" :key="post.id">
-        {{ post.id }}
-        <v-flex class="pb-5">
-          <post :post="post" />
-        </v-flex>
-      </div>
-    </v-flex>
-  </v-layout>
+  <v-container fill-height>
+    <feed
+      :posts="posts"
+      :isNewPostAvailable="isNewPostAvailable"
+      @reachedBottom="loadMorePosts"/>
+  </v-container>
 </template>
 
 <script>
 import {mapState} from 'vuex'
 import PostService from '@/services/PostService'
-import Post from './Post'
+import Feed from './Feed'
 export default {
   data () {
     return {
@@ -27,7 +22,6 @@ export default {
   },
   beforeDestroy () {
     this.eventSource.removeEventListener(this.postStreamEvent, this.postStreamCb)
-    window.onscroll = () => {}
   },
   computed: {
     ...mapState([
@@ -49,7 +43,6 @@ export default {
     let result = await PostService.index()
     await this.addSSEListeners()
     this.posts = result.data
-    this.scroll()
   },
   methods: {
     async addSSEListeners () {
@@ -83,25 +76,17 @@ export default {
       }
       // this.$store.dispatch('closeEventSource')
     },
-    scroll () {
-      window.onscroll = async () => {
-        let bottomOfWindow = document.documentElement.scrollTop + window.innerHeight === document.documentElement.offsetHeight
-        if (bottomOfWindow) {
-          let lastPost = this.posts[Object.keys(this.posts).length - 1]
-          // console.log(lastPost)
-          let morePosts = (await PostService.index(lastPost, 5)).data
-          // console.log(morePosts)
-          for (let newPost of morePosts) {
-            this.posts.push(newPost)
-          }
-          // this.posts.push(morePosts)
-          console.log(this.posts)
-        }
+    async loadMorePosts () {
+      let lastPost = this.posts[Object.keys(this.posts).length - 1]
+      let morePosts = (await PostService.index(lastPost, 5)).data
+      for (let newPost of morePosts) {
+        this.posts.push(newPost)
       }
+      console.log(this.posts)
     }
   },
   components: {
-    Post
+    Feed
   }
 }
 </script>
