@@ -1,12 +1,10 @@
 <template>
   <v-container>
-    <v-flex xs12>
-      <h1 v-if="isNewPostAvailable" class="bold blue--text">See new posts</h1>
-      <div v-for="post in posts" :key="post.id">
-        {{ post.id }}
-        <post :post="post" />
-      </div>
-    </v-flex>
+    <h1 v-if="isNewPostAvailable" class="bold blue--text">See new posts</h1>
+    <div v-for="post in posts" :key="post.id">
+      {{ post.id }}
+      <post :post="post" />
+    </div>
   </v-container>
 </template>
 

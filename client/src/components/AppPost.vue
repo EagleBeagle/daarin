@@ -8,16 +8,24 @@
       <v-divider/>
       <v-img :src="post.url" width="100%"/>
       <v-divider/>
-      <v-card-title>
+      <v-card-title class="pa-2">
           <v-btn
+            class="my-0"
             @click="upvote()">
             <v-icon :class="[ upvoted ? 'light-blue--text' : 'grey--text' ]">arrow_upward</v-icon></v-btn>
           <v-btn
             @click="downvote()">
             <v-icon :class="[ downvoted ? 'light-blue--text' : 'grey--text' ]">arrow_downward</v-icon></v-btn>
           <h3>{{ post.likes.length - post.dislikes.length }}</h3>
+          <v-spacer></v-spacer>
+          <v-btn
+            class="light-blue accent-2"
+            @click="showingComments = !showingComments">
+            Comments
+          </v-btn>
       </v-card-title>
     </v-card>
+    <v-card v-if="showingComments" height="200px" class="mt-2"></v-card>
   </v-flex>
 </template>
 
@@ -28,6 +36,11 @@ export default {
   props: [
     'post'
   ],
+  data () {
+    return {
+      showingComments: false
+    }
+  },
   computed: {
     ...mapState([
       'isUserLoggedIn',
