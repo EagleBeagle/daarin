@@ -1,16 +1,24 @@
 <template>
-  <v-container fill-height>
-    <feed
+  <v-layout justify-center>
+    <v-flex md3 lg4 hidden-sm-and-down>
+      <div></div>
+    </v-flex>
+    <v-flex xs11 sm8 md6 lg4>
+    <PostFeed
       :posts="posts"
       :isNewPostAvailable="isNewPostAvailable"
       @reachedBottom="loadMorePosts"/>
-  </v-container>
+    </v-flex>
+    <v-flex md3 lg4 hidden-sm-and-down>
+      <div></div>
+    </v-flex>
+  </v-layout>
 </template>
 
 <script>
 import {mapState} from 'vuex'
 import PostService from '@/services/PostService'
-import Feed from './Feed'
+import PostFeed from './PostFeed'
 export default {
   data () {
     return {
@@ -86,7 +94,7 @@ export default {
     }
   },
   components: {
-    Feed
+    PostFeed
   }
 }
 </script>

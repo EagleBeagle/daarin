@@ -1,19 +1,17 @@
 <template>
-  <v-layout justify-center>
-    <v-flex xs4>
+  <v-container>
+    <v-flex xs12>
       <h1 v-if="isNewPostAvailable" class="bold blue--text">See new posts</h1>
       <div v-for="post in posts" :key="post.id">
         {{ post.id }}
-        <v-flex class="pb-5">
-          <post :post="post" />
-        </v-flex>
+        <post :post="post" />
       </div>
     </v-flex>
-  </v-layout>
+  </v-container>
 </template>
 
 <script>
-import Post from './Post'
+import Post from './AppPost'
 export default {
   props: [
     'posts',

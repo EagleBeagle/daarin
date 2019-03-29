@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <div id="app">
-      <page-header />
+      <PageHeader />
       <!-- <img src="./assets/logo.png"> -->
       <router-view/>
     </div>
@@ -9,7 +9,7 @@
 </template>
 
 <script>
-import PageHeader from '@/components/Header.vue'
+import PageHeader from '@/components/PageHeader.vue'
 import 'material-design-icons-iconfont/dist/material-design-icons.css'
 document.title = 'daarin'
 export default {

@@ -1,22 +1,24 @@
 <template>
-  <v-card>
-    <div>
-      <h1 class="bold blue--text">{{ post.title }}</h1>
-      <p class="light-blue--text">{{ post.createdBy.username }}</p>
-    </div>
-    <v-divider/>
-    <v-img :src="post.url" width="100%"/>
-    <v-divider/>
-    <v-card-title>
-        <v-btn
-          @click="upvote()">
-          <v-icon :class="[ upvoted ? 'light-blue--text' : 'grey--text' ]">arrow_upward</v-icon></v-btn>
-        <v-btn
-          @click="downvote()">
-          <v-icon :class="[ downvoted ? 'light-blue--text' : 'grey--text' ]">arrow_downward</v-icon></v-btn>
-        <h3>{{ post.likes.length - post.dislikes.length }}</h3>
-    </v-card-title>
-  </v-card>
+  <v-flex xs12 class="pb-5">
+    <v-card>
+      <div>
+        <h1 class="bold blue--text">{{ post.title }}</h1>
+        <p class="light-blue--text">{{ post.createdBy.username }}</p>
+      </div>
+      <v-divider/>
+      <v-img :src="post.url" width="100%"/>
+      <v-divider/>
+      <v-card-title>
+          <v-btn
+            @click="upvote()">
+            <v-icon :class="[ upvoted ? 'light-blue--text' : 'grey--text' ]">arrow_upward</v-icon></v-btn>
+          <v-btn
+            @click="downvote()">
+            <v-icon :class="[ downvoted ? 'light-blue--text' : 'grey--text' ]">arrow_downward</v-icon></v-btn>
+          <h3>{{ post.likes.length - post.dislikes.length }}</h3>
+      </v-card-title>
+    </v-card>
+  </v-flex>
 </template>
 
 <script>
