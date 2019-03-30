@@ -3,7 +3,7 @@
     <v-flex md3 lg4 hidden-sm-and-down>
       <div></div>
     </v-flex>
-    <v-flex xs11 sm8 md6 lg4>
+    <v-flex xs12 sm8 md6 lg4>
     <PostFeed
       :posts="posts"
       :isNewPostAvailable="isNewPostAvailable"
