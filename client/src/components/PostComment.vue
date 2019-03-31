@@ -10,10 +10,10 @@
         <span class="grey--text">1 hour ago</span>
         <v-layout row wrap>
           <v-flex xs11>
-            <div 
+            <div
               id="commentBody"
               class="body-1 light-blue accent-3 white--text pa-2 pl-3 ma-0">
-              ex soluta,  consequatur veritatis possimus aliquid  consequatur veritatis possimus aliquid  consequatur veritatis possimus aliquid consequatur veritatis possimus aliquid laudantium. Perspiciatis, dolor.
+              ex soluta, veritatis possimus aliquid laudantium. veritatis possimus aliquid laudantium. Perspiciatis, dolor.
             </div>
           </v-flex>
           <v-flex xs1 align-self-center>
@@ -21,7 +21,7 @@
           </v-flex>
           <v-layout>
             <v-flex xs9>
-              <v-btn 
+              <v-btn
                 class="ma-0"
                 small
                 flat
@@ -29,7 +29,7 @@
                 @click="upvote()">
                 <v-icon class="grey--text" small>arrow_upward</v-icon>
               </v-btn>
-              <v-btn 
+              <v-btn
                 class="ma-0"
                 small
                 flat
@@ -46,7 +46,7 @@
                 class="ma-0"
                 small
                 fab
-                flat>                
+                flat>
                 <v-icon class="grey--text" small>reply</v-icon>
               </v-btn>
             </v-flex>

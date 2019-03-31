@@ -54,10 +54,8 @@
       <transition name="commentSlide">
         <v-container v-show="showingComments" class="pa-0 ma-0">
           <v-divider/>
-          <v-card-content>
-            <PostComment/>
-            <PostComment/>
-          </v-card-content>
+          <PostComment/>
+          <PostComment/>
         </v-container>
       </transition>
     </v-card>
