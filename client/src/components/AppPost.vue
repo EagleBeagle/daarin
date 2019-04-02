@@ -1,12 +1,16 @@
 <template>
-  <v-container xs12 class="pb-5">
+  <v-container xs12 class="pb-5" :id="post.title">
     <v-card>
       <div>
-        <h1 class="bold blue--text">{{ post.title }}</h1>
-        <p class="light-blue--text">{{ post.createdBy.username }}</p>
+        <div class="display-1 blue--text font-weight-bold py-1">{{ post.title }}</div>
+        <div class="subheading light-blue--text pb-1">{{ post.createdBy.username }}</div>
       </div>
       <v-divider/>
-      <v-img :src="post.url" width="100%"/>
+      <v-img
+        :src="post.url"
+        width="100%"
+        id="postImage"
+        @click="$router.push({ name: 'postPage', params: { postId: post._id } })"/>
       <v-divider/>
       <v-card-actions class="px-3 py-0">
         <v-layout justify-space-around class="py-1 px-0">
@@ -38,7 +42,7 @@
               <v-btn
                 flat
                 fab
-                @click="showingComments = !showingComments">
+                @click="showComments">
                 <v-icon class="grey--text">comment</v-icon>
               </v-btn>
             </v-flex>
@@ -52,11 +56,7 @@
         </v-layout>
       </v-card-actions>
       <transition name="commentSlide">
-        <v-container v-show="showingComments" class="pa-0 ma-0">
-          <v-divider/>
-          <PostComment/>
-          <PostComment/>
-        </v-container>
+        <CommentContainer :postId="post._id" v-if="showingComments"/>
       </transition>
     </v-card>
   </v-container>
@@ -65,7 +65,8 @@
 <script>
 import {mapState} from 'vuex'
 import PostService from '@/services/PostService'
-import PostComment from './PostComment'
+import CommentContainer from './CommentContainer'
+// import goTo from 'vuetify/lib/components/Vuetify/goTo'
 export default {
   props: [
     'post'
@@ -79,7 +80,8 @@ export default {
   computed: {
     ...mapState([
       'isUserLoggedIn',
-      'user'
+      'user',
+      'closeComments'
     ]),
     upvoted: function () {
       if (!this.isUserLoggedIn) {
@@ -112,7 +114,10 @@ export default {
       } else {
         this.scoreDirection = 'scoreDown'
       }
-    }
+    } /* ,
+    closeComments () {
+      this.showingComments = false
+    } */
   },
   methods: {
     async upvote () {
@@ -154,10 +159,20 @@ export default {
       } catch (err) {
         console.log(err)
       }
+    },
+    async showComments () {
+      if (!this.showingComments) {
+        // await this.$store.dispatch('closeComments')
+      }
+      this.showingComments = !this.showingComments
+      /* if (this.showingComments) {
+        this.$vuetify.goTo(window.scrollY, { offset: -700, easing: 'easeOutCubic' })
+        console.log(window.scrollY)
+      } */
     }
   },
   components: {
-    PostComment
+    CommentContainer
   }
 }
 </script>
@@ -174,7 +189,7 @@ export default {
 }
 
 .commentSlide-enter-to, .commentSlide-leave {
-   max-height: 500px;
+   max-height: 800px;
    overflow: hidden;
 }
 
@@ -219,6 +234,10 @@ export default {
 
 .scoreFlex {
   overflow: visible;
+}
+
+#postImage {
+  cursor: pointer;
 }
 
 </style>

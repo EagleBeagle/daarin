@@ -14,6 +14,7 @@ export default new Vuex.Store({
     user: null,
     sseId: null,
     isUserLoggedIn: false,
+    closeComments: false,
     eventSource: null,
     eventSourceChanged: false
   },
@@ -27,6 +28,9 @@ export default new Vuex.Store({
     },
     setUser (state, user) {
       state.user = user
+    },
+    closeComments (state) {
+      state.closeComments = !state.closeComments
     },
     updateEventSource (state, eventSource) {
       state.eventSource = eventSource
@@ -47,6 +51,9 @@ export default new Vuex.Store({
     },
     setUser ({commit}, user) {
       commit('setUser', user)
+    },
+    closeComments ({commit}) {
+      commit('closeComments')
     },
     async updateEventSource ({commit}) { // le kell kezelni, hogy ne csináljon többet
       let eventSource = null

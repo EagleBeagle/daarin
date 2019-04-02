@@ -1,5 +1,6 @@
 const cloudinary = require('cloudinary')
 const Datauri = require('datauri')
+const uniqueSlug = require('unique-slug')
 const path = require('path')
 const Post = require('../models/Post.js')
 const User = require('../models/User.js')
@@ -45,6 +46,25 @@ module.exports = {
     }
   },
 
+  async getPost (req, res) {
+    try {
+      let postId = req.params.postId
+      let post = await Post.find({ '_id': postId })
+      if (!post.length) {
+        res.status(400).send({
+          error: "the given post doesn't exist"
+        })
+      } else {
+        res.status(200).send(post)
+      }
+    } catch (err) {
+      console.log(err)
+      res.status(500).send({
+        error: 'an error has occured trying to fetch the post'
+      })
+    }
+  },
+
   async upload (req, res) {
     const dUri = new Datauri()
     dUri.format(path.extname(req.file.originalname).toString(), req.file.buffer)
@@ -53,6 +73,7 @@ module.exports = {
       let result = await cloudinary.v2.uploader.upload(dUri.content)
       let newPost = {
         title: req.body.title,
+        slug: uniqueSlug(req.body._id),
         createdBy: req.body.createdBy,
         url: result.url
       }

@@ -21,6 +21,7 @@ module.exports = {
     }
     let postData = null
     let userData = null
+    let commentData = null
     let popupData = null
     let errorData = null
 
@@ -31,14 +32,22 @@ module.exports = {
           let connection = SSEConnectionHandler.connections[sseId]
           if (connection.postQuery) {
             postData = await connection.postQuery.exec()
+            console.log('\tpost')
             res.sseSend('post', postData)
           }
           if (connection.userQuery) {
             userData = await connection.userQuery.exec()
+            console.log('\tuser')
             res.sseSend('user', userData)
+          }
+          if (connection.commentQuery) {
+            commentData = await connection.commentQuery.exec()
+            console.log('\tcomment')
+            res.sseSend('comment', commentData)
           }
           if (connection.popupQuery) {
             popupData = await connection.popupQuery.exec()
+            console.log('\tpopup')
             res.sseSend('popup', popupData)
           }
         } else {

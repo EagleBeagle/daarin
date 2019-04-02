@@ -10,6 +10,9 @@ export default {
     }
     return Api().get(`/home${query}`)
   },
+  getPost (postId) {
+    return Api().get(`/posts/${postId}`)
+  },
   upload (formData) {
     console.log('uploadService: ' + formData.get('createdBy'))
     return Api().post('upload', formData, {

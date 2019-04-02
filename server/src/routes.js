@@ -2,6 +2,7 @@ const AuthenticationController = require('./controllers/AuthenticationController
 const AuthenticationControllerPolicy = require('./policies/AuthenticationControllerPolicy')
 const PostController = require('./controllers/PostController')
 const PostControllerPolicy = require('./policies/PostControllerPolicy')
+const CommentController = require('./controllers/CommentController')
 const IsAuthenticated = require('./policies/IsAuthenticated')
 const SSEController = require('./controllers/SSEController')
 const multer = require('multer')
@@ -17,6 +18,20 @@ module.exports = (app) => {
 
   app.get('/stream',
     SSEController.stream)
+
+  app.get('/posts/:postId',
+    PostController.getPost)
+
+  app.get('/posts/:postId/comments',
+    IsAuthenticated.check,
+    CommentController.getCommentsOfPost)
+
+  app.get('/posts/:postId/comments/:commentId/replies',
+    CommentController.getRepliesOfComment)
+
+  app.post('/posts/:postId/comments',
+    IsAuthenticated.restrict,
+    CommentController.createComment)
 
   app.post('/register',
     AuthenticationControllerPolicy.register,
@@ -47,4 +62,20 @@ module.exports = (app) => {
   app.delete('/posts/:postId/downvote',
     IsAuthenticated.restrict,
     PostController.unDownvote)
+
+  app.put('/posts/:postId/comments/:commentId/upvote',
+    IsAuthenticated.restrict,
+    CommentController.upvote)
+
+  app.put('/posts/:postId/comments/:commentId/downvote',
+    IsAuthenticated.restrict,
+    CommentController.downvote)
+
+  app.delete('/posts/:postId/comments/:commentId/upvote',
+    IsAuthenticated.restrict,
+    CommentController.unUpvote)
+
+  app.delete('/posts/:postId/comments/:commentId/downvote',
+    IsAuthenticated.restrict,
+    CommentController.unDownvote)
 }
