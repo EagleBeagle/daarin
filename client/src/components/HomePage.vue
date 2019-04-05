@@ -85,12 +85,14 @@ export default {
       // this.$store.dispatch('closeEventSource')
     },
     async loadMorePosts () {
-      let lastPost = this.posts[Object.keys(this.posts).length - 1]
-      let morePosts = (await PostService.index(lastPost, 5)).data
-      for (let newPost of morePosts) {
-        this.posts.push(newPost)
+      if (this.posts) {
+        let lastPost = this.posts[Object.keys(this.posts).length - 1]
+        let morePosts = (await PostService.index(lastPost, 5)).data
+        for (let newPost of morePosts) {
+          this.posts.push(newPost)
+        }
+        console.log(this.posts)
       }
-      console.log(this.posts)
     }
   },
   components: {

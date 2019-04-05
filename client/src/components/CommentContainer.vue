@@ -17,7 +17,7 @@
       </v-layout>
       <v-divider class="pb-0"/>
       <div v-bar id="vb">
-        <v-container pa-0 ma-0 id="commentContainer">
+        <v-container pa-0 ma-0 class="commentContainer" :id="postId + '-comments'">
           <div v-for="comment in comments" :key="comment.id">
             <PostComment :comment="comment" />
           </div>
@@ -89,7 +89,9 @@ export default {
       comments: null,
       firstTimeEntered: true,
       commentStreamCb: null,
-      commentStreamEvent: null
+      commentStreamEvent: null,
+      firstLoadedComment: null,
+      lastLoadedComment: null
     }
   },
   computed: {
@@ -115,6 +117,7 @@ export default {
   async mounted () {
     await this.getComments()
     await this.addSSEListeners()
+    await this.scroll()
   },
   methods: {
     async addSSEListeners () {
@@ -122,9 +125,17 @@ export default {
         await this.$store.dispatch('closeComments')
         this.commentStreamCb = (event) => {
           let streamedComments = JSON.parse(event.data)
-          this.comments = streamedComments
-          this.comments.forEach((comment) => {
+          streamedComments.forEach((comment) => {
             comment.sinceCreated = this.timeDifference(comment.createdAt)
+          })
+          this.comments.forEach((comment) => {
+            let streamedComment = streamedComments.find(streamedComment => streamedComment._id === comment._id)
+            if (streamedComment) {
+              comment.likes = streamedComment.likes
+              comment.dislikes = streamedComment.dislikes
+              comment.sinceCreated = this.timeDifference(streamedComment.createdAt)
+              comment.replyCount = streamedComment.replyCount
+            }
           })
           console.log(streamedComments)
         }
@@ -138,7 +149,7 @@ export default {
           text: this.commentText
         })
         this.commentText = ''
-        await this.getComments()
+        // await this.getComments() SSE-vel nem kell
       } catch (error) {
         console.log('BAJ VAN: ' + error)
       }
@@ -147,11 +158,61 @@ export default {
       try {
         console.log('called')
         let response
-        response = await CommentService.getCommentsOfPost(this.postId)
+        response = await CommentService.getCommentsOfPost({
+          postId: this.postId
+        })
         this.comments = response.data
         this.comments.forEach((comment) => {
           comment.sinceCreated = this.timeDifference(comment.createdAt)
         })
+        this.firstLoadedComment = this.comments[0]
+        this.lastLoadedComment = this.comments[this.comments.length - 1]
+        console.log('LEGUJABB: ' + this.firstLoadedComment.createdAt)
+        console.log('LEGREGEBBI: ' + this.lastLoadedComment.createdAt)
+      } catch (error) {
+        console.log('BAJ VAN: ' + error)
+      }
+    },
+    async getHigherComments () {
+      try {
+        let response
+        response = await CommentService.getCommentsOfPost({
+          postId: this.postId,
+          newest: this.firstLoadedComment,
+          oldest: this.lastLoadedComment,
+          get: 'newer'
+        })
+        let newComments = response.data
+        if (newComments[0]) {
+          this.firstLoadedComment = newComments[0]
+        }
+        newComments.forEach((comment) => {
+          comment.sinceCreated = this.timeDifference(comment.createdAt)
+        })
+        this.comments = [...newComments, ...this.comments]
+      } catch (error) {
+        console.log('BAJ VAN: ' + error)
+      }
+    },
+    async getLowerComments () {
+      try {
+        let response
+        response = await CommentService.getCommentsOfPost({
+          postId: this.postId,
+          newest: this.firstLoadedComment,
+          oldest: this.lastLoadedComment,
+          get: 'older'
+        })
+        let newComments = response.data
+        console.log('REGIEK: ' + newComments)
+        // console.log('RÉGEBBI CUCLIK: ' + response)
+        if (newComments[newComments.length - 1]) {
+          this.lastLoadedComment = newComments[newComments.length - 1]
+        }
+        newComments.forEach((comment) => {
+          comment.sinceCreated = this.timeDifference(comment.createdAt)
+        })
+        this.comments = [...this.comments, ...newComments]
       } catch (error) {
         console.log('BAJ VAN: ' + error)
       }
@@ -179,6 +240,26 @@ export default {
       console.log(e.scrollValue) // 0..1 last scroll value (change of page scroll offset)
       console.log(e.target.rect) // element.getBoundingClientRect() result
       */
+    },
+    async scroll () {
+      let commentContainer = document.getElementById(this.postId + '-comments')
+      if (commentContainer) {
+        commentContainer.onscroll = async () => {
+          let topOfWindow = commentContainer.scrollTop + commentContainer.clientHeight === commentContainer.offsetHeight
+          let bottomOfWindow = commentContainer.scrollHeight - commentContainer.scrollTop === commentContainer.clientHeight
+          console.log(commentContainer.clientHeight)
+          if (topOfWindow) {
+            let commentsLength = this.comments.length
+            console.log('teteje')
+            await this.getHigherComments()
+            let newCommentsLength = this.comments.length - commentsLength
+            commentContainer.scrollTo(0, newCommentsLength * 89)
+          } else if (bottomOfWindow) {
+            console.log('alja')
+            await this.getLowerComments()
+          }
+        }
+      }
     },
     timeDifference (createdAt) {
       let msPerMinute = 60 * 1000
@@ -222,7 +303,7 @@ export default {
 </script>
 
 <style scoped>
-#commentContainer {
+.commentContainer {
   overflow-y: auto;
   max-height: 500px;
 }

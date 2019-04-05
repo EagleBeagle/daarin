@@ -1,8 +1,24 @@
 import Api from '@/services/Api'
+import querystring from 'querystring'
 
 export default {
-  getCommentsOfPost (postId) {
-    return Api().get(`/posts/${postId}/comments`)
+  getCommentsOfPost (commentData) {
+    let query = ''
+    if (commentData.newest && commentData.oldest && commentData.get) {
+      let newestCreated = querystring.stringify({ newest: commentData.newest.createdAt })
+      let oldestCreated = querystring.stringify({ oldest: commentData.oldest.createdAt })
+      console.log('mindenmegvan')
+      query = `?${newestCreated}&${oldestCreated}&get=${commentData.get}`
+    } else if (commentData.newest) {
+      let newestCreated = querystring.stringify({ newest: commentData.newest.createdAt })
+      query = `?${newestCreated}`
+    } else if (commentData.oldest) {
+      let oldestCreated = querystring.stringify({ oldest: commentData.oldest.createdAt })
+      query = `?${oldestCreated}`
+    } else if (commentData.highest && commentData.lowest) {
+      console.log('todo')
+    }
+    return Api().get(`/posts/${commentData.postId}/comments${query}`)
   },
   createComment (postId, commentData) {
     return Api().post(`/posts/${postId}/comments`, commentData)

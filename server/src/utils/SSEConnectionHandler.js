@@ -8,6 +8,7 @@ module.exports = {
       postQuery: null,
       userQuery: null,
       commentQuery: null,
+      replyQuery: null,
       popupQuery: null,
       errorData: null
     }
@@ -29,6 +30,10 @@ module.exports = {
         case 'comment':
           connections[sseId].commentQuery = query
           console.log('komment addolva')
+          break
+        case 'reply':
+          connections[sseId].replyQuery = query
+          console.log('reply addolva')
           break
         case 'popup':
           connections[sseId].popupQuery = query

@@ -22,6 +22,7 @@ module.exports = {
     let postData = null
     let userData = null
     let commentData = null
+    let replyData = null
     let popupData = null
     let errorData = null
 
@@ -44,6 +45,11 @@ module.exports = {
             commentData = await connection.commentQuery.exec()
             console.log('\tcomment')
             res.sseSend('comment', commentData)
+          }
+          if (connection.replyQuery) {
+            replyData = await connection.replyQuery.exec()
+            console.log('\treply')
+            res.sseSend('reply', replyData)
           }
           if (connection.popupQuery) {
             popupData = await connection.popupQuery.exec()

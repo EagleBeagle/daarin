@@ -17,7 +17,7 @@ module.exports = {
     let posts = null
     let sseId = req.user ? req.user.sseId : null
     try {
-      if (!req.query.created || !req.query.limit) {
+      if (!req.query.created || !req.query.limit) { // TODO esetek
         posts = await Post.find()
           .populate('createdBy', 'username')
           .sort('-createdAt')

@@ -7,21 +7,99 @@ module.exports = {
     let comments = null
     let sseId = req.user ? req.user.sseId : null
     let postId = req.params.postId
+    let newestLoaded = req.query.newest
+    let oldestLoaded = req.query.oldest
+    let highestLoaded = req.query.highest
+    let lowestLoaded = req.query.lowest
+    let get = req.query.get
     try {
-      if (!req.query.created || !req.query.limit) {
+      if (newestLoaded && oldestLoaded && get) {
+        if (get === 'newer') {
+          comments = await Comment
+            .find({
+              'to': postId,
+              'replyTo': null,
+              'createdAt': { $gt: newestLoaded }
+            })
+            .populate('createdBy', 'username')
+            .sort('-createdAt')
+            .limit(6)
+          let lastCommentToBeLoaded = comments[0]
+          if (lastCommentToBeLoaded) {
+            let sseQuery = Comment
+              .find({
+                'to': postId,
+                'replyTo': null,
+                'createdAt': {
+                  $lte: lastCommentToBeLoaded.createdAt,
+                  $gte: oldestLoaded
+                }
+              }, 'likes dislikes replyCount createdAt') // todo: majd csak lájk dislájkokat fogunk sendelni
+              .populate('createdBy', 'username')
+              .sort('-createdAt')
+            SSEConnectionHandler.setConnectionQuery('comment', sseId, sseQuery)
+          }
+          console.log(comments)
+          res.status(200).send(comments)
+        } else if (get === 'older') {
+          comments = await Comment
+            .find({
+              'to': postId,
+              'replyTo': null,
+              'createdAt': { $lt: oldestLoaded }
+            })
+            .populate('createdBy', 'username')
+            .sort('-createdAt')
+            .limit(6)
+          let lastCommentToBeLoaded = comments[Object.keys(comments).length - 1]
+          if (lastCommentToBeLoaded) {
+            let sseQuery = Comment
+              .find({
+                'to': postId,
+                'replyTo': null,
+                'createdAt': {
+                  $gte: lastCommentToBeLoaded.createdAt,
+                  $lte: newestLoaded
+                }
+              }, 'likes dislikes replyCount createdAt')
+              .populate('createdBy', 'username')
+              .sort('-createdAt')
+            SSEConnectionHandler.setConnectionQuery('comment', sseId, sseQuery)
+          }
+          res.status(200).send(comments)
+        } else {
+          res.status(400).send({
+            error: 'Invalid query format.'
+          })
+        }
+      } else if (newestLoaded && oldestLoaded && get) { // todo
+        res.status(200).send('todo')
+      } else if (newestLoaded || oldestLoaded || highestLoaded || lowestLoaded || get) {
+        res.status(400).send({
+          error: 'Invalid query format.'
+        })
+      } else {
         comments = await Comment
-          .find({ 'to': postId, 'replyTo': null })
+          .find({
+            'to': postId,
+            'replyTo': null
+          })
           .populate('createdBy', 'username')
           .sort('-createdAt')
-          .limit(10)
+          .limit(6)
+        let date = Date.now()
         let sseQuery = Comment
-          .find({ 'to': postId, 'replyTo': null })
+          .find({
+            'to': postId,
+            'replyTo': null,
+            'createdAt': { $lte: date }
+          })
           .populate('createdBy', 'username')
           .sort('-createdAt')
-          .limit(10)
+          .limit(6)
         SSEConnectionHandler.setConnectionQuery('comment', sseId, sseQuery)
+        res.status(200).send(comments)
       }
-      res.status(200).send(comments)
     } catch (err) {
       console.log(err)
       res.status(500).send({
@@ -72,16 +150,43 @@ module.exports = {
       })
     }
   },
-
+  /*
+  MEGOLDANI: több reply-containert láthatunk egyszerre,
+             tömb a reply query-knek sse-ben, vue-ban meg
+             hozzáadni a listenereket a replycontainerhez,
+             ha nem látszik a container bontani az event listening-et
+  */
   async getRepliesOfComment (req, res) {
     let commentId = req.params.commentId
+    let oldestLoaded = req.query.oldest
+    let sseId = req.user ? req.user.sseId : null
     let replies
     try {
-      replies = await Comment
-        .find({ 'replyTo': commentId })
-        .populate('createdBy', 'username')
-        .sort('createdAt')
-      res.status(200).send(replies)
+      if (oldestLoaded) {
+        replies = await Comment
+          .find({
+            'replyTo': commentId,
+            'createdAt': { $lt: oldestLoaded }
+          })
+          .populate('createdBy', 'username')
+          .sort('-createdAt')
+          .limit(10)
+        let lastReplyToBeLoaded = replies[Object.keys(replies).length - 1]
+        if (lastReplyToBeLoaded) {
+          let sseQuery = Comment
+            .find({
+              'replyTo': commentId,
+              'createdAt': { $gte: lastReplyToBeLoaded.createdAt }
+            })
+          SSEConnectionHandler.setConnectionQuery('reply', sseId, sseQuery) // todo
+        }
+      } else {
+        replies = await Comment
+          .find({ 'replyTo': commentId })
+          .populate('createdBy', 'username')
+          .sort('createdAt')
+        res.status(200).send(replies)
+      }
     } catch (err) {
       console.log(err)
       res.status(500).send({

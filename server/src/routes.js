@@ -27,6 +27,7 @@ module.exports = (app) => {
     CommentController.getCommentsOfPost)
 
   app.get('/posts/:postId/comments/:commentId/replies',
+    IsAuthenticated.check,
     CommentController.getRepliesOfComment)
 
   app.post('/posts/:postId/comments',

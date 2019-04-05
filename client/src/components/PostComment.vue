@@ -34,7 +34,7 @@
                 flat
                 fab
                 @click="upvote()">
-                <v-icon class="grey--text" small>arrow_upward</v-icon>
+                <v-icon :class="[ upvoted ? 'light-blue--text' : 'grey--text' ]" small>arrow_upward</v-icon>
               </v-btn>
               <v-btn
                 class="ma-0"
@@ -42,7 +42,7 @@
                 flat
                 fab
                 @click="downvote()">
-                <v-icon class="grey--text" small>arrow_downward</v-icon>
+                <v-icon :class="[ downvoted ? 'light-blue--text' : 'grey--text' ]" small>arrow_downward</v-icon>
               </v-btn>
             </v-flex>
             <v-flex align-self-center xs4>
@@ -100,7 +100,10 @@
       </v-container>
     </transition>
     <transition name="commentSlide">
-      <ReplyContainer :postId="comment.to" :replyTo="comment._id" v-if="showingReplies"/>
+      <div v-if="showingReplies">
+        <ReplyContainer :postId="comment.to" :replyTo="comment._id"/>
+        <v-divider class="mx-5 my-2"/>
+      </div>
     </transition>
   </v-container>
 
