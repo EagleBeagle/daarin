@@ -23,24 +23,15 @@ module.exports = {
             })
             .populate('createdBy', 'username')
             .sort('-createdAt')
-            .limit(6)
+            .limit(10)
           let lastCommentToBeLoaded = comments[0]
           if (lastCommentToBeLoaded) {
-            let sseQuery = Comment
-              .find({
-                'to': postId,
-                'replyTo': null,
-                'createdAt': {
-                  $lte: lastCommentToBeLoaded.createdAt,
-                  $gte: oldestLoaded
-                }
-              }, 'likes dislikes replyCount createdAt') // todo: majd csak lájk dislájkokat fogunk sendelni
-              .populate('createdBy', 'username')
-              .sort('-createdAt')
-            SSEConnectionHandler.setConnectionQuery('comment', sseId, sseQuery)
+            SSEConnectionHandler.buildAndSetConnectionQuery('comment', sseId, comments, false)
           }
           console.log(comments)
-          res.status(200).send(comments)
+          setTimeout(() => {
+            res.status(200).send(comments)
+          }, 2000)
         } else if (get === 'older') {
           comments = await Comment
             .find({
@@ -50,23 +41,14 @@ module.exports = {
             })
             .populate('createdBy', 'username')
             .sort('-createdAt')
-            .limit(6)
+            .limit(10)
           let lastCommentToBeLoaded = comments[Object.keys(comments).length - 1]
           if (lastCommentToBeLoaded) {
-            let sseQuery = Comment
-              .find({
-                'to': postId,
-                'replyTo': null,
-                'createdAt': {
-                  $gte: lastCommentToBeLoaded.createdAt,
-                  $lte: newestLoaded
-                }
-              }, 'likes dislikes replyCount createdAt')
-              .populate('createdBy', 'username')
-              .sort('-createdAt')
-            SSEConnectionHandler.setConnectionQuery('comment', sseId, sseQuery)
+            SSEConnectionHandler.buildAndSetConnectionQuery('comment', sseId, comments, false)
           }
-          res.status(200).send(comments)
+          setTimeout(() => {
+            res.status(200).send(comments)
+          }, 2000)
         } else {
           res.status(400).send({
             error: 'Invalid query format.'
@@ -86,18 +68,8 @@ module.exports = {
           })
           .populate('createdBy', 'username')
           .sort('-createdAt')
-          .limit(6)
-        let date = Date.now()
-        let sseQuery = Comment
-          .find({
-            'to': postId,
-            'replyTo': null,
-            'createdAt': { $lte: date }
-          })
-          .populate('createdBy', 'username')
-          .sort('-createdAt')
-          .limit(6)
-        SSEConnectionHandler.setConnectionQuery('comment', sseId, sseQuery)
+          .limit(10)
+        SSEConnectionHandler.buildAndSetConnectionQuery('comment', sseId, comments, true)
         res.status(200).send(comments)
       }
     } catch (err) {

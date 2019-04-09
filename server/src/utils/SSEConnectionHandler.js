@@ -1,3 +1,5 @@
+const Comment = require('../models/Comment.js')
+
 let connections = {}
 
 module.exports = {
@@ -8,7 +10,9 @@ module.exports = {
       postQuery: null,
       userQuery: null,
       commentQuery: null,
+      commentIDs: [],
       replyQuery: null,
+      replyIDs: [],
       popupQuery: null,
       errorData: null
     }
@@ -37,6 +41,35 @@ module.exports = {
           break
         case 'popup':
           connections[sseId].popupQuery = query
+          break
+        default:
+      }
+    }
+  },
+
+  buildAndSetConnectionQuery (type, sseId, data, flush) {
+    if (connections[sseId]) {
+      switch (type) {
+        case 'comment':
+          if (flush) {
+            console.log('flusholunk')
+            connections[sseId].commentIDs = []
+            console.log(connections[sseId].commentIDs)
+          }
+          data.forEach((comment) => {
+            connections[sseId].commentIDs.push(comment._id)
+          })
+          let query = Comment
+            .find({
+              '_id': { $in: connections[sseId].commentIDs }
+            })
+            .populate('createdBy', 'username')
+          this.setConnectionQuery(type, sseId, query)
+          break
+        case 'reply':
+          if (flush) {
+            connections[sseId].commentIDs = []
+          }
           break
         default:
       }

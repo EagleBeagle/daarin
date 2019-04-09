@@ -6,7 +6,7 @@
   "scripts": {
     "start": "./node_modules/nodemon/bin/nodemon.js src/app.js --exec 'npm run lint && node'",
     "test": "./node_modules/.bin/mocha --timeout 15000 \"./{,!(node_modules)/**/}*.test.js\"",
-    "unit": "./node_modules/.bin/mocha --timeout 15000 \"./src/tests/unit/*.test.js\"",
+    "unit": "./node_modules/.bin/mocha --timeout 5000 \"./src/tests/unit/*.test.js\"",
     "unit-coverage": "nyc ./node_modules/.bin/mocha --timeout 15000 \"./src/tests/unit/*.test.js\"",
     "test-coverage": "nyc mocha --timeout 5000 \"./{,!(node_modules)/**/}*.test.js\"",
     "lint": "./node_modules/.bin/eslint \"**/*.js\""

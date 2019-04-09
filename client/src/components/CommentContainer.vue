@@ -18,9 +18,21 @@
       <v-divider class="pb-0"/>
       <div v-bar id="vb">
         <v-container pa-0 ma-0 class="commentContainer" :id="postId + '-comments'">
+          <v-progress-circular
+            v-if="loadingTop"
+            class="pb-4 pt-5"
+            indeterminate
+            color="light-blue accent-2">
+          </v-progress-circular>
           <div v-for="comment in comments" :key="comment.id">
             <PostComment :comment="comment" />
           </div>
+          <v-progress-circular
+            class="pb-3 pt-5"
+            indeterminate
+            color="light-blue accent-2"
+            v-show="loadingBottom">
+          </v-progress-circular>
         </v-container>
       </div>
       <v-divider class="pa-0 ma-0"/>
@@ -91,7 +103,12 @@ export default {
       commentStreamCb: null,
       commentStreamEvent: null,
       firstLoadedComment: null,
-      lastLoadedComment: null
+      lastLoadedComment: null,
+      loadingTop: false,
+      loadingBottom: false,
+      lastFetchTime: null,
+      lastScrollPosition: null,
+      currentScrollPosition: null
     }
   },
   computed: {
@@ -116,6 +133,7 @@ export default {
   },
   async mounted () {
     await this.getComments()
+    this.loadingInitial = false
     await this.addSSEListeners()
     await this.scroll()
   },
@@ -204,9 +222,8 @@ export default {
           get: 'older'
         })
         let newComments = response.data
-        console.log('REGIEK: ' + newComments)
         // console.log('RÉGEBBI CUCLIK: ' + response)
-        if (newComments[newComments.length - 1]) {
+        if (newComments.length) {
           this.lastLoadedComment = newComments[newComments.length - 1]
         }
         newComments.forEach((comment) => {
@@ -220,12 +237,10 @@ export default {
     async viewHandler (e) {
       if (e.type === 'enter') {
         if (this.firstTimeEntered) {
-          console.log('FIRST TIME ENTERED')
           this.firstTimeEntered = !this.firstTimeEntered
         } else {
           await this.getComments()
           await this.addSSEListeners()
-          console.log('ENTERED')
         }
       } else if (e.type === 'exit') {
         if (this.commentStreamCb) {
@@ -244,19 +259,32 @@ export default {
     async scroll () {
       let commentContainer = document.getElementById(this.postId + '-comments')
       if (commentContainer) {
+        let gotUpAfterUpdate = true
         commentContainer.onscroll = async () => {
           let topOfWindow = commentContainer.scrollTop + commentContainer.clientHeight === commentContainer.offsetHeight
           let bottomOfWindow = commentContainer.scrollHeight - commentContainer.scrollTop === commentContainer.clientHeight
-          console.log(commentContainer.clientHeight)
-          if (topOfWindow) {
+          this.currentScrollPosition = commentContainer.scrollTop
+          if (topOfWindow && !gotUpAfterUpdate) {
+            setTimeout(function () {
+              gotUpAfterUpdate = true
+            }, 1000)
+          }
+          if (topOfWindow && !this.loadingTop && gotUpAfterUpdate) {
             let commentsLength = this.comments.length
-            console.log('teteje')
+            this.loadingTop = true
             await this.getHigherComments()
+            this.loadingTop = false
             let newCommentsLength = this.comments.length - commentsLength
-            commentContainer.scrollTo(0, newCommentsLength * 89)
-          } else if (bottomOfWindow) {
-            console.log('alja')
+            commentContainer.scrollTo(0, newCommentsLength * 89 + this.currentScrollPosition)
+            gotUpAfterUpdate = false
+          } else if (bottomOfWindow && !this.loadingBottom && (!(this.currentScrollPosition < this.lastScrollPosition + 70 && this.currentScrollPosition > this.lastScrollPosition - 70) || !this.lastScrollPosition)) {
+            this.loadingBottom = true
             await this.getLowerComments()
+            this.loadingBottom = false
+            this.lastScrollPosition = this.currentScrollPosition
+          }
+          if (this.currentScrollPosition + 70 < this.lastScrollPosition) {
+            this.lastScrollPosition = this.currentScrollPosition
           }
         }
       }
@@ -269,9 +297,8 @@ export default {
       let msPerYear = msPerDay * 365
       let elapsed = Date.now() - (new Date(createdAt).getTime())
       if (elapsed < msPerMinute) {
-        let time = Math.round(elapsed / 1000)
-        if (time <= 15) return 'just now'
-        else return time + ' seconds ago'
+        // let time = Math.round(elapsed / 1000)
+        return 'just now'
       } else if (elapsed < msPerHour) {
         let time = Math.round(elapsed / msPerMinute)
         if (time === 1) return time + ' minute ago'
