@@ -51,16 +51,9 @@ module.exports = {
         }, 2000)
       } else if (highestLoaded && !newestLoaded && !oldestLoaded && !lowestLoaded) { // todo
         comments = await Comment // todo
-          .aggregate(
+          .aggregate( // todo
             [{
-              $project: {
-                replyCount: 1,
-                text: 1,
-                to: 1,
-                createdBy: 1,
-                createdAt: 1,
-                likes: 1,
-                dislikes: 1,
+              $addFields: {
                 score: { $substract: [ { $size: '$likes' }, { $size: '$dislikes' } ] }
               }
             }]
@@ -96,14 +89,7 @@ module.exports = {
                 }
               },
               {
-                $project: {
-                  replyCount: 1,
-                  text: 1,
-                  to: 1,
-                  createdBy: 1,
-                  createdAt: 1,
-                  likes: 1,
-                  dislikes: 1,
+                $addFields: {
                   score: { $subtract: [ { $size: '$likes' }, { $size: '$dislikes' } ] }
                 }
               }]
