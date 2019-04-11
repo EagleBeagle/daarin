@@ -10,9 +10,9 @@ module.exports = {
       postQuery: null,
       userQuery: null,
       commentQuery: null,
-      commentIDs: [],
+      commentIDs: new Set(),
       replyQuery: null,
-      replyIDs: [],
+      replyIDs: new Set(),
       popupQuery: null,
       errorData: null
     }
@@ -47,29 +47,43 @@ module.exports = {
     }
   },
 
-  buildAndSetConnectionQuery (type, sseId, data, flush) {
+  async buildAndSetConnectionQuery (type, sseId, data) {
     if (connections[sseId]) {
+      let query
       switch (type) {
         case 'comment':
-          if (flush) {
-            console.log('flusholunk')
-            connections[sseId].commentIDs = []
-            console.log(connections[sseId].commentIDs)
-          }
           data.forEach((comment) => {
-            connections[sseId].commentIDs.push(comment._id)
+            connections[sseId].commentIDs.add(comment._id)
           })
-          let query = Comment
+          query = Comment
             .find({
-              '_id': { $in: connections[sseId].commentIDs }
+              '_id': { $in: Array.from(connections[sseId].commentIDs) }
             })
-            .populate('createdBy', 'username')
           this.setConnectionQuery(type, sseId, query)
           break
         case 'reply':
-          if (flush) {
-            connections[sseId].commentIDs = []
-          }
+          data.forEach((reply) => {
+            connections[sseId].replyIDs.add(reply._id)
+          })
+          query = Comment
+            .find({
+              '_id': { $in: Array.from(connections[sseId].replyIDs) }
+            })
+          this.setConnectionQuery(type, sseId, query)
+          break
+        default:
+      }
+    }
+  },
+
+  flushQuery (type, sseId) {
+    if (connections[sseId]) {
+      switch (type) {
+        case 'comment':
+          connections[sseId].commentIDs.clear()
+          break
+        case 'reply':
+          connections[sseId].replyIDs.clear()
           break
         default:
       }

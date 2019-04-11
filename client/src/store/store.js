@@ -16,7 +16,12 @@ export default new Vuex.Store({
     isUserLoggedIn: false,
     closeComments: false,
     eventSource: null,
-    eventSourceChanged: false
+    eventSourceChanged: false,
+    replyStreamCb: null,
+    replyStreamExists: false,
+    replyStreamFlag: false,
+    replyStreamData: null,
+    localReply: null
   },
   mutations: {
     setToken (state, token) {
@@ -40,6 +45,21 @@ export default new Vuex.Store({
     },
     setEventSourceChanged (state) {
       state.eventSourceChanged = !state.eventSourceChanged
+    },
+    setReplyStreamCb (state, replyStreamCb) {
+      state.replyStreamCb = replyStreamCb
+    },
+    setReplyStreamExists (state, replyStreamExists) {
+      state.replyStreamExists = replyStreamExists
+    },
+    alternateReplyStreamFlag (state) {
+      state.replyStreamFlag = !state.replyStreamFlag
+    },
+    setReplyStreamData (state, data) {
+      state.replyStreamData = data
+    },
+    setLocalReply (state, reply) {
+      state.localReply = reply
     }
   },
   actions: {
@@ -72,6 +92,27 @@ export default new Vuex.Store({
     async closeEventSource ({commit}) {
       await this.state.eventSource.close()
       commit('closeEventSource')
+    },
+    async addReplyListener ({commit}) {
+      if (this.state.user) {
+        let replyStreamCb = (event) => {
+          let data = JSON.parse(event.data)
+          commit('alternateReplyStreamFlag')
+          commit('setReplyStreamData', data)
+        }
+        commit('setReplyStreamCb', replyStreamCb)
+        this.state.eventSource.addEventListener('reply', replyStreamCb)
+        commit('setReplyStreamExists', true)
+      }
+    },
+    removeReplyListener ({commit}) {
+      if (this.state.replyStreamExists) {
+        this.state.eventSource.removeEventListener('reply', this.state.replyStreamCb)
+      }
+      commit('setReplyStreamExists', null)
+    },
+    setLocalReply ({commit}, reply) {
+      commit('setLocalReply', reply)
     }
   }
 })

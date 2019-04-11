@@ -13,6 +13,7 @@
             <div
               id="commentBody"
               class="body-1 light-blue accent-3 white--text pa-2 pl-3 ma-0">
+              <span v-if="comment.replyUsername" class="body-1 font-weight-bold">{{ comment.replyUsername[0] }}</span>
               {{ comment.text }}
             </div>
           </v-flex>
@@ -51,7 +52,17 @@
               class="grey--text"
               style="cursor: pointer"
               @click="showingReplies = !showingReplies">
-              see {{ comment.replyCount }} replies
+                <span v-if="!showingReplies">
+                  <span v-if="comment.replyCount > 1">
+                  see {{ comment.replyCount }} replies
+                  </span>
+                  <span v-else>
+                    see {{ comment.replyCount }} reply
+                  </span>
+                </span>
+                <span v-else>
+                  hide replies
+                </span>
               </span>
             </v-flex>
             <v-flex xs3>
@@ -101,7 +112,7 @@
     </transition>
     <transition name="commentSlide">
       <div v-if="showingReplies">
-        <ReplyContainer :postId="comment.to" :replyTo="comment._id"/>
+        <ReplyContainer :postId="comment.to" :replyTo="comment"/>
         <v-divider class="mx-5 my-2"/>
       </div>
     </transition>
@@ -170,14 +181,27 @@ export default {
   methods: {
     async createReply () {
       try {
-        await CommentService.createComment(this.comment.to, {
-          text: this.replyText,
-          replyTo: this.comment._id
+        let replyTo
+        let text = this.replyText // hogy ne változzon a textfieldben
+        if (this.comment.replyTo) {
+          replyTo = this.comment.replyTo
+          text = `@${this.comment.createdBy.username} ${this.replyText}`
+        } else {
+          replyTo = this.comment._id
+        }
+        let response = await CommentService.createComment(this.comment.to, {
+          text: text,
+          replyTo: replyTo
         })
         this.replyText = ''
         this.replying = !this.replying
-        this.comment.replyCount += 1
-        this.locallyReplied = true
+        if (!this.comment.replyTo) {
+          this.comment.replyCount += 1
+          this.locallyReplied = true
+        }
+        let reply = response.data.comment
+        console.log(reply)
+        this.$store.dispatch('setLocalReply', reply)
       } catch (error) {
         console.log('BAJ VAN: ' + error)
       }

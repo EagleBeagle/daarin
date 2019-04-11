@@ -1,38 +1,190 @@
 <template>
-  <v-container v-if="comments && comments.length" class="pa-0 pl-5 ma-0">
-    <div v-bar id="vb">
-      <div v-for="comment in comments" :key="comment.id">
-        <PostComment :comment="comment" />
-      </div>
+  <v-container class="pa-0 ma-0">
+    <v-container v-if="replies && replies.length" class="pa-0 pl-5 ma-0">
+        <div v-for="reply in replies" :key="reply.id">
+          <PostComment :comment="reply"/>
+        </div>
+    </v-container>
+    <div
+      v-if="isMoreAvailable"
+      class="grey--text subheading py-1"
+      style="cursor: pointer"
+      @click="getNewerReplies()">
+      see more replies
     </div>
   </v-container>
 </template>
 
 <script>
 import CommentService from '@/services/CommentService'
+import {mapState} from 'vuex'
 export default {
   name: 'replyContainer',
-  data () {
-    return {
-      comments: null
-    }
-  },
   props: [
     'postId',
     'replyTo'
   ],
+  data () {
+    return {
+      replies: null,
+      replyStreamCb: null,
+      replyStreamEvent: null,
+      lastLoadedReply: null,
+      isMoreAvailable: false,
+      locallyAddedReplies: []
+    }
+  },
+  computed: {
+    ...mapState([
+      'user',
+      'eventSource',
+      'replyStreamExists',
+      'replyStreamData',
+      'localReply'
+    ])
+  },
+  watch: {
+    replyStreamData (data) {
+      if (this.replies) {
+        let streamedReplies = JSON.parse(JSON.stringify(data))
+        streamedReplies.forEach((streamedReply) => {
+          let loadedReply = this.replies.find(loadedReply => loadedReply._id === streamedReply._id)
+          if (loadedReply) {
+            loadedReply.likes = streamedReply.likes
+            loadedReply.dislikes = streamedReply.dislikes
+            loadedReply.sinceCreated = this.timeDifference(streamedReply.createdAt)
+          }
+        })
+        console.log(this.replyTo.replyCount)
+        console.log(this.replies.length)
+        if (this.replyTo.replyCount > this.replies.length) {
+          this.isMoreAvailable = true
+        }
+        console.log(streamedReplies)
+      }
+      /* this.replies.forEach((reply) => {
+        let streamedReply = streamedReplies.find(streamedReply => streamedReply._id === reply._id)
+        if (streamedReply) {
+          reply.likes = streamedReply.likes
+          reply.dislikes = streamedReply.dislikes
+          reply.sinceCreated = this.timeDifference(streamedReply.createdAt)
+        } else if (streamedReply.replyTo === this.post_id) {
+          this.isMoreAvailable = true
+        }
+      })
+      streamedReplies. */
+    },
+    localReply (reply) {
+      if (reply && reply.replyTo === this.replyTo._id) {
+        console.log(reply)
+        let localReply = JSON.parse(JSON.stringify(reply))
+        localReply.createdBy = {
+          username: this.user.username
+        }
+        localReply.sinceCreated = this.timeDifference(localReply.createdAt)
+        let re = new RegExp('^@\\w+')
+        let match = localReply.text.match(re)
+        if (match) {
+          localReply.text = localReply.text.replace(match, '')
+          localReply.replyUsername = match
+        }
+        this.locallyAddedReplies.push(localReply._id)
+        this.replies = [...this.replies, localReply]
+        console.log(this.replies)
+      }
+    }
+  },
   async mounted () {
     await this.getReplies()
+    await this.addSSEListeners()
   },
   methods: {
+    async addSSEListeners () {
+      console.log(this.replyStreamExists)
+      if (!this.replyStreamExists) {
+        console.log('addolunk')
+        await this.$store.dispatch('addReplyListener')
+      }
+      /* if (this.user) {
+        this.replyStreamCb = (event) => {
+          let streamedReplies = JSON.parse(event.data)
+          streamedReplies.forEach((reply) => {
+            reply.sinceCreated = this.timeDifference(reply.createdAt)
+          })
+          this.replies.forEach((reply) => {
+            let streamedReply = streamedReplies.find(streamedReply => streamedReply._id === reply._id)
+            if (streamedReply) {
+              reply.likes = streamedReply.likes
+              reply.dislikes = streamedReply.dislikes
+              reply.sinceCreated = this.timeDifference(streamedReply.createdAt)
+            }
+          })
+          console.log(streamedReplies)
+        }
+        this.replyStreamEvent = 'reply'
+        this.eventSource.addEventListener(this.replyStreamEvent, this.replyStreamCb)
+      } */
+    },
     async getReplies () {
       try {
         let response
-        response = await CommentService.getRepliesOfComment(this.postId, this.replyTo)
-        this.comments = response.data
-        this.comments.forEach((comment) => {
-          comment.sinceCreated = this.timeDifference(comment.createdAt)
+        response = await CommentService.getRepliesOfComment({
+          postId: this.postId,
+          commentId: this.replyTo._id
         })
+        this.replies = response.data
+
+        if (this.replyTo.replyCount > this.replies.length) {
+          this.isMoreAvailable = true
+        }
+
+        if (this.replies.length) {
+          this.replies.forEach((reply) => {
+            reply.sinceCreated = this.timeDifference(reply.createdAt)
+            let re = new RegExp('^@\\w+')
+            let match = reply.text.match(re)
+            if (match) {
+              reply.text = reply.text.replace(match, '')
+              reply.replyUsername = match
+            }
+            /* reply.text = reply.text.replace(re, (match) => {
+              reply.replyUsername = match
+              console.log(reply.replyUsername)
+              return ''
+            })
+            console.log('REPLYTEXT: ' + reply.text) */
+          })
+          this.lastLoadedReply = this.replies[this.replies.length - 1]
+        }
+      } catch (error) {
+        console.log('BAJ VAN: ' + error)
+      }
+    },
+    async getNewerReplies () {
+      try {
+        let response
+        response = await CommentService.getRepliesOfComment({
+          postId: this.postId,
+          commentId: this.replyTo._id,
+          createdAt: this.lastLoadedReply.createdAt
+        })
+        let newReplies = response.data
+
+        newReplies = newReplies.filter(reply => !this.locallyAddedReplies.includes(reply._id))
+        newReplies.forEach((reply, index) => {
+          reply.sinceCreated = this.timeDifference(reply.createdAt)
+          let re = new RegExp('^@\\w+')
+          let match = reply.text.match(re)
+          if (match) {
+            reply.text = reply.text.replace(match, '')
+            reply.replyUsername = match
+          }
+        })
+        if (newReplies[0]) {
+          this.lastLoadedReply = newReplies[newReplies.length - 1]
+        }
+        this.replies = [...this.replies, ...newReplies]
+        this.isMoreAvailable = false
       } catch (error) {
         console.log('BAJ VAN: ' + error)
       }

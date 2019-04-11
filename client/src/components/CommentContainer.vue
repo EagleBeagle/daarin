@@ -4,37 +4,49 @@
       <v-divider/>
       <v-layout my-2 py-1>
         <v-flex xs6>
-          <div class="title blue--text">
+          <div
+            style="cursor: pointer"
+            @click="relevantShowed = false"
+            :class="relevantShowed ? 'title grey--text' : 'title blue--text'">
             Newest
           </div>
         </v-flex>
         <v-divider vertical/>
         <v-flex xs6>
-          <div class="title">
+          <div
+            style="cursor: pointer"
+            @click="relevantShowed = true"
+            :class="relevantShowed ? 'title blue--text' : 'title grey--text'">
             Relevant
           </div>
         </v-flex>
       </v-layout>
       <v-divider class="pb-0"/>
-      <div v-bar id="vb">
-        <v-container pa-0 ma-0 class="commentContainer" :id="postId + '-comments'">
+        <v-container v-if="visible" pa-0 ma-0 class="commentContainer" :id="postId + '-comments'">
           <v-progress-circular
-            v-if="loadingTop"
+            v-if="loadingTop && !loadingWhenVisible"
             class="pb-4 pt-5"
             indeterminate
             color="light-blue accent-2">
           </v-progress-circular>
-          <div v-for="comment in comments" :key="comment.id">
+          <v-progress-circular
+            v-if="loadingWhenVisible"
+            class="pb-4 pt-5"
+            indeterminate
+            color="light-blue accent-2">
+          </v-progress-circular>
+          <div v-if="comments != 'empty'" v-for="comment in comments" :key="comment.id">
             <PostComment :comment="comment" />
           </div>
           <v-progress-circular
             class="pb-3 pt-5"
             indeterminate
             color="light-blue accent-2"
-            v-show="loadingBottom">
+            v-if="loadingBottom">
           </v-progress-circular>
         </v-container>
-      </div>
+        <v-container v-else :style="commentContainerHeight" pa-0 ma-0>
+        </v-container>
       <v-divider class="pa-0 ma-0"/>
       <v-layout v-if="isUserLoggedIn" xs12 pa-0 ma-0 pr-3 row wrap>
         <v-flex pa-0 pb-1 ma-0 mb-1 xs11>
@@ -60,7 +72,13 @@
     </v-container>
     <v-container v-else class="pa-0 ma-0">
       <v-divider/>
-      <div class="body-1 py-4 grey--text">NO COMMENTS YET</div>
+        <v-progress-circular
+          class="py-5"
+          indeterminate
+          color="light-blue accent-2"
+          v-if="loadingInitial">
+        </v-progress-circular>
+      <div class="body-1 py-4 grey--text" v-if="!loadingInitial">NO COMMENTS YET</div>
       <v-divider class="pa-0 ma-0"/>
       <v-layout v-if="isUserLoggedIn" xs12 pa-0 ma-0 pr-3 row wrap>
         <v-flex pa-0 pb-1 ma-0 mb-1 xs11>
@@ -100,15 +118,22 @@ export default {
       commentText: null,
       comments: null,
       firstTimeEntered: true,
+      firstTimeLeft: true,
       commentStreamCb: null,
       commentStreamEvent: null,
       firstLoadedComment: null,
       lastLoadedComment: null,
+      loadingInitial: true,
       loadingTop: false,
       loadingBottom: false,
+      loadingWhenVisible: false,
       lastFetchTime: null,
       lastScrollPosition: null,
-      currentScrollPosition: null
+      currentScrollPosition: null,
+      locallyAddedComments: [],
+      visible: true,
+      commentContainerHeight: null,
+      relevantShowed: true
     }
   },
   computed: {
@@ -124,23 +149,26 @@ export default {
       if (this.commentStreamCb) {
         this.eventSource.removeEventListener(this.commentStreamEvent, this.commentStreamCb)
       }
+    },
+    async relevantShowed () {
+      await this.getComments()
     }
   },
   beforeDestroy () {
     if (this.commentStreamCb) {
       this.eventSource.removeEventListener(this.commentStreamEvent, this.commentStreamCb)
     }
+    this.$store.dispatch('removeReplyListener')
   },
   async mounted () {
     await this.getComments()
-    this.loadingInitial = false
     await this.addSSEListeners()
     await this.scroll()
   },
   methods: {
     async addSSEListeners () {
       if (this.user) {
-        await this.$store.dispatch('closeComments')
+        await this.$store.dispatch('closeComments') // ??
         this.commentStreamCb = (event) => {
           let streamedComments = JSON.parse(event.data)
           streamedComments.forEach((comment) => {
@@ -162,11 +190,21 @@ export default {
       }
     },
     async createComment () { // TODO: error handling
+      let commentContainer = document.getElementById(this.postId + '-comments')
       try {
-        await CommentService.createComment(this.postId, {
+        let response = await CommentService.createComment(this.postId, {
           text: this.commentText
         })
+        let comment = response.data.comment
+        comment.createdBy = {
+          username: this.user.username
+        }
+        comment.sinceCreated = this.timeDifference(comment.createdAt)
+        this.comments = [comment, ...this.comments]
+        this.locallyAddedComments.push(comment._id)
+        console.log(comment.createdAt)
         this.commentText = ''
+        if (this.comments.length > 5) commentContainer.scrollTo(0, 0)
         // await this.getComments() SSE-vel nem kell
       } catch (error) {
         console.log('BAJ VAN: ' + error)
@@ -174,21 +212,26 @@ export default {
     },
     async getComments () {
       try {
-        console.log('called')
+        this.loadingInitial = true
         let response
         response = await CommentService.getCommentsOfPost({
-          postId: this.postId
+          postId: this.postId,
+          sortBy: 'date'
         })
         this.comments = response.data
         this.comments.forEach((comment) => {
           comment.sinceCreated = this.timeDifference(comment.createdAt)
         })
-        this.firstLoadedComment = this.comments[0]
-        this.lastLoadedComment = this.comments[this.comments.length - 1]
-        console.log('LEGUJABB: ' + this.firstLoadedComment.createdAt)
-        console.log('LEGREGEBBI: ' + this.lastLoadedComment.createdAt)
+        if (this.comments.length) {
+          this.firstLoadedComment = this.comments[0]
+          this.lastLoadedComment = this.comments[this.comments.length - 1]
+          console.log('LEGUJABB: ' + this.firstLoadedComment.createdAt)
+          console.log('LEGREGEBBI: ' + this.lastLoadedComment.createdAt)
+        }
+        this.loadingInitial = false
       } catch (error) {
-        console.log('BAJ VAN: ' + error)
+        console.log('BAJ VAN:' + error)
+        this.loadingInitial = false
       }
     },
     async getHigherComments () {
@@ -196,15 +239,18 @@ export default {
         let response
         response = await CommentService.getCommentsOfPost({
           postId: this.postId,
-          newest: this.firstLoadedComment,
-          oldest: this.lastLoadedComment,
-          get: 'newer'
+          newest: this.firstLoadedComment
         })
         let newComments = response.data
         if (newComments[0]) {
           this.firstLoadedComment = newComments[0]
         }
-        newComments.forEach((comment) => {
+        newComments.forEach((comment, index) => {
+          this.locallyAddedComments.forEach((localCommentId) => {
+            if (localCommentId === comment._id) {
+              newComments.splice(index, 1)
+            }
+          })
           comment.sinceCreated = this.timeDifference(comment.createdAt)
         })
         this.comments = [...newComments, ...this.comments]
@@ -217,16 +263,19 @@ export default {
         let response
         response = await CommentService.getCommentsOfPost({
           postId: this.postId,
-          newest: this.firstLoadedComment,
-          oldest: this.lastLoadedComment,
-          get: 'older'
+          oldest: this.lastLoadedComment
         })
         let newComments = response.data
         // console.log('RÉGEBBI CUCLIK: ' + response)
         if (newComments.length) {
           this.lastLoadedComment = newComments[newComments.length - 1]
         }
-        newComments.forEach((comment) => {
+        newComments.forEach((comment, index) => { // exp
+          this.locallyAddedComments.forEach((localCommentId) => {
+            if (localCommentId === comment._id) {
+              newComments.splice(index, 1)
+            }
+          })
           comment.sinceCreated = this.timeDifference(comment.createdAt)
         })
         this.comments = [...this.comments, ...newComments]
@@ -236,15 +285,29 @@ export default {
     },
     async viewHandler (e) {
       if (e.type === 'enter') {
+        this.visible = true
         if (this.firstTimeEntered) {
           this.firstTimeEntered = !this.firstTimeEntered
         } else {
+          this.loadingWhenVisible = true
           await this.getComments()
           await this.addSSEListeners()
+          this.loadingWhenVisible = false
         }
       } else if (e.type === 'exit') {
-        if (this.commentStreamCb) {
-          this.eventSource.removeEventListener(this.commentStreamEvent, this.commentStreamCb)
+        if (this.firstTimeLeft) {
+          this.firstTimeLeft = !this.firstTimeLeft
+        } else {
+          if (this.commentStreamCb) {
+            this.eventSource.removeEventListener(this.commentStreamEvent, this.commentStreamCb)
+          }
+          this.$store.dispatch('removeReplyListener')
+          let commentContainer = document.getElementById(this.postId + '-comments')
+          if (commentContainer) {
+            this.commentContainerHeight = `height: ${commentContainer.clientHeight}px`
+          }
+          this.visible = false
+          this.comments = 'empty'
         }
       }
       // console.log(e.type) // 'enter', 'exit', 'progress'
@@ -332,7 +395,9 @@ export default {
 <style scoped>
 .commentContainer {
   overflow-y: auto;
-  max-height: 500px;
+  height: 500px;
 }
+
+.commentContainer::-webkit-scrollbar {display:none;}
 
 </style>

@@ -43,7 +43,6 @@ router.beforeEach(async (to, from, next) => {
   if (!(store.state.eventSource instanceof EventSource)) {
     await store.dispatch('updateEventSource')
   }
-
   let restrictedPages = []
   if (store.state.user) {
     console.log('bejelentkezve')

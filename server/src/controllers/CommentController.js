@@ -1,3 +1,4 @@
+const mongoose = require('mongoose')
 const Comment = require('../models/Comment.js')
 // const Post = require('../models/Post.js')
 const SSEConnectionHandler = require('../utils/SSEConnectionHandler.js')
@@ -11,66 +12,113 @@ module.exports = {
     let oldestLoaded = req.query.oldest
     let highestLoaded = req.query.highest
     let lowestLoaded = req.query.lowest
-    let get = req.query.get
+    let sortBy = req.query.sortBy
     try {
-      if (newestLoaded && oldestLoaded && get) {
-        if (get === 'newer') {
-          comments = await Comment
-            .find({
-              'to': postId,
-              'replyTo': null,
-              'createdAt': { $gt: newestLoaded }
-            })
-            .populate('createdBy', 'username')
-            .sort('-createdAt')
-            .limit(10)
-          let lastCommentToBeLoaded = comments[0]
-          if (lastCommentToBeLoaded) {
-            SSEConnectionHandler.buildAndSetConnectionQuery('comment', sseId, comments, false)
-          }
-          console.log(comments)
-          setTimeout(() => {
-            res.status(200).send(comments)
-          }, 2000)
-        } else if (get === 'older') {
-          comments = await Comment
-            .find({
-              'to': postId,
-              'replyTo': null,
-              'createdAt': { $lt: oldestLoaded }
-            })
-            .populate('createdBy', 'username')
-            .sort('-createdAt')
-            .limit(10)
-          let lastCommentToBeLoaded = comments[Object.keys(comments).length - 1]
-          if (lastCommentToBeLoaded) {
-            SSEConnectionHandler.buildAndSetConnectionQuery('comment', sseId, comments, false)
-          }
-          setTimeout(() => {
-            res.status(200).send(comments)
-          }, 2000)
-        } else {
-          res.status(400).send({
-            error: 'Invalid query format.'
-          })
-        }
-      } else if (newestLoaded && oldestLoaded && get) { // todo
-        res.status(200).send('todo')
-      } else if (newestLoaded || oldestLoaded || highestLoaded || lowestLoaded || get) {
-        res.status(400).send({
-          error: 'Invalid query format.'
-        })
-      } else {
+      if (newestLoaded && !oldestLoaded && !lowestLoaded && !highestLoaded) {
         comments = await Comment
           .find({
             'to': postId,
-            'replyTo': null
+            'replyTo': null,
+            'createdAt': { $gt: newestLoaded }
           })
           .populate('createdBy', 'username')
           .sort('-createdAt')
           .limit(10)
-        SSEConnectionHandler.buildAndSetConnectionQuery('comment', sseId, comments, true)
+        let lastCommentToBeLoaded = comments[0]
+        if (lastCommentToBeLoaded) {
+          await SSEConnectionHandler.buildAndSetConnectionQuery('comment', sseId, comments)
+        }
+        console.log(comments)
+        setTimeout(() => {
+          res.status(200).send(comments)
+        }, 2000)
+      } else if (oldestLoaded && !newestLoaded && !lowestLoaded && !highestLoaded) {
+        comments = await Comment
+          .find({
+            'to': postId,
+            'replyTo': null,
+            'createdAt': { $lt: oldestLoaded }
+          })
+          .populate('createdBy', 'username')
+          .sort('-createdAt')
+          .limit(10)
+        let lastCommentToBeLoaded = comments[Object.keys(comments).length - 1]
+        if (lastCommentToBeLoaded) {
+          await SSEConnectionHandler.buildAndSetConnectionQuery('comment', sseId, comments)
+        }
+        setTimeout(() => {
+          res.status(200).send(comments)
+        }, 2000)
+      } else if (highestLoaded && !newestLoaded && !oldestLoaded && !lowestLoaded) { // todo
+        comments = await Comment // todo
+          .aggregate(
+            [{
+              $project: {
+                replyCount: 1,
+                text: 1,
+                to: 1,
+                createdBy: 1,
+                createdAt: 1,
+                likes: 1,
+                dislikes: 1,
+                score: { $substract: [ { $size: '$likes' }, { $size: '$dislikes' } ] }
+              }
+            }]
+          )
+          .sort('-score')
+          .limit(10)
         res.status(200).send(comments)
+      } else if (lowestLoaded && !highestLoaded && !newestLoaded && !oldestLoaded) {
+        res.status(200).send('todo')
+      } else if (!oldestLoaded && !newestLoaded && !lowestLoaded && !highestLoaded && (sortBy === 'date' || sortBy === 'relevancy')) {
+        if (sortBy === 'date') {
+          comments = await Comment
+            .find({
+              'to': postId,
+              'replyTo': null
+            })
+            .populate('createdBy', 'username')
+            .sort('-createdAt')
+            .limit(10)
+          SSEConnectionHandler.flushQuery('comment', sseId)
+          SSEConnectionHandler.flushQuery('reply', sseId)
+          await SSEConnectionHandler.buildAndSetConnectionQuery('comment', sseId, comments)
+          setTimeout(function () {
+            res.status(200).send(comments)
+          }, 2000)
+        } else {
+          comments = await Comment
+            .aggregate([
+              {
+                $match: {
+                  to: mongoose.Types.ObjectId(postId),
+                  replyTo: null
+                }
+              },
+              {
+                $project: {
+                  replyCount: 1,
+                  text: 1,
+                  to: 1,
+                  createdBy: 1,
+                  createdAt: 1,
+                  likes: 1,
+                  dislikes: 1,
+                  score: { $subtract: [ { $size: '$likes' }, { $size: '$dislikes' } ] }
+                }
+              }]
+            )
+            .sort('-score')
+            .limit(10)
+          SSEConnectionHandler.flushQuery('comment', sseId)
+          SSEConnectionHandler.flushQuery('reply', sseId)
+          await SSEConnectionHandler.buildAndSetConnectionQuery('comment', sseId, comments)
+          res.status(200).send(comments)
+        }
+      } else {
+        res.status(400).send({
+          error: 'Invalid query format.'
+        })
       }
     } catch (err) {
       console.log(err)
@@ -83,6 +131,7 @@ module.exports = {
   async createComment (req, res) {
     let postId = req.params.postId
     let replyTo = req.body.replyTo
+    let sseId = req.user ? req.user.sseId : null
     console.log('ENNEK VÁLASZOLUNK: ' + replyTo)
 
     try {
@@ -102,7 +151,8 @@ module.exports = {
             to: parent.to,
             replyTo: replyTo
           }
-          await Comment.create(newComment)
+          newComment = await Comment.create(newComment)
+          await SSEConnectionHandler.buildAndSetConnectionQuery('reply', sseId, [newComment])
           await Comment.findOneAndUpdate({ '_id': replyTo }, { $inc: { 'replyCount': 1 } })
           res.status(200).send({ comment: newComment })
         }
@@ -112,7 +162,8 @@ module.exports = {
           to: postId,
           createdBy: req.user._id
         }
-        await Comment.create(newComment)
+        newComment = await Comment.create(newComment)
+        await SSEConnectionHandler.buildAndSetConnectionQuery('comment', sseId, [newComment])
         res.status(201).send({ comment: newComment })
       }
     } catch (err) {
@@ -130,33 +181,31 @@ module.exports = {
   */
   async getRepliesOfComment (req, res) {
     let commentId = req.params.commentId
-    let oldestLoaded = req.query.oldest
+    let newestLoaded = req.query.newest
     let sseId = req.user ? req.user.sseId : null
     let replies
     try {
-      if (oldestLoaded) {
+      if (newestLoaded) {
         replies = await Comment
           .find({
             'replyTo': commentId,
-            'createdAt': { $lt: oldestLoaded }
+            'createdAt': { $gt: newestLoaded }
           })
           .populate('createdBy', 'username')
-          .sort('-createdAt')
+          .sort('createdAt')
           .limit(10)
         let lastReplyToBeLoaded = replies[Object.keys(replies).length - 1]
         if (lastReplyToBeLoaded) {
-          let sseQuery = Comment
-            .find({
-              'replyTo': commentId,
-              'createdAt': { $gte: lastReplyToBeLoaded.createdAt }
-            })
-          SSEConnectionHandler.setConnectionQuery('reply', sseId, sseQuery) // todo
+          await SSEConnectionHandler.buildAndSetConnectionQuery('reply', sseId, replies) // todo
         }
+        res.status(200).send(replies)
       } else {
         replies = await Comment
           .find({ 'replyTo': commentId })
           .populate('createdBy', 'username')
           .sort('createdAt')
+          .limit(10)
+        await SSEConnectionHandler.buildAndSetConnectionQuery('reply', sseId, replies) // todo
         res.status(200).send(replies)
       }
     } catch (err) {

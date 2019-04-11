@@ -161,6 +161,7 @@ export default {
       }
     },
     async showComments () {
+      this.$store.dispatch('removeReplyListener')
       if (!this.showingComments) {
         // await this.$store.dispatch('closeComments')
       }
