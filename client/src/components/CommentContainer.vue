@@ -1,6 +1,6 @@
 <template>
   <div v-view="viewHandler">
-    <v-container v-if="comments && comments.length" class="pa-0 ma-0">
+    <v-container v-if="(comments && comments.length) || commentsAvailable" class="pa-0 ma-0">
       <v-divider/>
       <v-layout my-2 py-1>
         <v-flex xs6>
@@ -29,12 +29,13 @@
             indeterminate
             color="light-blue accent-2">
           </v-progress-circular>
-          <v-progress-circular
-            v-if="loadingWhenVisible"
-            class="pb-4 pt-5"
-            indeterminate
-            color="light-blue accent-2">
-          </v-progress-circular>
+          <v-layout v-if="loadingWhenVisible" column justify-center align-center commentContainer>
+            <v-progress-circular
+              class="pb-4 pt-5"
+              indeterminate
+              color="light-blue accent-2">
+            </v-progress-circular>
+          </v-layout>
           <div v-if="comments != 'empty'" v-for="comment in comments" :key="comment.id">
             <PostComment :comment="comment" />
           </div>
@@ -42,7 +43,7 @@
             class="pb-3 pt-5"
             indeterminate
             color="light-blue accent-2"
-            v-if="loadingBottom">
+            v-if="loadingBottom && !loadingWhenVisible">
           </v-progress-circular>
         </v-container>
         <v-container v-else :style="commentContainerHeight" pa-0 ma-0>
@@ -72,13 +73,17 @@
     </v-container>
     <v-container v-else class="pa-0 ma-0">
       <v-divider/>
-        <v-progress-circular
+      <v-layout column justify-center emptyCommentContainer>
+        <div>
+          <v-progress-circular
           class="py-5"
           indeterminate
           color="light-blue accent-2"
           v-if="loadingInitial">
         </v-progress-circular>
-      <div class="body-1 py-4 grey--text" v-if="!loadingInitial">NO COMMENTS YET</div>
+        </div>
+        <div class="body-1 py-4 grey--text" v-if="!loadingInitial">NO COMMENTS YET</div>
+      </v-layout>
       <v-divider class="pa-0 ma-0"/>
       <v-layout v-if="isUserLoggedIn" xs12 pa-0 ma-0 pr-3 row wrap>
         <v-flex pa-0 pb-1 ma-0 mb-1 xs11>
@@ -117,6 +122,7 @@ export default {
     return {
       commentText: null,
       comments: null,
+      commentsAvailable: false,
       firstTimeEntered: true,
       firstTimeLeft: true,
       commentStreamCb: null,
@@ -151,6 +157,7 @@ export default {
       }
     },
     async relevantShowed () {
+      this.comments = []
       await this.getComments()
     }
   },
@@ -213,10 +220,12 @@ export default {
     async getComments () {
       try {
         this.loadingInitial = true
+        this.loadingWhenVisible = true
         let response
+        let sortCriteria = this.relevantShowed ? 'relevancy' : 'date'
         response = await CommentService.getCommentsOfPost({
           postId: this.postId,
-          sortBy: 'date'
+          sortBy: sortCriteria
         })
         this.comments = response.data
         this.comments.forEach((comment) => {
@@ -229,18 +238,30 @@ export default {
           console.log('LEGREGEBBI: ' + this.lastLoadedComment.createdAt)
         }
         this.loadingInitial = false
+        this.loadingWhenVisible = false
+        if (this.comments.length > 0) {
+          this.commentsAvailable = true
+        }
       } catch (error) {
         console.log('BAJ VAN:' + error)
         this.loadingInitial = false
+        this.loadingWhenVisible = false
       }
     },
     async getHigherComments () {
       try {
         let response
-        response = await CommentService.getCommentsOfPost({
-          postId: this.postId,
-          newest: this.firstLoadedComment
-        })
+        if (this.relevantShowed) {
+          response = await CommentService.getCommentsOfPost({
+            postId: this.postId,
+            highest: this.firstLoadedComment
+          })
+        } else {
+          response = await CommentService.getCommentsOfPost({
+            postId: this.postId,
+            newest: this.firstLoadedComment
+          })
+        }
         let newComments = response.data
         if (newComments[0]) {
           this.firstLoadedComment = newComments[0]
@@ -261,10 +282,17 @@ export default {
     async getLowerComments () {
       try {
         let response
-        response = await CommentService.getCommentsOfPost({
-          postId: this.postId,
-          oldest: this.lastLoadedComment
-        })
+        if (this.relevantShowed) {
+          response = await CommentService.getCommentsOfPost({
+            postId: this.postId,
+            lowest: this.lastLoadedComment
+          })
+        } else {
+          response = await CommentService.getCommentsOfPost({
+            postId: this.postId,
+            oldest: this.lastLoadedComment
+          })
+        }
         let newComments = response.data
         // console.log('RÉGEBBI CUCLIK: ' + response)
         if (newComments.length) {
@@ -323,6 +351,7 @@ export default {
       let commentContainer = document.getElementById(this.postId + '-comments')
       if (commentContainer) {
         let gotUpAfterUpdate = true
+        let gotDownAfterUpdate = true
         commentContainer.onscroll = async () => {
           let topOfWindow = commentContainer.scrollTop + commentContainer.clientHeight === commentContainer.offsetHeight
           let bottomOfWindow = commentContainer.scrollHeight - commentContainer.scrollTop === commentContainer.clientHeight
@@ -330,6 +359,11 @@ export default {
           if (topOfWindow && !gotUpAfterUpdate) {
             setTimeout(function () {
               gotUpAfterUpdate = true
+            }, 1000)
+          }
+          if (bottomOfWindow && !gotDownAfterUpdate) {
+            setTimeout(function () {
+              gotDownAfterUpdate = true
             }, 1000)
           }
           if (topOfWindow && !this.loadingTop && gotUpAfterUpdate) {
@@ -340,15 +374,20 @@ export default {
             let newCommentsLength = this.comments.length - commentsLength
             commentContainer.scrollTo(0, newCommentsLength * 89 + this.currentScrollPosition)
             gotUpAfterUpdate = false
-          } else if (bottomOfWindow && !this.loadingBottom && (!(this.currentScrollPosition < this.lastScrollPosition + 70 && this.currentScrollPosition > this.lastScrollPosition - 70) || !this.lastScrollPosition)) {
+          /* else if (bottomOfWindow && !this.loadingBottom && (!(this.currentScrollPosition < this.lastScrollPosition + 70 && this.currentScrollPosition > this.lastScrollPosition - 70) || !this.lastScrollPosition)) {
             this.loadingBottom = true
             await this.getLowerComments()
             this.loadingBottom = false
-            this.lastScrollPosition = this.currentScrollPosition
+            this.lastScrollPosition = this.currentScrollPosition */
+          } else if (bottomOfWindow && !this.loadingBottom && gotDownAfterUpdate) {
+            this.loadingBottom = true
+            await this.getLowerComments()
+            this.loadingBottom = false
+            gotDownAfterUpdate = false
           }
-          if (this.currentScrollPosition + 70 < this.lastScrollPosition) {
+          /* if (this.currentScrollPosition + 70 < this.lastScrollPosition) {
             this.lastScrollPosition = this.currentScrollPosition
-          }
+          } */
         }
       }
     },
@@ -396,6 +435,10 @@ export default {
 .commentContainer {
   overflow-y: auto;
   height: 500px;
+}
+
+.emptyCommentContainer {
+  height: 545px;
 }
 
 .commentContainer::-webkit-scrollbar {display:none;}

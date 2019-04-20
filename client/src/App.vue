@@ -27,9 +27,14 @@ export default {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-  margin-top: 60px;
+  margin-top: 20px;
   background-color:#ECEFF1;
 }
+
+body {
+  background-color:#ECEFF1;
+}
+body::-webkit-scrollbar {display:none;}
 
 .input-group--text-field input {
   border-bottom: 1px solid black;
@@ -38,5 +43,4 @@ export default {
 .v-btn__content {
   color: white;
 }
-
 </style>

@@ -49,20 +49,85 @@ module.exports = {
         setTimeout(() => {
           res.status(200).send(comments)
         }, 2000)
-      } else if (highestLoaded && !newestLoaded && !oldestLoaded && !lowestLoaded) { // todo
-        comments = await Comment // todo
-          .aggregate( // todo
-            [{
+      } else if (highestLoaded && newestLoaded && !oldestLoaded && !lowestLoaded) {
+        comments = await Comment
+          .aggregate([
+            {
               $addFields: {
-                score: { $substract: [ { $size: '$likes' }, { $size: '$dislikes' } ] }
+                score: { $subtract: [ { $size: '$likes' }, { $size: '$dislikes' } ] }
               }
-            }]
-          )
-          .sort('-score')
+            },
+            {
+              $match: {
+                $or: [
+                  {
+                    to: mongoose.Types.ObjectId(postId),
+                    replyTo: null,
+                    score: Number(highestLoaded),
+                    createdAt: { $gt: new Date(newestLoaded) }
+                  },
+                  {
+                    to: mongoose.Types.ObjectId(postId),
+                    replyTo: null,
+                    score: { $gt: Number(highestLoaded) }
+                  }
+                ]
+              }
+            }
+          ])
+          .sort({
+            'score': -1,
+            'createdAt': -1
+          })
           .limit(10)
-        res.status(200).send(comments)
-      } else if (lowestLoaded && !highestLoaded && !newestLoaded && !oldestLoaded) {
-        res.status(200).send('todo')
+        comments = await Comment.populate(comments, { path: 'createdBy', select: 'username' })
+        let lastCommentToBeLoaded = comments[0]
+        if (lastCommentToBeLoaded) {
+          await SSEConnectionHandler.buildAndSetConnectionQuery('comment', sseId, comments)
+        }
+        setTimeout(function () {
+          res.status(200).send(comments)
+        }, 1000)
+      } else if (lowestLoaded && oldestLoaded && !highestLoaded && !newestLoaded) {
+        console.log(new Date(oldestLoaded))
+        comments = await Comment
+          .aggregate([
+            {
+              $addFields: {
+                score: { $subtract: [ { $size: '$likes' }, { $size: '$dislikes' } ] }
+              }
+            },
+            {
+              $match: {
+                $or: [
+                  {
+                    to: mongoose.Types.ObjectId(postId),
+                    replyTo: null,
+                    score: Number(lowestLoaded),
+                    createdAt: { $lt: new Date(oldestLoaded) }
+                  },
+                  {
+                    to: mongoose.Types.ObjectId(postId),
+                    replyTo: null,
+                    score: { $lt: Number(lowestLoaded) }
+                  }
+                ]
+              }
+            }
+          ])
+          .sort({
+            'score': -1,
+            'createdAt': -1
+          })
+          .limit(10)
+        comments = await Comment.populate(comments, { path: 'createdBy', select: 'username' })
+        let lastCommentToBeLoaded = comments[0]
+        if (lastCommentToBeLoaded) {
+          await SSEConnectionHandler.buildAndSetConnectionQuery('comment', sseId, comments)
+        }
+        setTimeout(function () {
+          res.status(200).send(comments)
+        }, 1000)
       } else if (!oldestLoaded && !newestLoaded && !lowestLoaded && !highestLoaded && (sortBy === 'date' || sortBy === 'relevancy')) {
         if (sortBy === 'date') {
           comments = await Comment
@@ -76,9 +141,7 @@ module.exports = {
           SSEConnectionHandler.flushQuery('comment', sseId)
           SSEConnectionHandler.flushQuery('reply', sseId)
           await SSEConnectionHandler.buildAndSetConnectionQuery('comment', sseId, comments)
-          setTimeout(function () {
-            res.status(200).send(comments)
-          }, 2000)
+          res.status(200).send(comments)
         } else {
           comments = await Comment
             .aggregate([
@@ -94,12 +157,18 @@ module.exports = {
                 }
               }]
             )
-            .sort('-score')
+            .sort({
+              'score': -1,
+              'createdAt': -1
+            })
             .limit(10)
+          comments = await Comment.populate(comments, { path: 'createdBy', select: 'username' })
           SSEConnectionHandler.flushQuery('comment', sseId)
           SSEConnectionHandler.flushQuery('reply', sseId)
           await SSEConnectionHandler.buildAndSetConnectionQuery('comment', sseId, comments)
-          res.status(200).send(comments)
+          setTimeout(function () {
+            res.status(200).send(comments)
+          }, 1000)
         }
       } else {
         res.status(400).send({

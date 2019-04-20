@@ -11,9 +11,13 @@ export default {
       let oldestCreated = querystring.stringify({ oldest: commentData.oldest.createdAt })
       query = `?${oldestCreated}`
     } else if (commentData.highest) {
-      console.log('todo')
+      let highestScored = querystring.stringify({ highest: commentData.highest.likes.length - commentData.highest.dislikes.length })
+      let newestCreated = querystring.stringify({ newest: commentData.highest.createdAt })
+      query = `?${highestScored}&${newestCreated}`
     } else if (commentData.lowest) {
-      console.log('todo')
+      let lowestScored = querystring.stringify({ lowest: commentData.lowest.likes.length - commentData.lowest.dislikes.length })
+      let oldestCreated = querystring.stringify({ oldest: commentData.lowest.createdAt })
+      query = `?${lowestScored}&${oldestCreated}`
     } else {
       let sortBy = querystring.stringify({ sortBy: commentData.sortBy })
       query = `?${sortBy}`

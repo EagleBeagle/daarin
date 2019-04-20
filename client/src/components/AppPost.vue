@@ -10,7 +10,7 @@
         :src="post.url"
         width="100%"
         id="postImage"
-        @click="$router.push({ name: 'postPage', params: { postId: post._id } })"/>
+        @click="goToPostPage"/>
       <v-divider/>
       <v-card-actions class="px-3 py-0">
         <v-layout justify-space-around class="py-1 px-0">
@@ -170,6 +170,11 @@ export default {
         this.$vuetify.goTo(window.scrollY, { offset: -700, easing: 'easeOutCubic' })
         console.log(window.scrollY)
       } */
+    },
+    goToPostPage () {
+      // document.getElementsByTagName('html')[0].style.overflow = 'hidden'
+      this.$router.push({ name: 'postPage', params: { postId: this.post._id } })
+      this.$emit('filter-post', this.post)
     }
   },
   components: {
@@ -178,7 +183,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style>
 .commentSlide-enter-active {
    transition-duration: 0.5s;
    transition-timing-function: ease-in;

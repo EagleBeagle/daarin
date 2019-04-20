@@ -11,6 +11,7 @@ import { sync } from 'vuex-router-sync'
 import store from '@/store/store'
 import 'vuetify/dist/vuetify.min.css'
 import Panel from '@/components/globals/Panel'
+import vue2Animate from 'vue2-animate/dist/vue2-animate.min.css'
 
 Vue.config.productionTip = false
 
@@ -18,6 +19,7 @@ Vue.use(Vuetify)
 Vue.use(Vuebar)
 Vue.use(Overdrive)
 Vue.use(checkView)
+Vue.use(vue2Animate)
 
 Vue.component('panel', Panel)
 

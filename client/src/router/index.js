@@ -4,7 +4,7 @@ import Home from '@/components/HomePage'
 import Register from '@/components/RegisterPage'
 import Login from '@/components/LoginPage'
 import store from '@/store/store'
-import PostPage from '@/components/PostPage'
+// import PostPage from '@/components/PostPage'
 
 Vue.use(Router)
 
@@ -28,7 +28,7 @@ const router = new Router({
     {
       path: '/post/:postId',
       name: 'postPage',
-      component: PostPage
+      component: Home
     },
     {
       path: '*',

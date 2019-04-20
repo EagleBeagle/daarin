@@ -50,6 +50,7 @@ module.exports = {
     try {
       let postId = req.params.postId
       let post = await Post.find({ '_id': postId })
+        .populate('createdBy', 'username')
       if (!post.length) {
         res.status(400).send({
           error: "the given post doesn't exist"

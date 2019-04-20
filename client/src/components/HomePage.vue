@@ -7,7 +7,8 @@
     <PostFeed
       :posts="posts"
       :isNewPostAvailable="isNewPostAvailable"
-      @reachedBottom="loadMorePosts"/>
+      @reachedBottom="loadMorePosts"
+      @filter-post="filterPost"/>
     </v-flex>
     <v-flex md3 lg4 hidden-sm-and-down>
       <div></div>
@@ -25,7 +26,11 @@ export default {
       posts: null,
       postStreamCb: null,
       postStreamEvent: null, // később több is lehet belőle
-      isNewPostAvailable: false // TODO
+      isNewPostAvailable: false, // TODO
+      hiddenPosts: [],
+      filteredPost: null,
+      filteredPostIndex: null,
+      savedScrollPos: null
     }
   },
   beforeDestroy () {
@@ -43,15 +48,48 @@ export default {
     async eventSourceChanged (val, oldVal) {
       console.log('EVENT SOURCE VÁLTOZOTT, reloadolunk')
       await this.addSSEListeners()
+    },
+    '$route' (to, from) {
+      console.log(from)
+      if (from.name === 'postPage') {
+        this.hiddenPosts.splice(this.filteredPostIndex, 0, this.posts[0])
+        // let copy = JSON.parse(JSON.stringify(this.hiddenPosts))
+        // let filteredPost = this.posts[0] // ?
+        // let upper = copy.slice(0, this.filteredPostIndex)
+        // let lower = copy.slice(this.filteredPostIndex, copy.length)
+        // this.posts = [...this.posts, ...this.hiddenPosts]
+        // this.posts = [...this.posts, ...lower]
+        this.posts = JSON.parse(JSON.stringify(this.hiddenPosts))
+        this.hiddenPosts = []
+      } else if (from === 'home' && to === 'postPage') {
+
+      }
     }
   },
   async mounted () {
     // await this.$store.dispatch('setEventSource')
     // this.$store.dispatch('unsetEventSourceChanged')
+    // document.getElementsByTagName('html')[0].style.overflow = 'auto'
+    // let result
+    // if (!this.posts) {
     let result = await PostService.index()
+    // }
     await this.addSSEListeners()
+    // if (!this.posts) {
     this.posts = result.data
+    // }
   },
+  /* beforeRouteEnter (to, from, next) {
+    next(vm => {
+      console.log('ASDSADASDASDSADSADASASAS')
+      console.log(vm.posts)
+      if (from.name === 'postPage') {
+        vm.$root.hiddenPosts.splice(vm.$root.filteredPostIndex, 0, vm.$root.posts[0])
+      }
+      vm.$root.posts = JSON.parse(JSON.stringify(vm.$root.hiddenPosts))
+      vm.$root.hiddenPosts = []
+    })
+  }, */
   methods: {
     async addSSEListeners () {
       // await this.$store.dispatch('setEventSource')
@@ -93,6 +131,25 @@ export default {
         }
         console.log(this.posts)
       }
+    },
+    filterPost (post) {
+      this.filteredPost = post
+      let postElements = document.getElementsByClassName('post')
+      for (let element of postElements) {
+        element.style.width = element.clientWidth + 'px'
+      }
+      this.hiddenPosts = JSON.parse(JSON.stringify(this.posts))
+      this.posts.forEach((localPost, index) => {
+        if (localPost._id === post._id) {
+          this.filteredPostIndex = index
+        }
+      })
+      this.hiddenPosts.splice(this.filteredPostIndex, 1)
+      this.savedScrollPos = document.documentElement.scrollTop
+      this.posts = []
+      this.posts.push(post)
+      // document.getElementsByTagName('html')[0].style.overflow = 'auto'
+      // postElement.style.width = 'inherit'
     }
   },
   components: {

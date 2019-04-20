@@ -1,10 +1,11 @@
 <template>
   <v-container xs12>
     <v-layout xs12 justify-center>
-      <v-flex xs6 v-if="post">
-        <AppPost :post="post"/>
-      </v-flex>
-      <v-spacer/>
+      <!-- <transition name="fade"> -->
+        <v-flex xs4 v-if="post" class="post">
+          <AppPost :post="post"/>
+        </v-flex>
+      <!-- </transition> -->
     </v-layout>
   </v-container>
 </template>
@@ -35,5 +36,7 @@ export default {
 </script>
 
 <style scoped>
-
+.post {
+  animation-duration: 500ms;
+}
 </style>
