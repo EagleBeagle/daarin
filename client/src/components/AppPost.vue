@@ -1,8 +1,12 @@
 <template>
   <v-container xs12 class="pb-5" :id="post.title">
     <v-card>
+      <v-layout row justify-center>
+        <v-flex xs12>
+          <div class="display-1 blue--text font-weight-bold py-1">{{ post.title }}</div>
+        </v-flex>
+      </v-layout>
       <div>
-        <div class="display-1 blue--text font-weight-bold py-1">{{ post.title }}</div>
         <div class="subheading light-blue--text pb-1">{{ post.createdBy.username }}</div>
       </div>
       <v-divider/>
@@ -12,48 +16,91 @@
         id="postImage"
         @click="goToPostPage"/>
       <v-divider/>
-      <v-card-actions class="px-3 py-0">
-        <v-layout justify-space-around class="py-1 px-0">
-            <v-flex class="scoreFlex" align-self-center md2>
-              <transition :name="scoreDirection" mode="out-in">
-                <div
-                  class="title"
-                  :key="score">
-                  {{ score }}
-                </div>
-              </transition>
-            </v-flex>
-            <v-divider vertical class="my-2"/>
-            <v-flex>
-              <v-btn
-                flat
-                fab
-                @click="upvote()">
-                <v-icon :class="[ upvoted ? 'light-blue--text' : 'grey--text' ]">arrow_upward</v-icon></v-btn>
-            </v-flex>
-            <v-flex>
-              <v-btn
-                flat
-                fab
-                @click="downvote()">
-                <v-icon :class="[ downvoted ? 'light-blue--text' : 'grey--text' ]">arrow_downward</v-icon></v-btn>
-            </v-flex>
-            <v-flex>
-              <v-btn
-                flat
-                fab
-                @click="showComments">
-                <v-icon class="grey--text">comment</v-icon>
-              </v-btn>
-            </v-flex>
-            <v-flex>
-              <v-btn
-                flat
-                fab>
-                <v-icon class="grey--text">share</v-icon>
-              </v-btn>
-            </v-flex>
-        </v-layout>
+      <v-card-actions class="px-0 py-0">
+        <v-container pa-0 ma-0>
+          <v-layout justify-space-around class="py-1 px-0">
+              <v-flex>
+                <v-btn
+                  flat
+                  fab
+                  @click="upvote()">
+                  <v-icon :class="[ upvoted ? 'amber--text amber--darken-4' : 'amber--text text--lighten-3' ]">sentiment_very_satisfied</v-icon></v-btn>
+              </v-flex>
+              <v-flex>
+                <v-btn
+                  flat
+                  fab
+                  @click="downvote()">
+                  <v-icon :class="[ downvoted ? 'light-green--text text--darken-2' : 'light-green--text text--lighten-3' ]">public</v-icon></v-btn>
+              </v-flex>
+              <v-flex>
+                <v-btn
+                  flat
+                  fab
+                  @click="downvote()">
+                  <v-icon :class="[ downvoted ? 'brown--text text--darken-1' : 'brown--text text--lighten-3' ]">school</v-icon></v-btn>
+              </v-flex>
+              <v-flex>
+                <v-btn
+                  flat
+                  fab
+                  @click="downvote()">
+                  <v-icon :class="[ downvoted ? 'pink--text text--darken-1' : 'pink--text text--lighten-3' ]">fas fa-cat</v-icon></v-btn>
+              </v-flex>
+              <v-flex>
+                <v-btn
+                  flat
+                  fab
+                  @click="downvote()">
+                  <v-icon :class="[ downvoted ? 'red--text text--darken-2' : 'red--text text--lighten-3' ]">whatshot</v-icon></v-btn>
+              </v-flex>
+              <v-flex>
+                <v-btn
+                  flat
+                  fab
+                  @click="downvote()">
+                  <v-icon :class="[ downvoted ? 'deep-purple--text text--darken-2' : 'deep-purple--text text--lighten-3' ]">palette</v-icon></v-btn>
+              </v-flex>
+              <v-flex>
+                <v-btn
+                  flat
+                  fab
+                  @click="downvote()">
+                  <v-icon :class="[ downvoted ? 'blue--text text--darken-1' : 'blue--text text--lighten-3' ]">live_tv</v-icon></v-btn>
+              </v-flex>
+          </v-layout>
+          <v-divider class="pa-0 ma-0"/>
+          <v-layout justify-space-around class="py-1 px-0">
+              <v-flex>
+                <v-btn
+                  flat
+                  fab
+                  small
+                  @click="showComments">
+                  <v-icon class="grey--text">comment</v-icon>
+                </v-btn>
+              </v-flex>
+              <v-divider vertical class="my-2"/>
+              <v-flex class="scoreFlex" align-self-center md2>
+                <transition :name="scoreDirection" mode="out-in">
+                  <div
+                    class="title"
+                    :key="score">
+                    {{ score }}
+                  </div>
+                </transition>
+              </v-flex>
+              <v-divider vertical class="my-2"/>
+              <v-flex>
+                <v-btn
+                  flat
+                  small
+                  fab>
+                  <v-icon class="grey--text">share</v-icon>
+                </v-btn>
+              </v-flex>
+          </v-layout>
+        </v-container>
       </v-card-actions>
       <transition name="commentSlide">
         <CommentContainer :postId="post._id" v-if="showingComments"/>

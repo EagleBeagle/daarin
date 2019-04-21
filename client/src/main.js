@@ -12,10 +12,13 @@ import store from '@/store/store'
 import 'vuetify/dist/vuetify.min.css'
 import Panel from '@/components/globals/Panel'
 import vue2Animate from 'vue2-animate/dist/vue2-animate.min.css'
+import '@fortawesome/fontawesome-free/css/all.css'
 
 Vue.config.productionTip = false
 
-Vue.use(Vuetify)
+Vue.use(Vuetify, {
+  iconfont: 'fa'
+})
 Vue.use(Vuebar)
 Vue.use(Overdrive)
 Vue.use(checkView)

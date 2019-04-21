@@ -80,6 +80,7 @@ export default {
         await this.getPosts()
         console.log('itt kéne lennünk')
       }
+      console.log(this.filteredPostIndex)
       setTimeout(() => {
         let postElements = document.getElementsByClassName('post')
         for (let element of postElements) {

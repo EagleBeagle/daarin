@@ -56,7 +56,7 @@ export default {
       }
     },
     scrollGuard () {
-      if (!this.filtered && this.posts.length && !(this.posts.length < 2)) {
+      if (!this.filtered && this.posts && !(this.posts.length < 2)) {
         console.log(this.posts.length)
         this.$emit('reachedBottom')
       }
