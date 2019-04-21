@@ -23,7 +23,7 @@ export default {
     await this.getPost()
   },
   methods: {
-    async getPost () {
+    async getPost () { // try catch
       let response = await PostService.getPost(this.$route.params.postId)
       console.log(response.data[0])
       this.post = response.data[0]

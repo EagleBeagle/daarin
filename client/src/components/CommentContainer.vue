@@ -434,11 +434,11 @@ export default {
 <style scoped>
 .commentContainer {
   overflow-y: auto;
-  height: 500px;
+  height: 400px;
 }
 
 .emptyCommentContainer {
-  height: 545px;
+  height: 445px;
 }
 
 .commentContainer::-webkit-scrollbar {display:none;}

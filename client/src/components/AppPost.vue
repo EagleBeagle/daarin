@@ -173,8 +173,10 @@ export default {
     },
     goToPostPage () {
       // document.getElementsByTagName('html')[0].style.overflow = 'hidden'
-      this.$router.push({ name: 'postPage', params: { postId: this.post._id } })
-      this.$emit('filter-post', this.post)
+      if (this.$route.params.postId !== this.post._id) {
+        this.$router.push({ name: 'postPage', params: { postId: this.post._id } })
+        this.$emit('filter-post', this.post)
+      }
     }
   },
   components: {

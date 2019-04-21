@@ -3,6 +3,7 @@ import Router from 'vue-router'
 import Home from '@/components/HomePage'
 import Register from '@/components/RegisterPage'
 import Login from '@/components/LoginPage'
+import UserPage from '@/components/UserPage'
 import store from '@/store/store'
 // import PostPage from '@/components/PostPage'
 
@@ -29,6 +30,11 @@ const router = new Router({
       path: '/post/:postId',
       name: 'postPage',
       component: Home
+    },
+    {
+      path: '/users/:userId',
+      name: 'userPage',
+      component: UserPage
     },
     {
       path: '*',

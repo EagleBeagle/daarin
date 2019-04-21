@@ -56,7 +56,8 @@ export default {
       }
     },
     scrollGuard () {
-      if (!this.filtered) {
+      if (!this.filtered && this.posts.length && !(this.posts.length < 2)) {
+        console.log(this.posts.length)
         this.$emit('reachedBottom')
       }
     }

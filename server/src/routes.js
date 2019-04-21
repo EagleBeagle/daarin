@@ -5,6 +5,7 @@ const PostControllerPolicy = require('./policies/PostControllerPolicy')
 const CommentController = require('./controllers/CommentController')
 const IsAuthenticated = require('./policies/IsAuthenticated')
 const SSEController = require('./controllers/SSEController')
+const UserController = require('./controllers/UserController')
 const multer = require('multer')
 const storage = multer.memoryStorage()
 const upload = multer({
@@ -40,6 +41,9 @@ module.exports = (app) => {
 
   app.post('/login',
     AuthenticationController.login)
+
+  app.get('/users/:userId',
+    UserController.getUser)
 
   app.post('/upload',
     upload.single('image'),
