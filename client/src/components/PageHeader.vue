@@ -1,13 +1,14 @@
 <template>
   <v-container>
-    <v-toolbar fixed class="light-blue accent-2" dark>
+    <v-toolbar fixed class="light-blue accent-2" flat dark>
       <v-toolbar-items>
         <v-btn
           v-if="$store.state.isUserLoggedIn"
           flat
-          class="blue-grey"
+          fab
+          class="px-0 ma-0"
           v-on:click.stop="dialog = true">
-          <v-icon>add</v-icon>
+          <v-icon>fas fa-file-upload</v-icon>
         </v-btn>
         <v-btn
           v-else
