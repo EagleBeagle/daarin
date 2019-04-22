@@ -121,20 +121,21 @@ export default {
       // await this.$store.dispatch('setEventSource')
       if (this.user) {
         this.postStreamCb = (event) => {
-          let streamedPosts = JSON.parse(event.data)
+          let streamedReacts = JSON.parse(event.data)
           this.posts.forEach(function (post) {
-            let streamedPost = streamedPosts.find(streamedPost => streamedPost._id === post._id)
-            if (streamedPost) {
-              post.likes = streamedPost.likes
-              post.dislikes = streamedPost.dislikes
+            let streamedReactsOfPost = streamedReacts.find(streamedReact => streamedReact._id === post._id)
+            if (streamedReactsOfPost) {
+              post.reactions = streamedReactsOfPost.reactions
+            } else {
+              post.reactions = []
             }
             return post
           })
-          if (streamedPosts.length > this.posts.length) { // TODO
+          /* if (streamedPosts.length > this.posts.length) { // TODO
             this.isNewPostAvailable = true
             console.log('VAN ÚJ')
-          }
-          console.log(streamedPosts)
+          } */
+          console.log(streamedReacts)
         }
         this.postStreamEvent = 'post'
         this.eventSource.addEventListener(this.postStreamEvent, this.postStreamCb)

@@ -14,7 +14,7 @@ cloudinary.config({
 })
 
 module.exports = {
-  async index (req, res) {
+  async index (req, res) { // SSE-t megcsinálni
     let posts = null
     let sseId = req.user ? req.user.sseId : null
     try {
@@ -24,23 +24,70 @@ module.exports = {
           .sort('-createdAt')
           .limit(5) // ez query-t ad vissza mert nem kezeljük le a promise-t
         // if (sseId) sseConnections[sseId] = Post.find({}, 'likes dislikes').sort('-createdAt').limit(5)
-        let sseQuery = Post.find({}, 'likes dislikes')
+        posts = await Post
+          .aggregate([
+            {
+              $sort: {
+                createdAt: -1
+              }
+            },
+            {
+              $limit: 5
+            },
+            {
+              $lookup: {
+                from: 'reactions',
+                localField: '_id',
+                foreignField: 'to',
+                as: 'reactions'
+              }
+            }
+          ])
+        posts = await Post.populate(posts, { path: 'createdBy', select: 'username' })
+        /* let sseQuery = Post.find({}, 'likes dislikes')
           .sort('-createdAt')
-          .limit(5)
-        SSEConnectionHandler.setConnectionQuery('post', sseId, sseQuery)
+          .limit(5) */
+        SSEConnectionHandler.flushQuery('comment', sseId)
+        SSEConnectionHandler.buildAndSetConnectionQuery('post', sseId, posts)
       } else {
         posts = await Post.find({ 'createdAt': { $lt: req.query.created } })
           .populate('createdBy', 'username')
           .sort('-createdAt')
           .limit(Number(req.query.limit))
+
+        posts = await Post
+          .aggregate([
+            {
+              $match: {
+                createdAt: { $lt: new Date(req.query.created) }
+              }
+            },
+            {
+              $sort: {
+                createdAt: -1
+              }
+            },
+            {
+              $limit: 5
+            },
+            {
+              $lookup: {
+                from: 'reactions',
+                localField: '_id',
+                foreignField: 'to',
+                as: 'reactions'
+              }
+            }
+          ])
+        posts = await Post.populate(posts, { path: 'createdBy', select: 'username' })
         let lastPost = posts[Object.keys(posts).length - 1] // ha üres akkor nincs több post
         if (lastPost) {
-          let sseQuery = Post.find({ 'createdAt': { $gte: lastPost.createdAt } }, 'likes dislikes')
-          SSEConnectionHandler.setConnectionQuery('post', sseId, sseQuery)
+          SSEConnectionHandler.buildAndSetConnectionQuery('post', sseId, posts)
         }
       }
       res.status(200).send(posts)
     } catch (err) {
+      console.log(err)
       res.status(500).send({
         error: 'an error has occured trying to fetch the posts'
       })
@@ -93,7 +140,7 @@ module.exports = {
     let type = Number(req.params.type)
     let postId = req.params.postId
     try {
-      if (type > 0 && type < 8) {
+      if (type >= 0 && type <= 6) {
         let reaction = {
           user: req.user._id,
           to: postId,
@@ -116,7 +163,7 @@ module.exports = {
     let type = Number(req.params.type)
     let postId = req.params.postId
     try {
-      if (type > 0 && type < 8) {
+      if (type >= 0 && type <= 6) {
         await Reaction.deleteOne({
           to: postId,
           user: req.user._id,

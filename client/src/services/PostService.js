@@ -21,6 +21,12 @@ export default {
       }
     })
   },
+  react (reactData) {
+    return Api().put(`/posts/${reactData.postId}/reaction/${reactData.type}`)
+  },
+  unReact (reactData) {
+    return Api().delete(`/posts/${reactData.postId}/reaction/${reactData.type}`)
+  },
   upvote (postId) {
     console.log(postId)
     return Api().put(`/posts/${postId}/upvote`)

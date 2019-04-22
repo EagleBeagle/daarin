@@ -1,4 +1,6 @@
+const mongoose = require('mongoose')
 const Comment = require('../models/Comment.js')
+const Reaction = require('../models/Reaction.js')
 
 let connections = {}
 
@@ -8,6 +10,7 @@ module.exports = {
   createNewConnection (sseId) {
     let connection = {
       postQuery: null,
+      postIDs: new Set(),
       userQuery: null,
       commentQuery: null,
       commentIDs: new Set(),
@@ -51,6 +54,33 @@ module.exports = {
     if (connections[sseId]) {
       let query
       switch (type) {
+        case 'post':
+          data.forEach((post) => {
+            connections[sseId].postIDs.add(post._id)
+          })
+          connections[sseId].postIDs.forEach((postId) => {
+            postId = mongoose.Types.ObjectId(postId)
+          }) /*
+          query = Reaction
+            .find({
+              'to': { $in: Array.from(connections[sseId].postIDs) }
+            }) */
+          query = Reaction
+            .aggregate([
+              {
+                $match: {
+                  to: { $in: Array.from(connections[sseId].postIDs) }
+                }
+              },
+              {
+                $group: {
+                  _id: '$to',
+                  reactions: { $push: { user: '$user', type: '$type' } }
+                }
+              }
+            ])
+          this.setConnectionQuery(type, sseId, query)
+          break
         case 'comment':
           data.forEach((comment) => {
             connections[sseId].commentIDs.add(comment._id)
@@ -79,6 +109,9 @@ module.exports = {
   flushQuery (type, sseId) {
     if (connections[sseId]) {
       switch (type) {
+        case 'post':
+          connections[sseId].postIDs.clear()
+          break
         case 'comment':
           connections[sseId].commentIDs.clear()
           break
