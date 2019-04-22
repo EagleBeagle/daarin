@@ -4,6 +4,7 @@ const uniqueSlug = require('unique-slug')
 const path = require('path')
 const Post = require('../models/Post.js')
 const User = require('../models/User.js')
+const Reaction = require('../models/Reaction.js')
 const SSEConnectionHandler = require('../utils/SSEConnectionHandler.js')
 
 cloudinary.config({
@@ -84,6 +85,49 @@ module.exports = {
       console.log(err)
       res.status(500).send({
         error: 'An error occured during the upload.'
+      })
+    }
+  },
+
+  async react (req, res) {
+    let type = Number(req.params.type)
+    let postId = req.params.postId
+    try {
+      if (type > 0 && type < 8) {
+        let reaction = {
+          user: req.user._id,
+          to: postId,
+          type: type
+        }
+        await Reaction.create(reaction)
+        res.status(201).send({
+          success: true
+        })
+      }
+    } catch (err) {
+      console.log(err)
+      res.status(500).send({
+        error: 'An error occured trying to save the reaction.'
+      })
+    }
+  },
+
+  async unReact (req, res) {
+    let type = Number(req.params.type)
+    let postId = req.params.postId
+    try {
+      if (type > 0 && type < 8) {
+        await Reaction.deleteOne({
+          to: postId,
+          user: req.user._id,
+          type: type
+        })
+        res.status(204).send()
+      }
+    } catch (err) {
+      console.log(err)
+      res.status(500).send({
+        error: 'An error occured trying to delete the reaction.'
       })
     }
   },

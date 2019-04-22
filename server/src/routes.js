@@ -68,6 +68,14 @@ module.exports = (app) => {
     IsAuthenticated.restrict,
     PostController.unDownvote)
 
+  app.put('/posts/:postId/reaction/:type',
+    IsAuthenticated.restrict,
+    PostController.react)
+
+  app.delete('/posts/:postId/reaction/:type',
+    IsAuthenticated.restrict,
+    PostController.unReact)
+
   app.put('/posts/:postId/comments/:commentId/upvote',
     IsAuthenticated.restrict,
     CommentController.upvote)
