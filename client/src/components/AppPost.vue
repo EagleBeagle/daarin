@@ -11,7 +11,8 @@
           flat
           fab
           small
-          class="mt-1 mr-0 pr-0">
+          class="mt-1 mr-0 pr-0"
+          id="optionsButton">
           <v-icon class="grey--text">fas fa-ellipsis-h</v-icon>
         </v-btn>
       </v-layout>
@@ -354,4 +355,7 @@ export default {
   cursor: pointer;
 }
 
+#optionsButton {
+  z-index: 0;
+}
 </style>
