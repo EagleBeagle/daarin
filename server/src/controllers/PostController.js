@@ -2,6 +2,7 @@ const cloudinary = require('cloudinary')
 const Datauri = require('datauri')
 const uniqueSlug = require('unique-slug')
 const path = require('path')
+const mongoose = require('mongoose')
 const Post = require('../models/Post.js')
 const User = require('../models/User.js')
 const Reaction = require('../models/Reaction.js')
@@ -95,10 +96,27 @@ module.exports = {
   },
 
   async getPost (req, res) {
+    let sseId = req.user ? req.user.sseId : null
     try {
       let postId = req.params.postId
-      let post = await Post.find({ '_id': postId })
-        .populate('createdBy', 'username')
+      let post = await Post
+        .aggregate([
+          {
+            $match: {
+              _id: mongoose.Types.ObjectId(postId)
+            }
+          },
+          {
+            $lookup: {
+              from: 'reactions',
+              localField: '_id',
+              foreignField: 'to',
+              as: 'reactions'
+            }
+          }
+        ])
+      post = await Post.populate(post, { path: 'createdBy', select: 'username' })
+      SSEConnectionHandler.buildAndSetConnectionQuery('post', sseId, post)
       if (!post.length) {
         res.status(400).send({
           error: "the given post doesn't exist"

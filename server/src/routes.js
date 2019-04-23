@@ -21,6 +21,7 @@ module.exports = (app) => {
     SSEController.stream)
 
   app.get('/posts/:postId',
+    IsAuthenticated.check,
     PostController.getPost)
 
   app.get('/posts/:postId/comments',

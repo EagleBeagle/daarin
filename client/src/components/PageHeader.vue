@@ -9,13 +9,14 @@
           class="px-0 ma-0"
           v-on:click.stop="dialog = true">
           <v-icon>fas fa-file-upload</v-icon>
-        </v-btn>
+        </v-btn> <!-- ezt itt átmegoldani -->
         <v-btn
           v-else
           flat
-          class="blue-grey"
+          fab
+          class="px-0 ma-0"
           v-on:click.stop="authDialog = true">
-          <v-icon>add</v-icon>
+          <v-icon>fas fa-file-upload</v-icon>
         </v-btn>
       </v-toolbar-items>
       <v-toolbar-title dark class="mr-4">
@@ -40,7 +41,7 @@
           Login
         </v-btn>
         <v-btn
-          v-if="!$store.state.isUserLoggedIn"
+          v-if="!isUserLoggedIn"
           flat
           dark
           :to="{
@@ -48,9 +49,19 @@
           }">
           Sign Up
         </v-btn>
-
+        <v-flex v-if="isUserLoggedIn">
+          <v-btn
+            flat
+            fab
+            @click="$router.push({ name: 'userPage', params: { userId: user._id } })">
+            <v-avatar
+              size="45">
+              <v-img id="avatar" src="http://res.cloudinary.com/daarin/image/upload/v1553966054/kkrlwpyyo9zhtfr8tgsf.jpg"></v-img>
+            </v-avatar>
+          </v-btn>
+        </v-flex>
         <v-btn
-          v-if="$store.state.isUserLoggedIn"
+          v-if="isUserLoggedIn"
           flat
           dark
           @click="logout">
@@ -137,6 +148,7 @@
 
 <script>
 import PostService from '@/services/PostService'
+import {mapState} from 'vuex'
 export default {
   data () {
     return {
@@ -150,6 +162,13 @@ export default {
     }
   },
   async mounted () {
+  },
+  computed: {
+    ...mapState([
+      'isUserLoggedIn',
+      'user',
+      'closeComments'
+    ])
   },
   methods: {
     async logout () {

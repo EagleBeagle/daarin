@@ -16,9 +16,12 @@
   "dependencies": {
     "@fortawesome/vue-fontawesome": "^0.1.6",
     "axios": "^0.18.0",
+    "chart.js": "^2.8.0",
     "karma-chrome-launcher": "^2.2.0",
     "material-design-icons-iconfont": "^4.0.3",
     "vue": "^2.6.10",
+    "vue-chartjs": "^3.4.2",
+    "vue-charts": "^0.2.1",
     "vue-check-view": "^0.3.0",
     "vue-overdrive": "^1.2.0",
     "vue-router": "^3.0.1",

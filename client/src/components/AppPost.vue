@@ -28,7 +28,7 @@
       <v-divider/>
       <v-card-actions class="px-0 py-0">
         <v-container pa-0 ma-0>
-          <v-layout v-if="reacted" justify-space-around class="py-1 px-0">
+          <v-layout justify-space-around class="py-1 px-0">
               <v-flex>
                 <v-btn
                   flat
@@ -147,26 +147,6 @@ export default {
       'user',
       'closeComments'
     ]),
-    upvoted: function () {
-      if (!this.isUserLoggedIn) {
-        return false
-      }
-      if (this.post.likes.includes(this.user._id)) {
-        return true
-      } else {
-        return false
-      }
-    },
-    downvoted: function () {
-      if (!this.isUserLoggedIn) {
-        return false
-      }
-      if (this.post.dislikes.includes(this.user._id)) {
-        return true
-      } else {
-        return false
-      }
-    },
     reacted: function () {
       let reactionsOfUser = [false, false, false, false, false, false, false]
       if (!this.isUserLoggedIn) {
@@ -201,27 +181,6 @@ export default {
     } */
   },
   methods: {
-    async upvote () {
-      if (!this.isUserLoggedIn) {
-        return
-      }
-      try {
-        if (this.upvoted) {
-          // console.log (this.post.likes)
-          // this.upvoted = false
-          this.post.likes = this.post.likes.filter(upvoter => upvoter !== this.user._id) // azonnali eredmény
-          await PostService.unUpvote(this.post._id)
-        } else {
-          if (this.downvoted) {
-            await this.downvote()
-          }
-          this.post.likes.push(this.user._id)
-          await PostService.upvote(this.post._id)
-        }
-      } catch (err) {
-        console.log(err)
-      }
-    },
     async react (type) {
       try {
         if (this.reacted[type]) {
@@ -232,8 +191,6 @@ export default {
           this.post.reactions = this.post.reactions.filter((reaction) => {
             return (reaction.user !== this.user._id || reaction.type !== type)
           })
-          console.log('maradék reaccok: ')
-          console.log(this.post.reactions)
         } else {
           await PostService.react({
             postId: this.post._id,
@@ -243,25 +200,6 @@ export default {
             user: this.user._id,
             type: type
           })
-        }
-      } catch (err) {
-        console.log(err)
-      }
-    },
-    async downvote () {
-      if (!this.isUserLoggedIn) {
-        return
-      }
-      try {
-        if (this.downvoted) {
-          this.post.dislikes = this.post.dislikes.filter(downvoter => downvoter !== this.user._id) // azonnali eredmény
-          await PostService.unDownvote(this.post._id)
-        } else {
-          if (this.upvoted) {
-            await this.upvote()
-          }
-          this.post.dislikes.push(this.user._id)
-          await PostService.downvote(this.post._id)
         }
       } catch (err) {
         console.log(err)

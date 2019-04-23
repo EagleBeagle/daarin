@@ -1,7 +1,7 @@
 <template>
   <v-layout justify-center>
-    <v-flex md3 lg4 hidden-sm-and-down>
-      <div></div>
+    <v-flex v-show="showPostInfo" md3 lg4 hidden-sm-and-down>
+      <div>left side</div>
     </v-flex>
     <v-flex xs12 sm12 md6 lg4>
     <PostFeed
@@ -10,8 +10,10 @@
       @reachedBottom="loadMorePosts"
       @filter-post="filterPost"/>
     </v-flex>
-    <v-flex md3 lg4 hidden-sm-and-down>
-      <div></div>
+    <v-flex v-show="showPostInfo" md3 lg4 hidden-sm-and-down>
+      <transition name="fadeRight">
+          <PieChart class="postChart" v-if="showPostInfo && posts && posts[0] && posts[0].reactions" :chart-data="chartData" />
+      </transition>
     </v-flex>
   </v-layout>
 </template>
@@ -20,6 +22,7 @@
 import {mapState} from 'vuex'
 import PostService from '@/services/PostService'
 import PostFeed from './PostFeed'
+import PieChart from '../PieChart.js'
 export default {
   data () {
     return {
@@ -30,7 +33,9 @@ export default {
       hiddenPosts: [],
       filteredPost: null,
       filteredPostIndex: null,
-      savedScrollPos: null
+      savedScrollPos: null,
+      showPostInfo: false,
+      chartData: null
     }
   },
   beforeDestroy () {
@@ -42,9 +47,33 @@ export default {
       'user',
       'eventSource',
       'eventSourceChanged'
-    ])
+    ]),
+    sortedReactions: function () {
+      if (this.posts && this.posts[0].reactions) {
+        let sortedReactions = [0, 0, 0, 0, 0, 0, 0]
+        this.posts[0].reactions.forEach((reaction) => {
+          sortedReactions[reaction.type] += 1
+        })
+        return sortedReactions
+      }
+    }
   },
   watch: {
+    sortedReactions (val) {
+      this.chartData = {
+        labels: [ 'Funny', 'Informative', 'Smart', 'Cute', 'Controversial', 'Creative', 'Entertaining' ],
+        datasets: [
+          {
+            backgroundColor: ['#FFCA28', '#9CCC65', '#8D6E63', '#F48FB1', '#E57373', '#9575CD', '#4FC3F7'],
+            borderColor: '#ECEFF1',
+            borderAlign: 'inner',
+            borderWidth: 4,
+            weight: 2,
+            data: val
+          }
+        ]
+      }
+    },
     async eventSourceChanged (val, oldVal) {
       console.log('EVENT SOURCE VÁLTOZOTT, reloadolunk')
       await this.addSSEListeners()
@@ -55,6 +84,12 @@ export default {
       let postElements = document.getElementsByClassName('post')
       for (let element of postElements) {
         element.style.width = element.clientWidth + 'px'
+      }
+      if (to.name === 'postPage') {
+        this.showPostInfo = true
+      }
+      if (to.name === 'home') {
+        this.showPostInfo = false
       }
       if (from.name === 'postPage' && to.name === 'home' && this.hiddenPosts[this.filteredPostIndex] && this.hiddenPosts[this.filteredPostIndex]._id === this.posts[0]._id && this.hiddenPosts.length > 1) {
         // this.hiddenPosts.splice(this.filteredPostIndex, 0, this.posts[0])
@@ -96,11 +131,14 @@ export default {
     // let result
     // if (!this.posts) {
     if (this.$route.params.postId) {
+      this.showPostInfo = true
       await this.getPost()
     } else { // külön method
       await this.getPosts()
-      await this.addSSEListeners()
     }
+    await this.addSSEListeners()
+    console.log(this.eventSource)
+    console.log('itten')
     // }
     // if (!this.posts) {
     // }
@@ -196,11 +234,15 @@ export default {
     }
   },
   components: {
-    PostFeed
+    PostFeed,
+    PieChart
   }
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.postChart {
+  animation-delay: 500ms;
+}
 </style>
