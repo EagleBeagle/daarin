@@ -79,6 +79,7 @@ export default {
       await this.addSSEListeners()
     },
     async '$route' (to, from) {
+      console.log('ez mukodik')
       console.log(from)
       console.log(to)
       let postElements = document.getElementsByClassName('post')
@@ -91,7 +92,10 @@ export default {
       if (to.name === 'home') {
         this.showPostInfo = false
       }
-      if (from.name === 'postPage' && to.name === 'home' && this.hiddenPosts[this.filteredPostIndex] && this.hiddenPosts[this.filteredPostIndex]._id === this.posts[0]._id && this.hiddenPosts.length > 1) {
+      if (to.name === 'userPage') {
+        console.log('lel')
+      }
+      if ((from.name === 'postPage' || from.name === 'userPage') && to.name === 'home' && this.hiddenPosts[this.filteredPostIndex] && this.hiddenPosts[this.filteredPostIndex]._id === this.posts[0]._id && this.hiddenPosts.length > 1) {
         // this.hiddenPosts.splice(this.filteredPostIndex, 0, this.posts[0])
         // let copy = JSON.parse(JSON.stringify(this.hiddenPosts))
         // let filteredPost = this.posts[0] // ?
@@ -99,10 +103,12 @@ export default {
         // let lower = copy.slice(this.filteredPostIndex, copy.length)
         // this.posts = [...this.posts, ...this.hiddenPosts]
         // this.posts = [...this.posts, ...lower]
+        console.log('hiiiiiii')
         this.hiddenPosts[this.filteredPostIndex] = this.posts[0]
         this.posts = JSON.parse(JSON.stringify(this.hiddenPosts))
         this.hiddenPosts = []
-      } else if (from.name === 'home' && to.name === 'postPage' && this.hiddenPosts[this.filteredPostIndex] && this.hiddenPosts[this.filteredPostIndex]._id === this.posts[0]._id) {
+      } else if ((from.name === 'home' || from.name === 'userPage') && to.name === 'postPage' && this.hiddenPosts[this.filteredPostIndex] && this.hiddenPosts[this.filteredPostIndex]._id === this.posts[0]._id) {
+        console.log('mukokokokookokook')
       } else if (from.name === 'home' && to.name === 'home') {
         await this.getPosts()
       } else if (from.name === 'home' && to.name === 'postPage') {
@@ -113,9 +119,8 @@ export default {
         }
       } else if (from.name === 'postPage' && to.name === 'home') {
         await this.getPosts()
-        console.log('itt kéne lennünk')
       }
-      console.log(this.filteredPostIndex)
+      console.log('SAODNAJSADUIADHSAUDIAHDAU')
       setTimeout(() => {
         let postElements = document.getElementsByClassName('post')
         for (let element of postElements) {
@@ -137,8 +142,6 @@ export default {
       await this.getPosts()
     }
     await this.addSSEListeners()
-    console.log(this.eventSource)
-    console.log('itten')
     // }
     // if (!this.posts) {
     // }
@@ -210,7 +213,6 @@ export default {
         for (let newPost of morePosts) {
           this.posts.push(newPost)
         }
-        console.log(this.posts)
       }
     },
     filterPost (post) {
@@ -243,6 +245,6 @@ export default {
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
 .postChart {
-  animation-delay: 500ms;
+  animation-delay: 150ms;
 }
 </style>

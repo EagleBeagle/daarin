@@ -13,6 +13,14 @@ export default {
   getPost (postId) {
     return Api().get(`/posts/${postId}`)
   },
+  getPostsOfUser (postData) {
+    let query = ''
+    if (postData.lastPost) {
+      let createdAt = querystring.stringify({ created: postData.lastPost.createdAt })
+      query += `?${createdAt}`
+    }
+    return Api().get(`/posts/user/${postData.userId}${query}`)
+  },
   upload (formData) {
     console.log('uploadService: ' + formData.get('createdBy'))
     return Api().post('upload', formData, {

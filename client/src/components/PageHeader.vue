@@ -189,7 +189,6 @@ export default {
         return alert('The given file is not valid') //  TODO
       }
       this.image = files[0]
-      console.log(files[0].path)
     },
     onClose () {
       this.dialog = false

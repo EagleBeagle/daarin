@@ -19,7 +19,7 @@ module.exports = {
     let posts = null
     let sseId = req.user ? req.user.sseId : null
     try {
-      if (!req.query.created || !req.query.limit) { // TODO esetek
+      if (!req.query.user || !req.query.created || !req.query.limit) { // TODO esetek
         posts = await Post.find()
           .populate('createdBy', 'username')
           .sort('-createdAt')
@@ -128,6 +128,43 @@ module.exports = {
       console.log(err)
       res.status(500).send({
         error: 'an error has occured trying to fetch the post'
+      })
+    }
+  },
+
+  async getPostsOfUser (req, res) {
+    console.log('ittvagyok')
+    let sseId = req.user ? req.user.sseId : null
+    let userId = req.params.userId
+    try {
+      let posts = await Post
+        .aggregate([
+          {
+            $match: {
+              createdBy: mongoose.Types.ObjectId(userId)
+            }
+          },
+          {
+            $lookup: {
+              from: 'reactions',
+              localField: '_id',
+              foreignField: 'to',
+              as: 'reactions'
+            }
+          },
+          {
+            $sort: {
+              createdAt: -1
+            }
+          }
+        ])
+      posts = await Post.populate(posts, { path: 'createdBy', select: 'username' })
+      SSEConnectionHandler.flushQuery('post', sseId)
+      SSEConnectionHandler.buildAndSetConnectionQuery('post', sseId, posts)
+      res.status(200).send(posts)
+    } catch (err) {
+      res.status(500).send({
+        error: 'an error has occured trying to fetch the posts'
       })
     }
   },
