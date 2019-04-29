@@ -19,7 +19,7 @@ module.exports = {
     let posts = null
     let sseId = req.user ? req.user.sseId : null
     try {
-      if (!req.query.user || !req.query.created || !req.query.limit) { // TODO esetek
+      if (!req.query.user && (!req.query.created || !req.query.limit)) { // TODO esetek
         posts = await Post.find()
           .populate('createdBy', 'username')
           .sort('-createdAt')
@@ -136,33 +136,246 @@ module.exports = {
     console.log('ittvagyok')
     let sseId = req.user ? req.user.sseId : null
     let userId = req.params.userId
+    let created = req.query.created
     try {
-      let posts = await Post
-        .aggregate([
-          {
-            $match: {
-              createdBy: mongoose.Types.ObjectId(userId)
+      if (userId && !created) { // TODO esetek
+        let posts = await Post
+          .aggregate([
+            {
+              $match: {
+                createdBy: mongoose.Types.ObjectId(userId)
+              }
+            },
+            {
+              $lookup: {
+                from: 'reactions',
+                localField: '_id',
+                foreignField: 'to',
+                as: 'reactions'
+              }
+            },
+            {
+              $sort: {
+                createdAt: -1
+              }
+            },
+            {
+              $limit: 5
             }
-          },
-          {
-            $lookup: {
-              from: 'reactions',
-              localField: '_id',
-              foreignField: 'to',
-              as: 'reactions'
+          ])
+        posts = await Post.populate(posts, { path: 'createdBy', select: 'username' })
+        SSEConnectionHandler.flushQuery('post', sseId)
+        SSEConnectionHandler.buildAndSetConnectionQuery('post', sseId, posts)
+        res.status(200).send(posts)
+      } else if (userId && created) {
+        let posts = await Post
+          .aggregate([
+            {
+              $match: {
+                createdBy: mongoose.Types.ObjectId(userId),
+                createdAt: { $lt: new Date(created) }
+              }
+            },
+            {
+              $sort: {
+                createdAt: -1
+              }
+            },
+            {
+              $limit: 5
+            },
+            {
+              $lookup: {
+                from: 'reactions',
+                localField: '_id',
+                foreignField: 'to',
+                as: 'reactions'
+              }
             }
-          },
-          {
-            $sort: {
-              createdAt: -1
-            }
-          }
-        ])
-      posts = await Post.populate(posts, { path: 'createdBy', select: 'username' })
-      SSEConnectionHandler.flushQuery('post', sseId)
-      SSEConnectionHandler.buildAndSetConnectionQuery('post', sseId, posts)
-      res.status(200).send(posts)
+          ])
+        posts = await Post.populate(posts, { path: 'createdBy', select: 'username' })
+        let lastPost = posts[Object.keys(posts).length - 1] // ha üres akkor nincs több post
+        if (lastPost) {
+          SSEConnectionHandler.buildAndSetConnectionQuery('post', sseId, posts)
+        }
+        res.status(200).send(posts)
+      }
     } catch (err) {
+      res.status(500).send({
+        error: 'an error has occured trying to fetch the posts'
+      })
+    }
+  },
+
+  async getReactedPostsOfUser (req, res) {
+    console.log('ittvagyok')
+    let sseId = req.user ? req.user.sseId : null
+    let userId = req.params.userId
+    let created = req.query.created
+    try {
+      if (userId && !created) { // TODO esetek
+        let posts = await Post
+          .aggregate([
+            {
+              $lookup: {
+                from: 'reactions',
+                localField: '_id',
+                foreignField: 'to',
+                as: 'reactions'
+              }
+            },
+            {
+              $match: {
+                reactions: {
+                  $elemMatch: { user: { $eq: mongoose.Types.ObjectId(userId) } }
+                }
+              }
+            },
+            {
+              $sort: {
+                createdAt: -1
+              }
+            },
+            {
+              $limit: 5
+            }
+          ])
+        posts = await Post.populate(posts, { path: 'createdBy', select: 'username' })
+        SSEConnectionHandler.flushQuery('post', sseId)
+        SSEConnectionHandler.buildAndSetConnectionQuery('post', sseId, posts)
+        res.status(200).send(posts)
+      } else if (userId && created) {
+        let posts = await Post
+          .aggregate([
+            {
+              $lookup: {
+                from: 'reactions',
+                localField: '_id',
+                foreignField: 'to',
+                as: 'reactions'
+              }
+            },
+            {
+              $match: {
+                createdAt: { $lt: new Date(created) },
+                reactions: {
+                  $elemMatch: { user: { $eq: mongoose.Types.ObjectId(userId) } }
+                }
+              }
+            },
+            {
+              $sort: {
+                createdAt: -1
+              }
+            },
+            {
+              $limit: 5
+            }
+          ])
+        posts = await Post.populate(posts, { path: 'createdBy', select: 'username' })
+        let lastPost = posts[Object.keys(posts).length - 1] // ha üres akkor nincs több post
+        if (lastPost) {
+          SSEConnectionHandler.buildAndSetConnectionQuery('post', sseId, posts)
+        }
+        res.status(200).send(posts)
+      }
+    } catch (err) {
+      res.status(500).send({
+        error: 'an error has occured trying to fetch the posts'
+      })
+    }
+  },
+
+  async getCommentedPostsOfUser (req, res) {
+    console.log('ittvagyok')
+    let sseId = req.user ? req.user.sseId : null
+    let userId = req.params.userId
+    let created = req.query.created
+    try {
+      if (userId && !created) { // TODO esetek
+        let posts = await Post
+          .aggregate([
+            {
+              $lookup: {
+                from: 'reactions',
+                localField: '_id',
+                foreignField: 'to',
+                as: 'reactions'
+              }
+            },
+            {
+              $lookup: {
+                from: 'comments',
+                localField: '_id',
+                foreignField: 'to',
+                as: 'comments'
+              }
+            },
+            {
+              $match: {
+                comments: {
+                  $elemMatch: { createdBy: { $eq: mongoose.Types.ObjectId(userId) } }
+                }
+              }
+            },
+            {
+              $sort: {
+                createdAt: -1
+              }
+            },
+            {
+              $limit: 5
+            }
+          ])
+        posts = await Post.populate(posts, { path: 'createdBy', select: 'username' })
+        SSEConnectionHandler.flushQuery('post', sseId)
+        SSEConnectionHandler.buildAndSetConnectionQuery('post', sseId, posts)
+        res.status(200).send(posts)
+      } else if (userId && created) {
+        let posts = await Post
+          .aggregate([
+            {
+              $lookup: {
+                from: 'reactions',
+                localField: '_id',
+                foreignField: 'to',
+                as: 'reactions'
+              }
+            },
+            {
+              $lookup: {
+                from: 'comments',
+                localField: '_id',
+                foreignField: 'to',
+                as: 'comments'
+              }
+            },
+            {
+              $match: {
+                createdAt: { $lt: new Date(created) },
+                comments: {
+                  $elemMatch: { createdBy: { $eq: mongoose.Types.ObjectId(userId) } }
+                }
+              }
+            },
+            {
+              $sort: {
+                createdAt: -1
+              }
+            },
+            {
+              $limit: 5
+            }
+          ])
+        posts = await Post.populate(posts, { path: 'createdBy', select: 'username' })
+        let lastPost = posts[Object.keys(posts).length - 1] // ha üres akkor nincs több post
+        if (lastPost) {
+          SSEConnectionHandler.buildAndSetConnectionQuery('post', sseId, posts)
+        }
+        res.status(200).send(posts)
+      }
+    } catch (err) {
+      console.log(err)
       res.status(500).send({
         error: 'an error has occured trying to fetch the posts'
       })

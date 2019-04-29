@@ -21,6 +21,22 @@ export default {
     }
     return Api().get(`/posts/user/${postData.userId}${query}`)
   },
+  getReactedPostsOfUser (postData) {
+    let query = ''
+    if (postData.lastPost) {
+      let createdAt = querystring.stringify({ created: postData.lastPost.createdAt })
+      query += `?${createdAt}`
+    }
+    return Api().get(`/posts/reacted/user/${postData.userId}${query}`)
+  },
+  getCommentedPostsOfUser (postData) {
+    let query = ''
+    if (postData.lastPost) {
+      let createdAt = querystring.stringify({ created: postData.lastPost.createdAt })
+      query += `?${createdAt}`
+    }
+    return Api().get(`/posts/commented/user/${postData.userId}${query}`)
+  },
   upload (formData) {
     console.log('uploadService: ' + formData.get('createdBy'))
     return Api().post('upload', formData, {

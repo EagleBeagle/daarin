@@ -1,7 +1,10 @@
 <template>
+  <v-container>
+  <transition name = "fade">
+    <UserPage class="userInfo" v-if="onUserPage" @switchedTab="getPostsOfUser"/>
+  </transition>
   <v-layout justify-center>
     <v-flex v-show="showPostInfo" md3 lg4 hidden-sm-and-down>
-      <div>left side</div>
     </v-flex>
     <v-flex xs12 sm12 md6 lg4>
     <PostFeed
@@ -16,12 +19,14 @@
       </transition>
     </v-flex>
   </v-layout>
+  </v-container>
 </template>
 
 <script>
 import {mapState} from 'vuex'
 import PostService from '@/services/PostService'
 import PostFeed from './PostFeed'
+import UserPage from './UserPage'
 import PieChart from '../PieChart.js'
 export default {
   data () {
@@ -33,9 +38,12 @@ export default {
       hiddenPosts: [],
       filteredPost: null,
       filteredPostIndex: null,
+      onUserPage: false,
       savedScrollPos: null,
       showPostInfo: false,
-      chartData: null
+      chartData: null,
+      canLoadMorePosts: true,
+      userPageTab: 0
     }
   },
   beforeDestroy () {
@@ -49,7 +57,7 @@ export default {
       'eventSourceChanged'
     ]),
     sortedReactions: function () {
-      if (this.posts && this.posts[0].reactions) {
+      if (this.posts && this.posts[0] && this.posts[0].reactions) {
         let sortedReactions = [0, 0, 0, 0, 0, 0, 0]
         this.posts[0].reactions.forEach((reaction) => {
           sortedReactions[reaction.type] += 1
@@ -88,14 +96,31 @@ export default {
       }
       if (to.name === 'postPage') {
         this.showPostInfo = true
-      }
-      if (to.name === 'home') {
+        console.log('true postPage')
+      } else {
+        console.log('false postPage')
         this.showPostInfo = false
       }
       if (to.name === 'userPage') {
-        console.log('lel')
+        this.onUserPage = true
+        console.log(this.onUserPage)
+      } else {
+        this.onUserPage = false
+        console.log(this.onUserPage)
       }
-      if ((from.name === 'postPage' || from.name === 'userPage') && to.name === 'home' && this.hiddenPosts[this.filteredPostIndex] && this.hiddenPosts[this.filteredPostIndex]._id === this.posts[0]._id && this.hiddenPosts.length > 1) {
+      if (to.name === 'userPage') {
+        this.canLoadMorePosts = false
+        this.posts = []
+        this.posts = this.getPostsOfUser('own')
+        this.userPageTab = 0
+        setTimeout(() => {
+          this.canLoadMorePosts = true
+        }, 1000)
+      }
+      if (from.name === 'userPage' && to.name !== 'postPage') {
+        this.post = []
+      }
+      if (from.name === 'postPage' && (to.name !== 'postPage') && this.posts && this.posts[0] && this.hiddenPosts[this.filteredPostIndex] && this.hiddenPosts[this.filteredPostIndex]._id === this.posts[0]._id && this.hiddenPosts.length > 1) {
         // this.hiddenPosts.splice(this.filteredPostIndex, 0, this.posts[0])
         // let copy = JSON.parse(JSON.stringify(this.hiddenPosts))
         // let filteredPost = this.posts[0] // ?
@@ -107,17 +132,21 @@ export default {
         this.hiddenPosts[this.filteredPostIndex] = this.posts[0]
         this.posts = JSON.parse(JSON.stringify(this.hiddenPosts))
         this.hiddenPosts = []
-      } else if ((from.name === 'home' || from.name === 'userPage') && to.name === 'postPage' && this.hiddenPosts[this.filteredPostIndex] && this.hiddenPosts[this.filteredPostIndex]._id === this.posts[0]._id) {
+      } else if (from.name !== 'postPage' && to.name === 'postPage' && this.hiddenPosts[this.filteredPostIndex] && this.hiddenPosts[this.filteredPostIndex]._id === this.posts[0]._id) {
         console.log('mukokokokookokook')
       } else if (from.name === 'home' && to.name === 'home') {
         await this.getPosts()
-      } else if (from.name === 'home' && to.name === 'postPage') {
+      } else if (from.name !== 'postPage' && to.name === 'postPage') {
         await this.getPost()
       } else if (from.name === 'postPage' && to.name === 'postPage') {
         if (from.params.postId !== to.params.postId) {
           await this.getPost()
         }
-      } else if (from.name === 'postPage' && to.name === 'home') {
+      } else if (from.name !== 'home' && to.name === 'home') {
+        await this.getPosts()
+      }
+      if (from.name !== 'postPage' && to.name === 'home') {
+        this.posts = []
         await this.getPosts()
       }
       console.log('SAODNAJSADUIADHSAUDIAHDAU')
@@ -138,6 +167,9 @@ export default {
     if (this.$route.params.postId) {
       this.showPostInfo = true
       await this.getPost()
+    } else if (this.$route.params.userId) {
+      this.onUserPage = true
+      await this.getPostsOfUser('own')
     } else { // külön method
       await this.getPosts()
     }
@@ -163,20 +195,22 @@ export default {
       if (this.user) {
         this.postStreamCb = (event) => {
           let streamedReacts = JSON.parse(event.data)
-          this.posts.forEach(function (post) {
-            let streamedReactsOfPost = streamedReacts.find(streamedReact => streamedReact._id === post._id)
-            if (streamedReactsOfPost) {
-              post.reactions = streamedReactsOfPost.reactions
-            } else {
-              post.reactions = []
-            }
-            return post
-          })
+          if (this.posts && this.posts[0]) {
+            this.posts.forEach(function (post) {
+              let streamedReactsOfPost = streamedReacts.find(streamedReact => streamedReact._id === post._id)
+              if (streamedReactsOfPost) {
+                post.reactions = streamedReactsOfPost.reactions
+              } else {
+                post.reactions = []
+              }
+              return post
+            })
+          }
+          console.log(streamedReacts)
           /* if (streamedPosts.length > this.posts.length) { // TODO
             this.isNewPostAvailable = true
             console.log('VAN ÚJ')
           } */
-          console.log(streamedReacts)
         }
         this.postStreamEvent = 'post'
         this.eventSource.addEventListener(this.postStreamEvent, this.postStreamCb)
@@ -207,9 +241,29 @@ export default {
       }
     },
     async loadMorePosts () {
-      if (this.posts) {
+      if (this.posts && this.canLoadMorePosts) {
         let lastPost = this.posts[Object.keys(this.posts).length - 1]
-        let morePosts = (await PostService.index(lastPost, 5)).data
+        let morePosts = null
+        if (this.$route.name === 'home') {
+          morePosts = (await PostService.index(lastPost, 5)).data
+        } else if (this.$route.name === 'userPage') {
+          if (this.userPageTab === 0) {
+            morePosts = (await PostService.getPostsOfUser({
+              userId: this.$route.params.userId,
+              lastPost: lastPost
+            })).data
+          } else if (this.userPageTab === 1) {
+            morePosts = (await PostService.getReactedPostsOfUser({
+              userId: this.$route.params.userId,
+              lastPost: lastPost
+            })).data
+          } else if (this.userPageTab === 2) {
+            morePosts = (await PostService.getCommentedPostsOfUser({
+              userId: this.$route.params.userId,
+              lastPost: lastPost
+            })).data
+          }
+        }
         for (let newPost of morePosts) {
           this.posts.push(newPost)
         }
@@ -228,15 +282,44 @@ export default {
         }
       })
       // this.hiddenPosts.splice(this.filteredPostIndex, 1)
-      this.savedScrollPos = document.documentElement.scrollTop
+      this.savedScrollPos = document.documentElement.scrollTop // probably nem kell
       this.posts = []
       this.posts.push(post)
       // document.getElementsByTagName('html')[0].style.overflow = 'auto'
       // postElement.style.width = 'inherit'
+    },
+    async getPostsOfUser (type) {
+      console.log('haliho')
+      this.posts = []
+      try {
+        let response = null
+        if (type === 'own') {
+          this.userPageTab = 0
+          response = await PostService.getPostsOfUser({
+            userId: this.$route.params.userId
+          })
+        } else if (type === 'reacted') {
+          this.userPageTab = 1
+          response = await PostService.getReactedPostsOfUser({
+            userId: this.$route.params.userId
+          })
+        } else if (type === 'commented') {
+          this.userPageTab = 2
+          response = await PostService.getCommentedPostsOfUser({
+            userId: this.$route.params.userId
+          })
+        }
+        this.posts = response.data
+        console.log('mégposzt')
+        console.log(response.data)
+      } catch (err) {
+        console.log(err)
+      }
     }
   },
   components: {
     PostFeed,
+    UserPage,
     PieChart
   }
 }
@@ -244,7 +327,22 @@ export default {
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+.userInfo {
+  max-height: 403px;
+}
 .postChart {
   animation-delay: 150ms;
+}
+.fade-enter-active {
+  transition: max-height .5s;
+  animation-duration: 300ms;
+}
+.fade-leave-active {
+  transition: max-height .5s;
+  animation-duration: 1ms;
+}
+
+.fade-enter, .fade-leave-to {
+  max-height: 0;
 }
 </style>

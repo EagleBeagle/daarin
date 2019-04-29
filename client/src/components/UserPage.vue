@@ -1,6 +1,4 @@
 <template>
-  <v-container>
-  <transition name="fade">
   <v-layout v-if="user" justify-center row wrap>
       <v-flex mt-4 xs12 sm12 md6 lg6 align-self-center>
         <v-layout justify-center row-wrap mx-0 px-0>
@@ -30,7 +28,7 @@
       </v-flex>
       <v-flex xs12 mt-5 mb-3>
         <v-tabs
-          v-model="activeTab"
+          v-model="active"
           centered
           fixed-tabs
           color="#ECEFF1"
@@ -47,34 +45,22 @@
           </v-tab>
         </v-tabs>
       </v-flex>
-      <v-layout v-show="posts" justify-center pa-5 pt-3>
-        <v-flex xs12 sm12 md6 lg4>
-          <div v-for ="post in posts" :key="post._id">
-              <AppPost :id="'post-' + post._id" :post="post" @filter-post="filterPost"/>
-          </div>
-        </v-flex>
-      </v-layout>
   </v-layout>
-  </transition>
-  </v-container>
 </template>
 
 <script>
 import UserService from '@/services/UserService'
-import PostServcie from '@/services/PostService'
-import AppPost from './AppPost'
 import {mapState} from 'vuex'
 export default {
   data () {
     return {
       user: null,
-      posts: null,
-      activeTab: null
+      active: null
     }
   },
   async mounted () {
     await this.getUser()
-    await this.getPostsOfUser()
+    console.log(this.user)
   },
   computed: {
     ...mapState([
@@ -82,9 +68,14 @@ export default {
     ])
   },
   watch: {
-    async active (val) {
+    active (val) {
+      console.log('itten')
       if (val === 0) {
-        await this.getPostsOfUser()
+        this.$emit('switchedTab', 'own')
+      } else if (val === 1) {
+        this.$emit('switchedTab', 'reacted')
+      } else if (val === 2) {
+        this.$emit('switchedTab', 'commented')
       }
     }
   },
@@ -96,23 +87,7 @@ export default {
       } catch (err) {
         console.log(err)
       }
-    },
-    async getPostsOfUser () {
-      try {
-        let response = await PostServcie.getPostsOfUser({
-          userId: this.user._id
-        })
-        this.posts = response.data
-      } catch (err) {
-        console.log(err)
-      }
-    },
-    filterPost (postId) {
-      console.log('FILTEREZÓNK')
     }
-  },
-  components: {
-    AppPost
   }
 }
 </script>

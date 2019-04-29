@@ -17,7 +17,11 @@
         </v-btn>
       </v-layout>
       <div>
-        <div class="subheading light-blue--text pb-1">{{ post.createdBy.username }}</div>
+        <div
+          class="subheading light-blue--text pb-1"
+          style="cursor: pointer"
+          @click="$router.push({ name: 'userPage', params: { userId: post.createdBy._id } })"
+          >{{ post.createdBy.username }}</div>
       </div>
       <v-divider/>
       <v-img

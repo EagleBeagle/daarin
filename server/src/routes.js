@@ -28,6 +28,14 @@ module.exports = (app) => {
     IsAuthenticated.check,
     PostController.getPostsOfUser)
 
+  app.get('/posts/reacted/user/:userId',
+    IsAuthenticated.check,
+    PostController.getReactedPostsOfUser)
+
+  app.get('/posts/commented/user/:userId',
+    IsAuthenticated.check,
+    PostController.getCommentedPostsOfUser)
+
   app.get('/posts/:postId/comments',
     IsAuthenticated.check,
     CommentController.getCommentsOfPost)
