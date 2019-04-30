@@ -32,7 +32,7 @@
       <v-divider/>
       <v-card-actions class="px-0 py-0">
         <v-container pa-0 ma-0>
-          <v-layout justify-space-around class="py-1 px-0">
+          <v-layout justify-center class="py-1 px-0" row wrap>
               <v-flex>
                 <v-btn
                   flat

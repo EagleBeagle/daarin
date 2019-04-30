@@ -414,6 +414,8 @@ module.exports = {
           to: postId,
           type: type
         }
+        let post = await Post.findOne({ _id: postId })
+        await User.findOneAndUpdate({ _id: post.createdBy }, { $inc: { 'reactionCount': 1 } })
         await Reaction.create(reaction)
         res.status(201).send({
           success: true
@@ -432,6 +434,8 @@ module.exports = {
     let postId = req.params.postId
     try {
       if (type >= 0 && type <= 6) {
+        let post = await Post.findOne({ _id: postId })
+        await User.findOneAndUpdate({ _id: post.createdBy }, { $inc: { 'reactionCount': -1 } })
         await Reaction.deleteOne({
           to: postId,
           user: req.user._id,

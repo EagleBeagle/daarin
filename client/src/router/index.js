@@ -50,11 +50,9 @@ router.beforeEach(async (to, from, next) => {
   }
   let restrictedPages = []
   if (store.state.user) {
-    console.log('bejelentkezve')
-    restrictedPages = ['/Login', '/Register']
+    restrictedPages = ['/login', '/register']
   }
   const unauthorized = restrictedPages.includes(to.path)
-
   if (unauthorized) {
     return next('/home')
   }

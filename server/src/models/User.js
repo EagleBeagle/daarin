@@ -11,12 +11,7 @@ const UserSchema = new Schema({
   ownPosts: [
     { type: Schema.Types.ObjectId, ref: 'Post' }
   ],
-  likedPosts: [
-    { type: Schema.Types.ObjectId, ref: 'Post' }
-  ],
-  dislikedPosts: [
-    { type: Schema.Types.ObjectId, ref: 'Post' }
-  ],
+  reactionCount: { type: Number, default: 0 },
   likedComments: [
     { type: Schema.Types.ObjectId, ref: 'Comment' }
   ],

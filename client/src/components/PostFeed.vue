@@ -79,9 +79,10 @@ div {
 }
 .zoom-leave-active {
   position: fixed;
+  animation-duration: 300ms;
 }
 .fade {
-  animation-duration: 1ms;
+  animation-duration: 200ms;
 }
 .fade-leave-active {
   position: fixed;

@@ -12,6 +12,7 @@ module.exports = {
       postQuery: null,
       postIDs: new Set(),
       userQuery: null,
+      userIDs: new Set(),
       commentQuery: null,
       commentIDs: new Set(),
       replyQuery: null,
@@ -109,6 +110,9 @@ module.exports = {
   flushQuery (type, sseId) {
     if (connections[sseId]) {
       switch (type) {
+        case 'user':
+          connections[sseId].userIDs.clear()
+          break
         case 'post':
           connections[sseId].postIDs.clear()
           break

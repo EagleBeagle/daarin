@@ -56,6 +56,7 @@ module.exports = (app) => {
     AuthenticationController.login)
 
   app.get('/users/:userId',
+    IsAuthenticated.check,
     UserController.getUser)
 
   app.post('/upload',

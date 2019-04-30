@@ -1,24 +1,40 @@
 <template>
-  <v-layout v-if="user" justify-center row wrap>
-      <v-flex mt-4 xs12 sm12 md6 lg6 align-self-center>
+  <v-layout v-if="shownUser" justify-center row wrap>
+      <v-flex mt-4 xs12 sm12 md10 lg5 align-self-center>
         <v-layout justify-center row-wrap mx-0 px-0>
-        <v-flex ml-5 pl-5 xs6 sm4 md4 lg4>
+        <v-flex ml-5 pl-5 xs12 sm12 md4 lg6>
           <v-avatar
             size="170">
             <v-img id="avatar" src="http://res.cloudinary.com/daarin/image/upload/v1553966054/kkrlwpyyo9zhtfr8tgsf.jpg"></v-img>
           </v-avatar>
         </v-flex>
-        <v-flex xs4 align-self-center>
+        <v-flex xs12 sm12 md4 lg5 align-self-center>
           <v-layout row wrap mr-4 pr-4 align-center justify-start>
             <v-flex xs12 mb-3>
-              <span class="display-1">{{ user.username }}</span>
+              <span class="display-1">{{ shownUser.username }}</span>
+              <v-btn
+                v-if="user && user.username === shownUser.username"
+                flat
+                small
+                absolute
+                class="ml-2"
+                fab>
+                <v-icon
+                  class="grey--text"
+                  >settings
+                </v-icon>
+              </v-btn>
             </v-flex>
-            <v-flex xs6>
-              <span class="title light-blue--text font-weight-bold light-blue--lighten-2">99</span>
+            <v-flex xs6 class="userInfoFlex">
+              <transition :name="postCountDirection" mode="out-in">
+                <span :key="postCount" class="title light-blue--text font-weight-bold light-blue--lighten-2">{{ postCount }}</span>
+              </transition>
               <span class="body-1">posts</span>
             </v-flex>
-            <v-flex xs6>
-              <span class="title light-blue--text font-weight-bold light-blue--lighten-2">99</span>
+            <v-flex xs6 class="userInfoFlex">
+              <transition :name="reactionCountDirection" mode="out-in">
+                <span :key="reactionCount" class="title light-blue--text font-weight-bold light-blue--lighten-2">{{ reactionCount }}</span>
+              </transition>
               <span class="body-1">reactions</span>
             </v-flex>
           </v-layout>
@@ -54,18 +70,37 @@ import {mapState} from 'vuex'
 export default {
   data () {
     return {
-      user: null,
-      active: null
+      shownUser: null,
+      active: null,
+      userStreamCb: null,
+      postCountDirection: null,
+      reactionCountDirection: null
     }
   },
   async mounted () {
+    if (this.$route.params.userId) {}
     await this.getUser()
-    console.log(this.user)
+    await this.addSSEListener()
+    console.log(this.shownUser)
+  },
+  beforeDestroy () {
+    this.eventSource.removeEventListener('user', this.userStreamCb)
   },
   computed: {
     ...mapState([
-      'eventSource'
-    ])
+      'eventSource',
+      'user'
+    ]),
+    postCount: function () {
+      if (this.shownUser) {
+        return this.shownUser.postCount
+      }
+    },
+    reactionCount: function () {
+      if (this.shownUser) {
+        return this.shownUser.reactionCount
+      }
+    }
   },
   watch: {
     active (val) {
@@ -77,13 +112,37 @@ export default {
       } else if (val === 2) {
         this.$emit('switchedTab', 'commented')
       }
+    },
+    postCount (newVal, oldVal) {
+      if (newVal > oldVal) {
+        this.postCountDirection = 'scoreUp'
+      } else {
+        this.postCountDirection = 'scoreDown'
+      }
+    },
+    reactionCount (newVal, oldVal) {
+      if (newVal > oldVal) {
+        this.reactionCountDirection = 'scoreUp'
+      } else {
+        this.reactionCountDirection = 'scoreDown'
+      }
     }
   },
   methods: {
+    async addSSEListener () {
+      if (this.user) {
+        this.userStreamCb = (event) => {
+          let streamedUser = JSON.parse(event.data)
+          this.shownUser = streamedUser[0]
+          console.log(streamedUser)
+        }
+        this.eventSource.addEventListener('user', this.userStreamCb)
+      }
+    },
     async getUser () {
       try {
         let response = await UserService.getUser(this.$route.params.userId)
-        this.user = response.data
+        this.shownUser = response.data[0]
       } catch (err) {
         console.log(err)
       }
@@ -93,5 +152,41 @@ export default {
 </script>
 
 <style scoped>
+.scoreUp-enter-active {
+  transition: all .3s ease;
+}
+.scoreUp-leave-active {
+  transition: all .3s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+}
+.scoreUp-enter
+/* .slide-fade-leave-active for <2.1.8 */ {
+  transform: translateY(10px);
+  opacity: 0;
+}
 
+.scoreUp-leave-to {
+  transform: translateY(-10px);
+  opacity: 0;
+}
+
+.scoreDown-enter-active {
+  transition: all .2s ease;
+}
+.scoreDown-leave-active {
+  transition: all .2s cubic-bezier(1.0, 0.5, 0.8, 1.0);
+}
+.scoreDown-enter
+/* .slide-fade-leave-active for <2.1.8 */ {
+  transform: translateY(-10px);
+  opacity: 0;
+}
+
+.scoreDown-leave-to {
+  transform: translateY(10px);
+  opacity: 0;
+}
+
+.userInfoFlex {
+  overflow: visible;
+}
 </style>

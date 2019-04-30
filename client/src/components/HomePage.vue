@@ -1,6 +1,7 @@
 <template>
   <v-container>
-  <transition name = "fade">
+  <v-layout class="userInfo"></v-layout>
+  <transition name ="fade">
     <UserPage class="userInfo" v-if="onUserPage" @switchedTab="getPostsOfUser"/>
   </transition>
   <v-layout justify-center>
@@ -87,31 +88,24 @@ export default {
       await this.addSSEListeners()
     },
     async '$route' (to, from) {
-      console.log('ez mukodik')
-      console.log(from)
-      console.log(to)
       let postElements = document.getElementsByClassName('post')
       for (let element of postElements) {
         element.style.width = element.clientWidth + 'px'
       }
       if (to.name === 'postPage') {
         this.showPostInfo = true
-        console.log('true postPage')
       } else {
-        console.log('false postPage')
         this.showPostInfo = false
       }
       if (to.name === 'userPage') {
         this.onUserPage = true
-        console.log(this.onUserPage)
       } else {
         this.onUserPage = false
-        console.log(this.onUserPage)
       }
       if (to.name === 'userPage') {
         this.canLoadMorePosts = false
-        this.posts = []
-        this.posts = this.getPostsOfUser('own')
+        // this.posts = []
+        // this.posts = await this.getPostsOfUser('own')
         this.userPageTab = 0
         setTimeout(() => {
           this.canLoadMorePosts = true
@@ -120,7 +114,16 @@ export default {
       if (from.name === 'userPage' && to.name !== 'postPage') {
         this.post = []
       }
-      if (from.name === 'postPage' && (to.name !== 'postPage') && this.posts && this.posts[0] && this.hiddenPosts[this.filteredPostIndex] && this.hiddenPosts[this.filteredPostIndex]._id === this.posts[0]._id && this.hiddenPosts.length > 1) {
+      if (from.name === 'userPage' && to.name === 'userPage') {
+        if (from.params.userId !== to.params.userId) {
+          this.onUserPage = false
+          setTimeout(() => {
+            this.onUserPage = true
+          }, 1)
+        }
+      }
+
+      if (from.name === 'postPage' && to.name !== 'postPage' && to.name !== 'userPage' && this.posts && this.posts[0] && this.hiddenPosts[this.filteredPostIndex] && this.hiddenPosts[this.filteredPostIndex]._id === this.posts[0]._id && this.hiddenPosts.length > 1) {
         // this.hiddenPosts.splice(this.filteredPostIndex, 0, this.posts[0])
         // let copy = JSON.parse(JSON.stringify(this.hiddenPosts))
         // let filteredPost = this.posts[0] // ?
@@ -128,13 +131,13 @@ export default {
         // let lower = copy.slice(this.filteredPostIndex, copy.length)
         // this.posts = [...this.posts, ...this.hiddenPosts]
         // this.posts = [...this.posts, ...lower]
-        console.log('hiiiiiii')
+        console.log('itvtadsa')
         this.hiddenPosts[this.filteredPostIndex] = this.posts[0]
         this.posts = JSON.parse(JSON.stringify(this.hiddenPosts))
         this.hiddenPosts = []
       } else if (from.name !== 'postPage' && to.name === 'postPage' && this.hiddenPosts[this.filteredPostIndex] && this.hiddenPosts[this.filteredPostIndex]._id === this.posts[0]._id) {
-        console.log('mukokokokookokook')
-      } else if (from.name === 'home' && to.name === 'home') {
+      } else if (from.name !== 'postPage' && to.name === 'home') {
+        this.posts = []
         await this.getPosts()
       } else if (from.name !== 'postPage' && to.name === 'postPage') {
         await this.getPost()
@@ -145,11 +148,6 @@ export default {
       } else if (from.name !== 'home' && to.name === 'home') {
         await this.getPosts()
       }
-      if (from.name !== 'postPage' && to.name === 'home') {
-        this.posts = []
-        await this.getPosts()
-      }
-      console.log('SAODNAJSADUIADHSAUDIAHDAU')
       setTimeout(() => {
         let postElements = document.getElementsByClassName('post')
         for (let element of postElements) {
@@ -169,7 +167,7 @@ export default {
       await this.getPost()
     } else if (this.$route.params.userId) {
       this.onUserPage = true
-      await this.getPostsOfUser('own')
+      // await this.getPostsOfUser('own')
     } else { // külön method
       await this.getPosts()
     }
@@ -220,11 +218,12 @@ export default {
           console.log(data)
         }
         this.postStreamEvent = 'message'
-        this.$store.state.eventSource.addEventListener(this.postStreamEvent, this.postStreamCb)
+        this.eventSource.addEventListener(this.postStreamEvent, this.postStreamCb)
       }
       // this.$store.dispatch('closeEventSource')
     },
     async getPost () {
+      console.log('getPost')
       try {
         let result = await PostService.getPost(this.$route.params.postId)
         this.posts = [result.data[0]]
@@ -233,6 +232,7 @@ export default {
       }
     },
     async getPosts () {
+      console.log('getPosts')
       try {
         let result = await PostService.index()
         this.posts = result.data
@@ -241,6 +241,7 @@ export default {
       }
     },
     async loadMorePosts () {
+      console.log('loadMorePosts')
       if (this.posts && this.canLoadMorePosts) {
         let lastPost = this.posts[Object.keys(this.posts).length - 1]
         let morePosts = null
@@ -270,6 +271,7 @@ export default {
       }
     },
     filterPost (post) {
+      console.log('filterPost')
       this.filteredPost = post
       /* let postElements = document.getElementsByClassName('post')
       for (let element of postElements) {
@@ -289,9 +291,13 @@ export default {
       // postElement.style.width = 'inherit'
     },
     async getPostsOfUser (type) {
-      console.log('haliho')
-      this.posts = []
+      console.log('getPostsOfUser')
+      let postElements = document.getElementsByClassName('post')
+      for (let element of postElements) {
+        element.style.width = element.clientWidth + 'px'
+      }
       try {
+        this.posts = null
         let response = null
         if (type === 'own') {
           this.userPageTab = 0
@@ -310,11 +316,15 @@ export default {
           })
         }
         this.posts = response.data
-        console.log('mégposzt')
-        console.log(response.data)
       } catch (err) {
         console.log(err)
       }
+      setTimeout(() => {
+        let postElements = document.getElementsByClassName('post')
+        for (let element of postElements) {
+          element.style.width = ''
+        }
+      }, 600)
     }
   },
   components: {
