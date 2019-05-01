@@ -14,6 +14,7 @@
               <span class="display-1">{{ shownUser.username }}</span>
               <v-btn
                 v-if="user && user.username === shownUser.username"
+                @click="$router.push({ name: 'userSettings', params: { userId: shownUser._id } })"
                 flat
                 small
                 absolute

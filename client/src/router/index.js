@@ -3,6 +3,7 @@ import Router from 'vue-router'
 import Home from '@/components/HomePage'
 import Register from '@/components/RegisterPage'
 import Login from '@/components/LoginPage'
+import UserSettings from '@/components/UserSettings'
 import store from '@/store/store'
 // import PostPage from '@/components/PostPage'
 
@@ -36,6 +37,11 @@ const router = new Router({
       component: Home
     },
     {
+      path: '/users/:userId/settings',
+      name: 'userSettings',
+      component: UserSettings
+    },
+    {
       path: '*',
       redirect: 'home'
     }
@@ -50,6 +56,9 @@ router.beforeEach(async (to, from, next) => {
   }
   let restrictedPages = []
   if (store.state.user) {
+    if (to.name === 'userSettings' && to.params.userId !== store.state.user._id) {
+      return next('/home')
+    }
     restrictedPages = ['/login', '/register']
   }
   const unauthorized = restrictedPages.includes(to.path)
