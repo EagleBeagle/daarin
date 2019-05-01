@@ -1,9 +1,9 @@
 <template>
   <v-layout mt-5 pt-3 justify-center>
-    <v-flex xs4>
+    <v-flex xs10 sm8 md6 lg4>
       <v-card class="pa-3">
         <v-layout justify-center row wrap>
-          <v-flex xs3 offset-xs3>
+          <v-flex xs5 sm3 md3 lg3 offset-xs1 offset-sm3 offset-md3 offset-lg3>
             <v-avatar
               size="80">
               <v-img id="avatar" src="http://res.cloudinary.com/daarin/image/upload/v1553966054/kkrlwpyyo9zhtfr8tgsf.jpg"></v-img>
