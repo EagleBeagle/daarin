@@ -387,15 +387,17 @@ module.exports = {
     dUri.format(path.extname(req.file.originalname).toString(), req.file.buffer)
 
     try {
-      let result = await cloudinary.v2.uploader.upload(dUri.content)
+      let result = await cloudinary.v2.uploader.upload(dUri.content, {
+        folder: 'posts'
+      })
       let newPost = {
         title: req.body.title,
         slug: uniqueSlug(req.body._id),
         createdBy: req.body.createdBy,
         url: result.url
       }
-      await Post.create(newPost)
-      res.status(201).json({ post: newPost })
+      newPost = await Post.create(newPost)
+      res.status(201).send(newPost)
     } catch (err) {
       console.log(err)
       res.status(500).send({

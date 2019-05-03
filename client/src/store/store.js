@@ -34,6 +34,10 @@ export default new Vuex.Store({
     setUser (state, user) {
       state.user = user
     },
+    changeUserAvatar (state, avatar) {
+      state.user.avatar = avatar
+      console.log(state.user.avatar)
+    },
     closeComments (state) {
       state.closeComments = !state.closeComments
     },
@@ -71,6 +75,9 @@ export default new Vuex.Store({
     },
     setUser ({commit}, user) {
       commit('setUser', user)
+    },
+    changeUserAvatar ({commit}, avatar) {
+      commit('changeUserAvatar', avatar)
     },
     closeComments ({commit}) {
       commit('closeComments')

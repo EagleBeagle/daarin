@@ -79,7 +79,8 @@ export default {
         console.log(reply)
         let localReply = JSON.parse(JSON.stringify(reply))
         localReply.createdBy = {
-          username: this.user.username
+          username: this.user.username,
+          avatar: this.user.avatar
         }
         localReply.sinceCreated = this.timeDifference(localReply.createdAt)
         let re = new RegExp('^@\\w+')

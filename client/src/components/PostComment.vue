@@ -2,7 +2,10 @@
   <v-container align-center pt-2 pb-0 px-0>
     <v-layout justify-center>
       <v-flex xs1 align-self-center mr-3>
-        <v-img id="avatar" width="50px" height="50px" src="http://res.cloudinary.com/daarin/image/upload/v1553966054/kkrlwpyyo9zhtfr8tgsf.jpg"></v-img>
+        <v-avatar>
+          <v-img v-if="comment.createdBy.avatar" id="avatar" :src="comment.createdBy.avatar"></v-img>
+          <v-icon id="avatar-icon" large v-else>fas fa-user-circle</v-icon>
+        </v-avatar>
       </v-flex>
       <v-flex xs9 align-self-start text-xs-left px-0>
         <span class="title pl-3 pb-1">{{ comment.createdBy.username }}</span>
@@ -83,7 +86,11 @@
       <v-container v-if="replying" pa-0 ma-0>
         <v-layout px-3 pt-3 pb-4 pl-5 ml-4 justify-center row wrap>
           <v-flex xs1 align-self-center mr-3>
-          <v-img id="avatar" width="30px" height="30px" src="http://res.cloudinary.com/daarin/image/upload/v1553966054/kkrlwpyyo9zhtfr8tgsf.jpg"></v-img>
+          <v-avatar
+            size="30">
+            <v-img v-if="user.avatar" id="avatar" :src="user.avatar"></v-img>
+            <v-icon id="avatar-icon-small" large v-else>fas fa-user-circle</v-icon>
+          </v-avatar>
         </v-flex>
           <v-flex pa-0 pb-1 pt-0 ma-0 mb-0 xs8>
             <v-textarea
@@ -256,6 +263,14 @@ export default {
 <style scoped>
 #avatar {
   border-radius: 20px;
+}
+
+#avatar-icon {
+  font-size: 50px;
+}
+
+#avatar-icon-smal {
+  font-size: 30px;
 }
 
 #commentBody {

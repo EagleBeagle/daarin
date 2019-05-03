@@ -72,14 +72,14 @@ div {
   animation-duration: 500ms;
 }
 .filtered {
-  animation-duration: 200ms;
+  animation-duration: 500ms;
 }
 .unfiltered {
-  animation-duration: 200ms;
+  animation-duration: 500ms;
 }
 .zoom-leave-active {
   position: fixed;
-  animation-duration: 300ms;
+  animation-duration: 500ms;
 }
 .fade {
   animation-duration: 200ms;

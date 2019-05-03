@@ -5,7 +5,8 @@
         <v-flex ml-5 pl-5 xs12 sm12 md4 lg6>
           <v-avatar
             size="170">
-            <v-img id="avatar" src="http://res.cloudinary.com/daarin/image/upload/v1553966054/kkrlwpyyo9zhtfr8tgsf.jpg"></v-img>
+            <v-img v-if="user.avatar" id="avatar" :src="user.avatar"></v-img>
+            <v-icon v-else id="avatar-icon">fas fa-user-circle</v-icon>
           </v-avatar>
         </v-flex>
         <v-flex xs12 sm12 md4 lg5 align-self-center>
@@ -153,6 +154,9 @@ export default {
 </script>
 
 <style scoped>
+#avatar-icon {
+  font-size: 170px;
+}
 .scoreUp-enter-active {
   transition: all .3s ease;
 }

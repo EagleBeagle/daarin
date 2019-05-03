@@ -1,6 +1,15 @@
 const User = require('../models/User.js')
 const mongoose = require('mongoose')
 const SSEConnectionHandler = require('../utils/SSEConnectionHandler.js')
+const Datauri = require('datauri')
+const path = require('path')
+const cloudinary = require('cloudinary')
+
+cloudinary.config({ // ezt valahol globalizálni
+  cloud_name: 'daarin',
+  api_key: '744822548765916',
+  api_secret: 'KTogd86JwWJzB0HJUYXI-puj084'
+})
 
 module.exports = {
   async getUser (req, res) {
@@ -46,6 +55,37 @@ module.exports = {
     } catch (err) {
       res.status(500).send({
         error: 'An error has occured while fetching the user.'
+      })
+    }
+  },
+
+  async getUserSettings (req, res) {
+    let userId = req.user._id
+    try {
+      let user = await User.findOne({ _id: userId })
+      res.status(200).send(user)
+    } catch (err) {
+      console.log(err)
+      res.status(500).send({
+        error: 'An error has occured while fetching the user.'
+      })
+    }
+  },
+
+  async changeAvatar (req, res) {
+    const dUri = new Datauri()
+    dUri.format(path.extname(req.file.originalname).toString(), req.file.buffer)
+
+    try {
+      let result = await cloudinary.v2.uploader.upload(dUri.content, {
+        folder: 'avatars'
+      })
+      await User.findOneAndUpdate({ _id: req.user._id }, { avatar: result.url })
+      res.status(201).send({ avatar: result.url })
+    } catch (err) {
+      console.log(err)
+      res.status(500).send({
+        error: 'An error occured while changing the avatar'
       })
     }
   }

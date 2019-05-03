@@ -21,7 +21,7 @@ module.exports = {
             'replyTo': null,
             'createdAt': { $gt: newestLoaded }
           })
-          .populate('createdBy', 'username')
+          .populate('createdBy', 'username avatar')
           .sort('-createdAt')
           .limit(10)
         let lastCommentToBeLoaded = comments[0]
@@ -39,7 +39,7 @@ module.exports = {
             'replyTo': null,
             'createdAt': { $lt: oldestLoaded }
           })
-          .populate('createdBy', 'username')
+          .populate('createdBy', 'username avatar')
           .sort('-createdAt')
           .limit(10)
         let lastCommentToBeLoaded = comments[Object.keys(comments).length - 1]
@@ -80,7 +80,7 @@ module.exports = {
             'createdAt': -1
           })
           .limit(10)
-        comments = await Comment.populate(comments, { path: 'createdBy', select: 'username' })
+        comments = await Comment.populate(comments, { path: 'createdBy', select: 'username avatar' })
         let lastCommentToBeLoaded = comments[0]
         if (lastCommentToBeLoaded) {
           await SSEConnectionHandler.buildAndSetConnectionQuery('comment', sseId, comments)
@@ -120,7 +120,7 @@ module.exports = {
             'createdAt': -1
           })
           .limit(10)
-        comments = await Comment.populate(comments, { path: 'createdBy', select: 'username' })
+        comments = await Comment.populate(comments, { path: 'createdBy', select: 'username avatar' })
         let lastCommentToBeLoaded = comments[0]
         if (lastCommentToBeLoaded) {
           await SSEConnectionHandler.buildAndSetConnectionQuery('comment', sseId, comments)
@@ -162,7 +162,7 @@ module.exports = {
               'createdAt': -1
             })
             .limit(10)
-          comments = await Comment.populate(comments, { path: 'createdBy', select: 'username' })
+          comments = await Comment.populate(comments, { path: 'createdBy', select: 'username avatar' })
           SSEConnectionHandler.flushQuery('comment', sseId)
           SSEConnectionHandler.flushQuery('reply', sseId)
           await SSEConnectionHandler.buildAndSetConnectionQuery('comment', sseId, comments)
@@ -246,7 +246,7 @@ module.exports = {
             'replyTo': commentId,
             'createdAt': { $gt: newestLoaded }
           })
-          .populate('createdBy', 'username')
+          .populate('createdBy', 'username avatar')
           .sort('createdAt')
           .limit(10)
         let lastReplyToBeLoaded = replies[Object.keys(replies).length - 1]
@@ -257,7 +257,7 @@ module.exports = {
       } else {
         replies = await Comment
           .find({ 'replyTo': commentId })
-          .populate('createdBy', 'username')
+          .populate('createdBy', 'username avatar')
           .sort('createdAt')
           .limit(10)
         await SSEConnectionHandler.buildAndSetConnectionQuery('reply', sseId, replies) // todo

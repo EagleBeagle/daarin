@@ -6,12 +6,24 @@
           <v-flex xs5 sm3 md3 lg3 offset-xs1 offset-sm3 offset-md3 offset-lg3>
             <v-avatar
               size="80">
-              <v-img id="avatar" src="http://res.cloudinary.com/daarin/image/upload/v1553966054/kkrlwpyyo9zhtfr8tgsf.jpg"></v-img>
+              <v-img v-if="user.avatar" id="avatar" :src="user.avatar"></v-img>
+              <v-icon v-else id="avatar-icon">fas fa-user-circle</v-icon>
             </v-avatar>
           </v-flex>
           <v-flex xs6 align-self-center>
             <div class="title leftText">testUser</div>
-            <div class="body-1 font-weight-bold light-blue--text leftText clickText">Change Avatar</div>
+            <form>
+              <div
+                class="body-1 font-weight-bold light-blue--text leftText clickText"
+                @click="onClickUpload">
+                Change Avatar</div>
+              <input
+                type="file"
+                style="display: none"
+                ref="fileInput"
+                accept="image/*"
+                @change="onFileChosen">
+            </form>
           </v-flex>
         </v-layout>
         <v-divider class="my-3 mx-2"/>
@@ -61,16 +73,42 @@
 </template>
 
 <script>
+import {mapState} from 'vuex'
+import UserService from '@/services/UserService'
 export default {
   data () {
     return {
-      changingPassword: false
+      changingPassword: false,
+    }
+  },
+  computed: {
+    ...mapState([
+      'user'
+    ]),
+  },
+  methods: {
+    onClickUpload () {
+      this.$refs.fileInput.click()
+    },
+    async onFileChosen () { // TODO validation
+      let avatar = event.target.files[0]
+      let formData = new FormData()
+      formData.append('image', avatar)
+      try {
+        let user = await UserService.changeAvatar(formData, this.user._id)
+        this.$store.dispatch('changeUserAvatar', user.data.avatar)
+      } catch (err) {
+        console.log(err)
+      }
     }
   }
 }
 </script>
 
 <style scoped>
+#avatar-icon {
+  font-size: 80px;
+}
 .leftText {
   text-align: left;
 }

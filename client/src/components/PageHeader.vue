@@ -56,7 +56,8 @@
             @click="$router.push({ name: 'userPage', params: { userId: user._id } })">
             <v-avatar
               size="45">
-              <v-img id="avatar" src="http://res.cloudinary.com/daarin/image/upload/v1553966054/kkrlwpyyo9zhtfr8tgsf.jpg"></v-img>
+              <v-img v-if="user.avatar" id="avatar" :src="user.avatar"></v-img>
+              <v-icon large v-else>fas fa-user-circle</v-icon>
             </v-avatar>
           </v-btn>
         </v-flex>
@@ -71,7 +72,7 @@
     </v-toolbar>
     <v-dialog v-model="dialog"  transition="scale-transition" origin="center center" width="30%">
       <v-card>
-        <v-toolbar dark class="light-blue accent-2">
+        <v-toolbar flat dark class="light-blue accent-2">
           <v-btn icon @click.native="onClose" dark>
             <v-icon>close</v-icon>
           </v-btn>
@@ -207,8 +208,10 @@ export default {
       formData.append('title', this.title)
       formData.append('createdBy', this.$store.state.user._id)
       try {
-        await PostService.upload(formData)
+        let result = await PostService.upload(formData)
         this.dialog = false
+        let postId = result.data._id
+        this.$router.push({ name: 'postPage', params: { postId: postId } })
       } catch (error) {
         this.error = error.response.data.error
         return

@@ -59,6 +59,15 @@ module.exports = (app) => {
     IsAuthenticated.check,
     UserController.getUser)
 
+  app.get('/users/:userId/settings', // TODO tiltani más usereket
+    IsAuthenticated.restrict,
+    UserController.getUserSettings)
+
+  app.put('/users/:userId/avatar',
+    upload.single('image'),
+    IsAuthenticated.restrict,
+    UserController.changeAvatar)
+
   app.post('/upload',
     upload.single('image'),
     IsAuthenticated.restrict,
