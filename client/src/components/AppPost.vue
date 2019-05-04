@@ -5,30 +5,28 @@
         <v-flex xs12>
           <div class="display-1 blue--text font-weight-bold py-1">{{ post.title }}</div>
         </v-flex>
+        <v-flex align-self-center>
+
+        <v-menu offset-y>
         <v-btn
           absolute
+          slot="activator"
           right
           flat
           fab
           small
-          class="mt-1 mr-0 pr-0 optionsButton"
+          class="mr-0 pr-0 pl-4 pb-3 optionsButton"
           :id="'optionsButton-' + post._id">
           <v-icon class="grey--text">fas fa-ellipsis-h</v-icon>
         </v-btn>
-        <v-menu absolute attach="#optionsButton" :activator="'optionsButton-' + post._id">
-          <v-list>
-            <v-list-tile>
-              <v-list-title>
-                asd
-              </v-list-title>
-            </v-list-tile>
-            <v-list-tile>
-              <v-list-title>
-                basd
-              </v-list-title>
-            </v-list-tile>
-          </v-list>
-        </v-menu>
+      <v-list>
+        <v-list-tile>
+          <v-list-tile-title>asdadsad</v-list-tile-title>
+        </v-list-tile>
+      </v-list>
+    </v-menu>
+            </v-flex>
+
       </v-layout>
       <div>
         <div
