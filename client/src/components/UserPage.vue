@@ -19,7 +19,7 @@
                 flat
                 small
                 absolute
-                class="ml-2"
+                class="ml-2 settingsButton"
                 fab>
                 <v-icon
                   class="grey--text"
@@ -154,6 +154,9 @@ export default {
 </script>
 
 <style scoped>
+.settingsButton {
+  z-index: 0;
+}
 #avatar-icon {
   font-size: 170px;
 }

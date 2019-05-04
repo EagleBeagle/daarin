@@ -1,5 +1,21 @@
 <template>
   <v-container>
+    <div class="text-xs-center">
+    <v-menu offset-y>
+        <v-btn
+          slot="activator"
+          color="primary"
+          dark
+        >
+          Dropdown
+        </v-btn>
+      <v-list>
+        <v-list-tile>
+          <v-list-tile-title>asdadsad</v-list-tile-title>
+        </v-list-tile>
+      </v-list>
+    </v-menu>
+  </div>
   <v-layout class="userInfo"></v-layout>
   <transition name ="fade">
     <UserPage class="userInfo" v-if="onUserPage" @switchedTab="getPostsOfUser"/>

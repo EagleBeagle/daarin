@@ -15,9 +15,6 @@
               v-model="password"
             ></v-text-field>
           </form>
-          <br>
-          <div class="danger-alert" v-html="error"/>
-          <br>
           <v-btn
             dark
             class="light-blue accent-2"
@@ -25,6 +22,14 @@
             Login
           </v-btn>
       </panel>
+      <v-alert
+        v-model="alert"
+        class="alert"
+        color="red lighten-2"
+        type="error"
+        transition="fadeDown">
+        {{ alertMessage }}
+      </v-alert>
     </v-flex>
   </v-layout>
 </template>
@@ -36,7 +41,9 @@ export default {
     return {
       username: null,
       password: null,
-      error: null
+      error: null,
+      alert: false,
+      alertMessage: null
     }
   },
   methods: {
@@ -44,7 +51,11 @@ export default {
       this.error = null
       const areAllFieldsFilledIn = (this.username && this.password)
       if (!areAllFieldsFilledIn) {
-        this.error = 'Please fill in all the required fields'
+        this.alertMessage = 'Please fill in all the required fields'
+        this.alert = true
+        setTimeout(() => {
+          this.alert = false
+        }, 3000)
         return
       }
       try {
@@ -59,7 +70,11 @@ export default {
           name: 'home'
         })
       } catch (error) {
-        this.error = error.response.data.error
+        this.alertMessage = error.response.data.error
+        this.alert = true
+        setTimeout(() => {
+          this.alert = false
+        }, 3000)
       }
     }
   }

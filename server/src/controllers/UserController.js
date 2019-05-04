@@ -72,6 +72,54 @@ module.exports = {
     }
   },
 
+  async changeUserSettings (req, res) {
+    let userId = req.params.userId
+    let username = req.body.username
+    let email = req.body.email
+    let oldPassword = req.body.oldPassword
+    let newPassword = req.body.newPassword
+    let confirmPassword = req.body.confirmPassword
+    try {
+      if (oldPassword && newPassword && confirmPassword) {
+        if (newPassword !== confirmPassword) {
+          res.status(401).send({
+            error: "The new passwords don't match."
+          })
+        } else {
+          let user = await User.findOne({ _id: userId }) // todo validation
+          user.comparePassword(oldPassword, async function (err, isMatch) {
+            if (isMatch && !err) {
+              user.username = username
+              user.email = email
+              user.password = newPassword
+              await user.save()
+              res.status(200).send({
+                success: true
+              })
+            } else {
+              res.status(401).send({
+                error: 'Your old password is not correct.'
+              })
+            }
+          })
+        }
+      } else {
+        await User.findOneAndUpdate({ _id: userId }, {
+          username: username,
+          email: email
+        })
+        res.status(200).send({
+          success: true
+        })
+      }
+    } catch (err) {
+      console.log(err)
+      res.status(500).send({
+        error: 'an error has occured trying to change the settings.'
+      })
+    }
+  },
+
   async changeAvatar (req, res) {
     const dUri = new Datauri()
     dUri.format(path.extname(req.file.originalname).toString(), req.file.buffer)

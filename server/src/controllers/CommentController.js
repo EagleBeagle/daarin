@@ -135,7 +135,7 @@ module.exports = {
               'to': postId,
               'replyTo': null
             })
-            .populate('createdBy', 'username')
+            .populate('createdBy', 'username avatar')
             .sort('-createdAt')
             .limit(10)
           SSEConnectionHandler.flushQuery('comment', sseId)

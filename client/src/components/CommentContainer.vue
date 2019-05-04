@@ -175,7 +175,7 @@ export default {
   methods: {
     async addSSEListeners () {
       if (this.user) {
-        await this.$store.dispatch('closeComments') // ??
+        // await this.$store.dispatch('closeComments') // ??
         this.commentStreamCb = (event) => {
           let streamedComments = JSON.parse(event.data)
           streamedComments.forEach((comment) => {
@@ -204,7 +204,8 @@ export default {
         })
         let comment = response.data.comment
         comment.createdBy = {
-          username: this.user.username
+          username: this.user.username,
+          avatar: this.user.avatar
         }
         comment.sinceCreated = this.timeDifference(comment.createdAt)
         this.comments = [comment, ...this.comments]
@@ -330,10 +331,7 @@ export default {
             this.eventSource.removeEventListener(this.commentStreamEvent, this.commentStreamCb)
           }
           this.$store.dispatch('removeReplyListener')
-          let commentContainer = document.getElementById(this.postId + '-comments')
-          if (commentContainer) {
-            this.commentContainerHeight = `height: ${commentContainer.clientHeight}px`
-          }
+          // this.commentContainerHeight = `height: ${commentContainer.clientHeight}px`
           this.visible = false
           this.comments = 'empty'
         }

@@ -6,6 +6,7 @@ const CommentController = require('./controllers/CommentController')
 const IsAuthenticated = require('./policies/IsAuthenticated')
 const SSEController = require('./controllers/SSEController')
 const UserController = require('./controllers/UserController')
+const UserControllerPolicy = require('./policies/UserControllerPolicy')
 const multer = require('multer')
 const storage = multer.memoryStorage()
 const upload = multer({
@@ -61,12 +62,18 @@ module.exports = (app) => {
 
   app.get('/users/:userId/settings', // TODO tiltani más usereket
     IsAuthenticated.restrict,
+    UserControllerPolicy.getUserSettings,
     UserController.getUserSettings)
 
   app.put('/users/:userId/avatar',
     upload.single('image'),
     IsAuthenticated.restrict,
     UserController.changeAvatar)
+
+  app.put('/users/:userId/settings',
+    IsAuthenticated.restrict,
+    UserControllerPolicy.changeUserSettings,
+    UserController.changeUserSettings)
 
   app.post('/upload',
     upload.single('image'),

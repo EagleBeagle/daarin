@@ -2,28 +2,29 @@
   <v-layout justify-center>
     <v-flex xs3>
       <panel title="Register">
-          <form
-            name ="register-form"
+          <v-form
+            ref="form"
+            v-model="valid"
+            lazy-validation
             autocomplete="off">
             <v-text-field
               label="Username"
-              :rules="[required]"
+              :rules="usernameRules"
               v-model="username"
             ></v-text-field>
             <v-text-field
               label="Email"
-              :rules="[required]"
+              :rules="emailRules"
               v-model="email"
             ></v-text-field>
             <v-text-field
               type="password"
-              :rules="[required]"
+              :rules="passwordRules"
               label="Password"
               v-model="password"
             ></v-text-field>
-          </form>
+          </v-form>
           <br>
-          <div class="danger-alert" v-html="error"/>
           <br>
           <v-btn
             class="light-blue accent-2"
@@ -31,6 +32,14 @@
             Register
           </v-btn>
       </panel>
+      <v-alert
+        v-model="alert"
+        class="alert"
+        color="red lighten-2"
+        type="error"
+        transition="fadeDown">
+        {{ alertMessage }}
+      </v-alert>
     </v-flex>
   </v-layout>
 </template>
@@ -40,35 +49,50 @@ import AuthenticationService from '@/services/AuthenticationService'
 export default {
   data () {
     return {
+      valid: true,
       username: null,
       email: null,
       password: null,
-      error: null,
-      required: (value) => !!value || 'Required.'
+      usernameRules: [
+        v => !!v || "Username can't stay empty.",
+        v => (v && v.length > 3) || 'The username has to be at least 4 characters long.',
+        v => (v && v.length < 16) || "The username can't be longer than 15 characters."
+      ],
+      emailRules: [
+        v => !!v || "Email can't stay empty.",
+        v => /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/igm.test(v) || 'E-mail must be valid.'
+      ],
+      passwordRules: [
+        v => !!v || "Password can't stay empty.",
+        v => (v && v.length > 7) || 'The password has to be at least 8 characters long.',
+        v => (v && v.length < 33) || "The password can't exceed 32 characters."
+      ],
+      alert: false,
+      alertMessage: null
     }
   },
   methods: {
     async register () {
-      this.error = null
-      const areAllFieldsFilledIn = (this.username && this.email && this.password)
-      if (!areAllFieldsFilledIn) {
-        this.error = 'Please fill in all the required fields'
-        return
-      }
-      try {
-        const response = await AuthenticationService.register({
-          username: this.username,
-          email: this.email,
-          password: this.password
-        })
-        this.$store.dispatch('setToken', response.data.token)
-        this.$store.dispatch('setUser', response.data.user)
-        await this.$store.dispatch('updateEventSource')
-        this.$router.push({
-          name: 'home'
-        })
-      } catch (error) {
-        this.error = error.response.data.error
+      if (this.$refs.form.validate()) {
+        try {
+          const response = await AuthenticationService.register({
+            username: this.username,
+            email: this.email,
+            password: this.password
+          })
+          this.$store.dispatch('setToken', response.data.token)
+          this.$store.dispatch('setUser', response.data.user)
+          await this.$store.dispatch('updateEventSource')
+          this.$router.push({
+            name: 'home'
+          })
+        } catch (error) {
+          this.alertMessage = error.response.data.error
+          this.alert = true
+          setTimeout(() => {
+            this.alert = false
+          }, 3000)
+        }
       }
     }
   }

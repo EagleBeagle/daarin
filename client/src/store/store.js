@@ -36,7 +36,10 @@ export default new Vuex.Store({
     },
     changeUserAvatar (state, avatar) {
       state.user.avatar = avatar
-      console.log(state.user.avatar)
+    },
+    changeUserCredentials (state, credentials) {
+      state.user.username = credentials.username
+      state.user.email = credentials.email
     },
     closeComments (state) {
       state.closeComments = !state.closeComments
@@ -78,6 +81,9 @@ export default new Vuex.Store({
     },
     changeUserAvatar ({commit}, avatar) {
       commit('changeUserAvatar', avatar)
+    },
+    changeUserCredentials ({commit}, credentials) {
+      commit('changeUserCredentials', credentials)
     },
     closeComments ({commit}) {
       commit('closeComments')

@@ -3,10 +3,12 @@ const Joi = require('joi')
 module.exports = {
   register (req, res, next) {
     const schema = {
-      username: Joi.string(),
+      username: Joi.string().min(4).max(15).regex(
+        /^[A-Za-z0-9]+(?:[ _-][A-Za-z0-9]+)*$/
+      ),
       email: Joi.string().email(),
       password: Joi.string().regex(
-        new RegExp('^[a-zA-Z0-9]{8,32}$')
+        /^[a-zA-Z0-9]{8,32}$/
       )
     }
 
