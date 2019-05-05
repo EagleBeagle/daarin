@@ -85,7 +85,7 @@
         <div class="body-1 py-4 grey--text" v-if="!loadingInitial">NO COMMENTS YET</div>
       </v-layout>
       <v-divider class="pa-0 ma-0"/>
-      <v-layout v-if="isUserLoggedIn" xs12 pa-0 ma-0 pr-3 row wrap>
+      <v-layout v-if="isUserLoggedIn && user.confirmed" xs12 pa-0 ma-0 pr-3 row wrap>
         <v-flex pa-0 pb-1 ma-0 mb-1 xs11>
           <v-textarea
             solo

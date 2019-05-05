@@ -1,7 +1,7 @@
 <template>
   <div class="white elevation-2">
     <v-toolbar flat dense class="light-blue accent-2" dark>
-      <v-toolbar-title>{{title}}</v-toolbar-title>
+      <v-toolbar-title class="textCenter">{{title}}</v-toolbar-title>
       <slot name="action" />
     </v-toolbar>
 

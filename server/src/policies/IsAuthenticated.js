@@ -6,7 +6,7 @@ module.exports = {
     passport.authenticate('jwt', function (err, user) {
       if (err || !user) {
         res.status(403).send({
-          error: 'you do not have access to this resource'
+          error: 'You do not have access to this action.'
         })
       } else {
         req.user = user
@@ -14,17 +14,23 @@ module.exports = {
       }
     })(req, res, next)
   },
-  check: function (req, res, next) {
+  restrictUnverified: function (req, res, next) {
+    if (!req.user.confirmed) {
+      res.status(403).send({
+        error: 'Confirm your email address to access this action.'
+      })
+    } else {
+      next()
+    }
+  },
+  attachUser: function (req, res, next) {
     passport.authenticate('jwt', function (err, user) {
       if (err) {
         res.status(500).send({
-          error: 'Error during user authentication'
+          error: 'Error during user authentication.'
         })
       } else if (!user) {
-        try {
-          next()
-        } catch (err) {
-        }
+        next()
       } else {
         req.user = user
         next()

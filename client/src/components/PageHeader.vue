@@ -7,7 +7,7 @@
           flat
           fab
           class="px-0 ma-0"
-          v-on:click.stop="dialog = true">
+          @click="openUploadDialog">
           <v-icon>fas fa-file-upload</v-icon>
         </v-btn> <!-- ezt itt átmegoldani -->
         <v-btn
@@ -179,6 +179,13 @@ export default {
       this.$router.push({
         name: 'home'
       })
+    },
+    openUploadDialog () {
+      if (this.user && this.user.confirmed) {
+        this.dialog = true
+      } else if (!this.user.confirmed) {
+        this.$store.dispatch('setSnackbarText', 'Confirm your email to upload posts.')
+      }
     },
     onClickUpload () {
       this.$refs.fileInput.click()

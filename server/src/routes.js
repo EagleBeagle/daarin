@@ -15,34 +15,34 @@ const upload = multer({
 
 module.exports = (app) => {
   app.get('/home',
-    IsAuthenticated.check,
+    IsAuthenticated.attachUser,
     PostController.index)
 
   app.get('/stream',
     SSEController.stream)
 
   app.get('/posts/:postId',
-    IsAuthenticated.check,
+    IsAuthenticated.attachUser,
     PostController.getPost)
 
   app.get('/posts/user/:userId',
-    IsAuthenticated.check,
+    IsAuthenticated.attachUser,
     PostController.getPostsOfUser)
 
   app.get('/posts/reacted/user/:userId',
-    IsAuthenticated.check,
+    IsAuthenticated.attachUser,
     PostController.getReactedPostsOfUser)
 
   app.get('/posts/commented/user/:userId',
-    IsAuthenticated.check,
+    IsAuthenticated.attachUser,
     PostController.getCommentedPostsOfUser)
 
   app.get('/posts/:postId/comments',
-    IsAuthenticated.check,
+    IsAuthenticated.attachUser,
     CommentController.getCommentsOfPost)
 
   app.get('/posts/:postId/comments/:commentId/replies',
-    IsAuthenticated.check,
+    IsAuthenticated.attachUser,
     CommentController.getRepliesOfComment)
 
   app.post('/posts/:postId/comments',
@@ -60,7 +60,7 @@ module.exports = (app) => {
     AuthenticationController.verify)
 
   app.get('/users/:userId',
-    IsAuthenticated.check,
+    IsAuthenticated.attachUser,
     UserController.getUser)
 
   app.get('/users/:userId/settings', // TODO tiltani más usereket
@@ -81,6 +81,7 @@ module.exports = (app) => {
   app.post('/upload',
     upload.single('image'),
     IsAuthenticated.restrict,
+    IsAuthenticated.restrictUnverified,
     PostControllerPolicy.upload,
     PostControllerPolicy.imageValidation,
     PostController.upload)
@@ -91,29 +92,36 @@ module.exports = (app) => {
 
   app.put('/posts/:postId/report',
     IsAuthenticated.restrict,
+    IsAuthenticated.restrictUnverified,
     PostController.report)
 
   app.put('/posts/:postId/reaction/:type',
     IsAuthenticated.restrict,
+    IsAuthenticated.restrictUnverified,
     PostController.react)
 
   app.delete('/posts/:postId/reaction/:type',
     IsAuthenticated.restrict,
+    IsAuthenticated.restrictUnverified,
     PostController.unReact)
 
   app.put('/posts/:postId/comments/:commentId/upvote',
     IsAuthenticated.restrict,
+    IsAuthenticated.restrictUnverified,
     CommentController.upvote)
 
   app.put('/posts/:postId/comments/:commentId/downvote',
     IsAuthenticated.restrict,
+    IsAuthenticated.restrictUnverified,
     CommentController.downvote)
 
   app.delete('/posts/:postId/comments/:commentId/upvote',
     IsAuthenticated.restrict,
+    IsAuthenticated.restrictUnverified,
     CommentController.unUpvote)
 
   app.delete('/posts/:postId/comments/:commentId/downvote',
     IsAuthenticated.restrict,
+    IsAuthenticated.restrictUnverified,
     CommentController.unDownvote)
 }

@@ -212,36 +212,46 @@ export default {
   },
   methods: {
     async react (type) {
-      try {
-        if (this.reacted[type]) {
-          await PostService.unReact({
-            postId: this.post._id,
-            type: type
-          })
-          this.post.reactions = this.post.reactions.filter((reaction) => {
-            return (reaction.user !== this.user._id || reaction.type !== type)
-          })
-        } else {
-          await PostService.react({
-            postId: this.post._id,
-            type: type
-          })
-          this.post.reactions.push({
-            user: this.user._id,
-            type: type
-          })
+      if (!this.user) {
+        this.$store.dispatch('setSnackbarText', 'Create an account to be able to react.')
+      } else if (!this.user.confirmed) {
+        this.$store.dispatch('setSnackbarText', 'Confirm your email to react.')
+      } else {
+        try {
+          if (this.reacted[type]) {
+            await PostService.unReact({
+              postId: this.post._id,
+              type: type
+            })
+            this.post.reactions = this.post.reactions.filter((reaction) => {
+              return (reaction.user !== this.user._id || reaction.type !== type)
+            })
+          } else {
+            await PostService.react({
+              postId: this.post._id,
+              type: type
+            })
+            this.post.reactions.push({
+              user: this.user._id,
+              type: type
+            })
+          }
+        } catch (err) {
+          console.log(err)
         }
-      } catch (err) {
-        console.log(err)
       }
     },
     async reportPost () {
-      try {
-        await PostService.report(this.post._id)
-        this.$store.dispatch('setSnackbarText', 'Post reported succesfully.')
-      } catch (err) {
-        console.log(err)
-        this.$store.dispatch('setSnackbarText', err.response.data.error)
+      if (!this.user.confirmed) {
+        this.$store.dispatch('setSnackbarText', 'Confirm your email to access this feature.')
+      } else {
+        try {
+          await PostService.report(this.post._id)
+          this.$store.dispatch('setSnackbarText', 'Post reported succesfully.')
+        } catch (err) {
+          console.log(err)
+          this.$store.dispatch('setSnackbarText', err.response.data.error)
+        }
       }
     },
     async deletePost () {

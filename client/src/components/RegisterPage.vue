@@ -1,6 +1,6 @@
 <template>
-  <v-layout justify-center>
-    <v-flex xs3>
+  <v-layout justify-center pt-5 mt-5>
+    <v-flex xs11 sm6 md4 lg3>
       <panel title="Register">
           <v-form
             ref="form"
@@ -13,6 +13,7 @@
               v-model="username"
             ></v-text-field>
             <v-text-field
+              type="email"
               label="Email"
               :rules="emailRules"
               v-model="email"
@@ -54,9 +55,10 @@ export default {
       email: null,
       password: null,
       usernameRules: [
-        v => !!v || "Username can't stay empty.",
+        v => !!v || "The username can't stay empty.",
         v => (v && v.length > 3) || 'The username has to be at least 4 characters long.',
-        v => (v && v.length < 16) || "The username can't be longer than 15 characters."
+        v => (v && v.length < 16) || "The username can't be longer than 15 characters.",
+        v => /^[A-Za-z0-9]+(?:[ _-][A-Za-z0-9]+)*$/.test(v) || 'This username format is not allowed.'
       ],
       emailRules: [
         v => !!v || "Email can't stay empty.",
