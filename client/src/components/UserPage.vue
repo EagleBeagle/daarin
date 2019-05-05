@@ -5,7 +5,7 @@
         <v-flex ml-5 pl-5 xs12 sm12 md4 lg6>
           <v-avatar
             size="170">
-            <v-img v-if="user.avatar" id="avatar" :src="user.avatar"></v-img>
+            <v-img v-if="shownUser.avatar" id="avatar" :src="shownUser.avatar"></v-img>
             <v-icon v-else id="avatar-icon">fas fa-user-circle</v-icon>
           </v-avatar>
         </v-flex>

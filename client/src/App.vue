@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <div id="app">
-      <v-snackbar
+        <v-snackbar
         v-model="showSnackbar"
         bottom right
         color="#FFFFFF"
@@ -12,7 +12,9 @@
       </v-snackbar>
       <PageHeader />
       <!-- <img src="./assets/logo.png"> -->
-      <router-view/>
+      <transition name="page" mode="out-in">
+        <router-view/>
+      </transition>
     </div>
   </v-app>
 </template>
@@ -70,4 +72,12 @@ body::-webkit-scrollbar {display:none;}
 .v-btn__content {
   color: white;
 }
+
+.page-enter-active, .page-leave-active {
+  transition: opacity 200ms, transform 200ms;
+}
+.page-enter, .page-leave-to {
+  opacity: 0;
+}
+
 </style>
