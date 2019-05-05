@@ -1,25 +1,25 @@
 <template>
   <v-container>
-  <v-layout class="userInfo"></v-layout>
-  <transition name ="fade">
-    <UserPage class="userInfo" v-if="onUserPage" @switchedTab="getPostsOfUser"/>
-  </transition>
-  <v-layout justify-center>
-    <v-flex v-show="showPostInfo" md3 lg4 hidden-sm-and-down>
-    </v-flex>
-    <v-flex xs12 sm12 md6 lg4>
-    <PostFeed
-      :posts="posts"
-      :isNewPostAvailable="isNewPostAvailable"
-      @reachedBottom="loadMorePosts"
-      @filter-post="filterPost"/>
-    </v-flex>
-    <v-flex v-show="showPostInfo" md3 lg4 hidden-sm-and-down>
-      <transition name="fadeRight">
-          <PieChart class="postChart" v-if="showPostInfo && posts && posts[0] && posts[0].reactions" :chart-data="chartData" />
-      </transition>
-    </v-flex>
-  </v-layout>
+    <v-layout class="userInfo"></v-layout>
+    <transition name ="fade">
+      <UserPage class="userInfo" v-if="onUserPage" @switchedTab="getPostsOfUser"/>
+    </transition>
+    <v-layout justify-center>
+      <v-flex v-show="showPostInfo" md3 lg4 hidden-sm-and-down>
+      </v-flex>
+      <v-flex xs12 sm12 md6 lg4>
+      <PostFeed
+        :posts="posts"
+        :isNewPostAvailable="isNewPostAvailable"
+        @reachedBottom="loadMorePosts"
+        @filter-post="filterPost"/>
+      </v-flex>
+      <v-flex v-show="showPostInfo" md3 lg4 hidden-sm-and-down>
+        <transition name="fadeRight">
+            <PieChart class="postChart" v-if="showPostInfo && posts && posts[0] && posts[0].reactions" :chart-data="chartData" />
+        </transition>
+      </v-flex>
+    </v-layout>
   </v-container>
 </template>
 
@@ -55,7 +55,9 @@ export default {
       'isUserLoggedIn',
       'user',
       'eventSource',
-      'eventSourceChanged'
+      'eventSourceChanged',
+      'deletedPost',
+      'requestSnackbar'
     ]),
     sortedReactions: function () {
       if (this.posts && this.posts[0] && this.posts[0].reactions) {
@@ -154,6 +156,17 @@ export default {
           element.style.width = ''
         }
       }, 600)
+    },
+    async deletedPost (newVal, oldVal) {
+      if (oldVal && newVal && oldVal !== newVal) {
+        if (this.$route.name !== 'postPage') {
+          this.posts = this.posts.filter(post => post._id !== this.deletedPost)
+        } else {
+          this.$router.push('/home')
+          this.posts = []
+          await this.getPosts()
+        }
+      }
     }
   },
   async mounted () {

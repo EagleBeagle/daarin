@@ -6,22 +6,36 @@
           <div class="display-1 blue--text font-weight-bold py-1">{{ post.title }}</div>
         </v-flex>
         <v-flex align-self-center>
-
-        <v-menu offset-y>
-        <v-btn
+        <v-menu
+          v-if="user"
           absolute
-          slot="activator"
-          right
-          flat
-          fab
-          small
-          class="mr-0 pr-0 pl-4 pb-3 optionsButton"
-          :id="'optionsButton-' + post._id">
-          <v-icon class="grey--text">fas fa-ellipsis-h</v-icon>
-        </v-btn>
-      <v-list>
-        <v-list-tile>
-          <v-list-tile-title>asdadsad</v-list-tile-title>
+          transition="scale-transition"
+          class="postMenu">
+          <v-btn
+            absolute
+            slot="activator"
+            right
+            flat
+            :ripple="false"
+            fab
+            small
+            class="mr-0 pr-0 pl-4 pb-3 optionsButton"
+            :id="'optionsButton-' + post._id">
+            <v-icon class="grey--text">fas fa-ellipsis-h</v-icon>
+          </v-btn>
+      <v-list class="postMenuList">
+        <v-list-tile
+          @click="reportPost">
+          <v-list-tile-title>
+            Report
+          </v-list-tile-title>
+        </v-list-tile>
+        <v-list-tile
+          @click="deletePost"
+          v-if="user && user._id === post.createdBy._id">
+          <v-list-tile-title>
+            Delete
+          </v-list-tile-title>
         </v-list-tile>
       </v-list>
     </v-menu>
@@ -221,6 +235,25 @@ export default {
         console.log(err)
       }
     },
+    async reportPost () {
+      try {
+        await PostService.report(this.post._id)
+        this.$store.dispatch('setSnackbarText', 'Post reported succesfully.')
+      } catch (err) {
+        console.log(err)
+        this.$store.dispatch('setSnackbarText', err.response.data.error)
+      }
+    },
+    async deletePost () {
+      try {
+        await PostService.delete(this.post._id)
+        this.$store.dispatch('setSnackbarText', 'Post deleted succesfully.')
+        this.$store.dispatch('setDeletedPost', this.post._id)
+      } catch (err) {
+        console.log(err)
+        this.$store.dispatch('setSnackbarText', 'An error occured during deletion.')
+      }
+    },
     async showComments () {
       this.$store.dispatch('removeReplyListener')
       if (!this.showingComments) {
@@ -309,7 +342,11 @@ export default {
   cursor: pointer;
 }
 
-.optionsButton {
+.optionsButton, .postMenu, .postMenuList {
   z-index: 0;
+}
+
+.optionsButton--active:before, .optionsButton:focus:before, .optionsButton:hover:before {
+    background-color: transparent;
 }
 </style>

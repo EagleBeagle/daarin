@@ -82,21 +82,13 @@ module.exports = (app) => {
     PostControllerPolicy.imageValidation,
     PostController.upload)
 
-  app.put('/posts/:postId/upvote',
+  app.delete('/posts/:postId',
     IsAuthenticated.restrict,
-    PostController.upvote)
+    PostController.delete)
 
-  app.put('/posts/:postId/downvote',
+  app.put('/posts/:postId/report',
     IsAuthenticated.restrict,
-    PostController.downvote)
-
-  app.delete('/posts/:postId/upvote',
-    IsAuthenticated.restrict,
-    PostController.unUpvote)
-
-  app.delete('/posts/:postId/downvote',
-    IsAuthenticated.restrict,
-    PostController.unDownvote)
+    PostController.report)
 
   app.put('/posts/:postId/reaction/:type',
     IsAuthenticated.restrict,

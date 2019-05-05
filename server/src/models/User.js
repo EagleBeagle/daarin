@@ -8,9 +8,6 @@ const UserSchema = new Schema({
   admin: { type: Boolean, default: false },
   avatar: String,
   rank: String,
-  ownPosts: [
-    { type: Schema.Types.ObjectId, ref: 'Post' }
-  ],
   reactionCount: { type: Number, default: 0 },
   likedComments: [
     { type: Schema.Types.ObjectId, ref: 'Comment' }

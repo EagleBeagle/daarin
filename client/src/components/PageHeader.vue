@@ -1,6 +1,6 @@
 <template>
   <v-container>
-    <v-toolbar fixed class="light-blue accent-2" flat dark>
+    <v-toolbar fixed class="light-blue accent-2 pageHeader" flat dark>
       <v-toolbar-items>
         <v-btn
           v-if="$store.state.isUserLoggedIn"
@@ -212,6 +212,7 @@ export default {
         this.dialog = false
         let postId = result.data._id
         this.$router.push({ name: 'postPage', params: { postId: postId } })
+        this.$store.dispatch('setSnackbarText', 'Post uploaded successfully.')
       } catch (error) {
         this.error = error.response.data.error
         return
@@ -231,5 +232,8 @@ export default {
 }
 .danger-alert {
   color: red;
+}
+.pageHeader {
+  z-index: 999;
 }
 </style>

@@ -38,12 +38,17 @@ export default {
     return Api().get(`/posts/commented/user/${postData.userId}${query}`)
   },
   upload (formData) {
-    console.log('uploadService: ' + formData.get('createdBy'))
     return Api().post('upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data'
       }
     })
+  },
+  report (postId) {
+    return Api().put(`/posts/${postId}/report`)
+  },
+  delete (postId) {
+    return Api().delete(`/posts/${postId}`)
   },
   react (reactData) {
     return Api().put(`/posts/${reactData.postId}/reaction/${reactData.type}`)

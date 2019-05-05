@@ -1,6 +1,15 @@
 <template>
   <v-app>
     <div id="app">
+      <v-snackbar
+        v-model="showSnackbar"
+        bottom right
+        color="#FFFFFF"
+        class="light-blue--text"
+        style="text-align: center"
+        >
+        {{ snackbarText }}
+      </v-snackbar>
       <PageHeader />
       <!-- <img src="./assets/logo.png"> -->
       <router-view/>
@@ -11,9 +20,27 @@
 <script>
 import PageHeader from '@/components/PageHeader.vue'
 import 'material-design-icons-iconfont/dist/material-design-icons.css'
+import {mapState} from 'vuex'
 document.title = 'daarin'
 export default {
   name: 'App',
+  data () {
+    return {
+      showSnackbar: false,
+      snackbarText: null
+    }
+  },
+  computed: {
+    ...mapState([
+      'requestSnackbar'
+    ])
+  },
+  watch: {
+    requestSnackbar () {
+      this.snackbarText = this.$store.state.snackbarText
+      this.showSnackbar = true
+    }
+  },
   components: {
     PageHeader
   }

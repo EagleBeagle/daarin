@@ -21,7 +21,10 @@ export default new Vuex.Store({
     replyStreamExists: false,
     replyStreamFlag: false,
     replyStreamData: null,
-    localReply: null
+    localReply: null,
+    deletedPost: null,
+    requestSnackbar: false,
+    snackbarText: null
   },
   mutations: {
     setToken (state, token) {
@@ -40,6 +43,15 @@ export default new Vuex.Store({
     changeUserCredentials (state, credentials) {
       state.user.username = credentials.username
       state.user.email = credentials.email
+    },
+    setDeletedPost (state, postId) {
+      state.deletedPost = postId
+    },
+    requestSnackbar (state) {
+      state.requestSnackbar = !state.requestSnackbar
+    },
+    setSnackbarText (state, text) {
+      state.snackbarText = text
     },
     closeComments (state) {
       state.closeComments = !state.closeComments
@@ -84,6 +96,13 @@ export default new Vuex.Store({
     },
     changeUserCredentials ({commit}, credentials) {
       commit('changeUserCredentials', credentials)
+    },
+    setDeletedPost ({commit}, postId) {
+      commit('setDeletedPost', postId)
+    },
+    setSnackbarText ({commit}, text) {
+      commit('setSnackbarText', text)
+      commit('requestSnackbar')
     },
     closeComments ({commit}) {
       commit('closeComments')

@@ -396,6 +396,7 @@ module.exports = {
         createdBy: req.body.createdBy,
         url: result.url
       }
+      console.log(result)
       newPost = await Post.create(newPost)
       res.status(201).send(newPost)
     } catch (err) {
@@ -453,74 +454,60 @@ module.exports = {
     }
   },
 
-  async upvote (req, res) {
-    try {
-      await Post.findOneAndUpdate({ '_id': req.params.postId }, { $addToSet: { 'likes': req.user.id } })
-      await User.findOneAndUpdate({ '_id': req.user.id }, { $addToSet: { 'likedPosts': req.params.postId } })
-      await Post.findOneAndUpdate({ '_id': req.params.postId }, { $pull: { 'dislikes': req.user.id } })
-      await User.findOneAndUpdate({ '_id': req.user.id }, { $pull: { 'dislikedPosts': req.params.postId } })
-      res.status(204).json({ success: true })
-    } catch (err) { //  TODO
-      if (err.name === 'CastError') {
-        res.status(400).send({
-          error: 'Invalid post'
+  async report (req, res) {
+    let userId = req.user._id
+    let postId = req.params.postId
+    if (!postId || postId.length !== 24) {
+      res.status(400).send()
+    } else {
+      try {
+        await Post.findOneAndUpdate({ _id: postId }, { $addToSet: { reports: userId } })
+        res.status(200).send({
+          success: true
         })
-      } else {
-        res.status(500).send({
-          error: 'An error occured trying to upvote'
-        })
+      } catch (err) {
+        console.log(err)
+        if (err.name === 'MongoError') {
+          res.status(400).send({
+            error: 'You already reported this post.'
+          })
+        } else {
+          res.status(500).send({
+            error: 'An error occured during the report.'
+          })
+        }
       }
     }
   },
-  async unUpvote (req, res) {
-    try {
-      await Post.findOneAndUpdate({ '_id': req.params.postId }, { $pull: { 'likes': req.user.id } })
-      await User.findOneAndUpdate({ '_id': req.user.id }, { $pull: { 'likedPosts': req.params.postId } })
-      res.status(204).json({ success: true })
-    } catch (err) { //  TODO
-      if (err.name === 'CastError') {
-        res.status(400).send({
-          error: 'Invalid post'
-        })
-      } else {
+
+  async delete (req, res) {
+    let userId = req.user._id
+    let postId = req.params.postId
+    if (!postId || postId.length !== 24) {
+      res.status(400).send()
+    } else {
+      try {
+        let post = await Post.findOne({ _id: postId })
+        if (post && String(post.createdBy) === String(userId)) {
+          await post.delete()
+          let reactionResult = await Reaction.deleteMany({ to: post._id })
+          console.log(reactionResult)
+          let deletedReactionCount = reactionResult.n
+          if (deletedReactionCount) {
+            await User.findOneAndUpdate({ _id: userId }, { $inc: { reactionCount: (-1 * deletedReactionCount) } })
+          }
+          let cloudId = 'posts/' + post.url.split('posts/')[1].split('.')[0]
+          await cloudinary.v2.uploader.destroy(cloudId)
+          console.log(cloudId)
+          res.status(200).send({
+            success: true
+          })
+        } else {
+          res.status(400).send()
+        }
+      } catch (err) {
         res.status(500).send({
-          error: 'An error occured trying to remove the upvote'
-        })
-      }
-    }
-  },
-  async downvote (req, res) {
-    try {
-      await Post.findOneAndUpdate({ '_id': req.params.postId }, { $addToSet: { 'dislikes': req.user.id } })
-      await User.findOneAndUpdate({ '_id': req.user.id }, { $addToSet: { 'dislikedPosts': req.params.postId } })
-      await Post.findOneAndUpdate({ '_id': req.params.postId }, { $pull: { 'likes': req.user.id } })
-      await User.findOneAndUpdate({ '_id': req.user.id }, { $pull: { 'likedPosts': req.params.postId } })
-      res.status(204).json({ success: true })
-    } catch (err) { //  TODO
-      if (err.name === 'CastError') {
-        res.status(400).send({
-          error: 'Invalid post'
-        })
-      } else {
-        res.status(500).send({
-          error: 'An error occured trying to downvote'
-        })
-      }
-    }
-  },
-  async unDownvote (req, res) {
-    try {
-      await Post.findOneAndUpdate({ '_id': req.params.postId }, { $pull: { 'dislikes': req.user.id } })
-      await User.findOneAndUpdate({ '_id': req.user.id }, { $pull: { 'dislikedPosts': req.params.postId } })
-      res.status(204).json({ success: true })
-    } catch (err) { //  TODO
-      if (err.name === 'CastError') {
-        res.status(400).send({
-          error: 'Invalid post'
-        })
-      } else {
-        res.status(500).send({
-          error: 'An error occured trying to remove the downvote'
+          error: 'An error occured during the deletion.'
         })
       }
     }
