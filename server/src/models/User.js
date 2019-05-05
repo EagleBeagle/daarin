@@ -6,6 +6,8 @@ const UserSchema = new Schema({
   username: { type: String, unique: true, required: true },
   password: { type: String, required: true },
   admin: { type: Boolean, default: false },
+  confirmed: { type: Boolean, default: false },
+  confirmationId: { type: String },
   avatar: String,
   rank: String,
   reactionCount: { type: Number, default: 0 },

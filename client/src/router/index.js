@@ -4,12 +4,14 @@ import Home from '@/components/HomePage'
 import Register from '@/components/RegisterPage'
 import Login from '@/components/LoginPage'
 import UserSettings from '@/components/UserSettings'
+import VerifyAccount from '@/components/VerifyAccount'
 import store from '@/store/store'
 // import PostPage from '@/components/PostPage'
 
 Vue.use(Router)
 
 const router = new Router({
+  mode: 'history',
   routes: [
     {
       path: '/home',
@@ -42,8 +44,13 @@ const router = new Router({
       component: UserSettings
     },
     {
+      path: '/verify',
+      name: 'verifyAccount',
+      component: VerifyAccount
+    },
+    {
       path: '*',
-      redirect: 'home'
+      redirect: '/home'
     }
   ]
 })

@@ -56,6 +56,9 @@ module.exports = (app) => {
   app.post('/login',
     AuthenticationController.login)
 
+  app.post('/verify',
+    AuthenticationController.verify)
+
   app.get('/users/:userId',
     IsAuthenticated.check,
     UserController.getUser)
