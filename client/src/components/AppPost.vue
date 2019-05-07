@@ -39,7 +39,7 @@
         </v-list-tile>
       </v-list>
     </v-menu>
-            </v-flex>
+    </v-flex>
 
       </v-layout>
       <div>
@@ -139,12 +139,45 @@
               </v-flex>
               <v-divider vertical class="my-2"/>
               <v-flex>
-                <v-btn
-                  flat
-                  small
-                  fab>
-                  <v-icon class="grey--text">share</v-icon>
-                </v-btn>
+                <v-menu
+                  absolute
+                  transition="scale-transition"
+                  class="postMenu">
+                  <v-btn
+                    slot="activator"
+                    flat
+                    fab
+                    small>
+                    <v-icon class="grey--text">share</v-icon>
+                  </v-btn>
+                      <v-card class="px-2 py-2">
+                        <span class="pr-1" @click="copyToClipboard">
+                          <v-icon>fas fa-clipboard</v-icon>
+                        </span>
+                        <social-sharing :url="postLink"
+                          inline-template>
+                          <span>
+                            <v-btn fab small flat>
+                            <network class="px-1" network="facebook">
+                              <v-icon>fab fa-facebook-square</v-icon>
+                            </network>
+                            </v-btn>
+                            <network class="px-1" network="twitter">
+                              <v-icon>fab fa-twitter</v-icon>
+                            </network>
+                            <network class="px-1" network="pinterest">
+                              <v-icon>fab fa-pinterest</v-icon>
+                            </network>
+                            <network class="px-1" network="reddit">
+                              <v-icon>fab fa-reddit</v-icon>
+                            </network>
+                            <network class="px-1" network="email">
+                                <v-icon>fas fa-envelope</v-icon>
+                            </network>
+                          </span>
+                      </social-sharing>
+                    </v-card>
+                </v-menu>
               </v-flex>
           </v-layout>
         </v-container>
@@ -168,8 +201,12 @@ export default {
   data () {
     return {
       showingComments: false,
-      scoreDirection: null
+      scoreDirection: null,
+      postLink: null
     }
+  },
+  mounted () {
+    this.postLink = `http://www.${window.location.host}/post/${this.post._id}`
   },
   computed: {
     ...mapState([
@@ -274,6 +311,10 @@ export default {
         this.$vuetify.goTo(window.scrollY, { offset: -700, easing: 'easeOutCubic' })
         console.log(window.scrollY)
       } */
+    },
+    async copyToClipboard () {
+      await this.$copyText(this.postLink)
+      this.$store.dispatch('setSnackbarText', 'Link copied to clipboard.')
     },
     goToPostPage () {
       // document.getElementsByTagName('html')[0].style.overflow = 'hidden'

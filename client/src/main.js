@@ -13,6 +13,8 @@ import 'vuetify/dist/vuetify.min.css'
 import Panel from '@/components/globals/Panel'
 import vue2Animate from 'vue2-animate/dist/vue2-animate.min.css'
 import '@fortawesome/fontawesome-free/css/all.css'
+import SocialSharing from 'vue-social-sharing'
+import VueClipboard from 'vue-clipboard2'
 
 Vue.config.productionTip = false
 
@@ -23,6 +25,8 @@ Vue.use(Vuebar)
 Vue.use(Overdrive)
 Vue.use(checkView)
 Vue.use(vue2Animate)
+Vue.use(SocialSharing)
+Vue.use(VueClipboard)
 
 Vue.component('panel', Panel)
 
