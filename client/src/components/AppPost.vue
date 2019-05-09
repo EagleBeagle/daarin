@@ -151,31 +151,35 @@
                     <v-icon class="grey--text">share</v-icon>
                   </v-btn>
                       <v-card class="px-2 py-2">
-                        <span class="pr-1" @click="copyToClipboard">
-                          <v-icon>fas fa-clipboard</v-icon>
-                        </span>
+                        <v-layout>
+                        <v-flex class="pr-2" @click="copyToClipboard">
+                          <v-icon class="shareIcon">fas fa-clipboard</v-icon>
+                        </v-flex>
+                        <v-divider vertical class="mr-1"/>
+                        <v-flex>
                         <social-sharing :url="postLink"
+                          :title="'Daarin post: ' + post.title"
                           inline-template>
-                          <span>
-                            <v-btn fab small flat>
+                          <span style="cursor: default">
                             <network class="px-1" network="facebook">
-                              <v-icon>fab fa-facebook-square</v-icon>
+                              <v-icon class="shareIcon" style="color: #3b5998">fab fa-facebook-square</v-icon>
                             </network>
-                            </v-btn>
                             <network class="px-1" network="twitter">
-                              <v-icon>fab fa-twitter</v-icon>
+                              <v-icon class="shareIcon" style="color: #00aced">fab fa-twitter</v-icon>
                             </network>
                             <network class="px-1" network="pinterest">
-                              <v-icon>fab fa-pinterest</v-icon>
+                              <v-icon class="shareIcon" style="color: #bd081c">fab fa-pinterest</v-icon>
                             </network>
                             <network class="px-1" network="reddit">
-                              <v-icon>fab fa-reddit</v-icon>
+                              <v-icon class="shareIcon" style="color: #ff4500">fab fa-reddit</v-icon>
                             </network>
                             <network class="px-1" network="email">
-                                <v-icon>fas fa-envelope</v-icon>
+                                <v-icon class="shareIcon">fas fa-envelope</v-icon>
                             </network>
-                          </span>
+                            </span>
                       </social-sharing>
+                      </v-flex>
+                      </v-layout>
                     </v-card>
                 </v-menu>
               </v-flex>
@@ -399,5 +403,9 @@ export default {
 
 .optionsButton--active:before, .optionsButton:focus:before, .optionsButton:hover:before {
     background-color: transparent;
+}
+
+.shareIcon {
+  cursor: pointer;
 }
 </style>

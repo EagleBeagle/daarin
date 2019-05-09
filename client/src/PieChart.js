@@ -20,7 +20,9 @@ export default {
       },
       tooltips: {
         displayColors: false,
-        cornerRadius: 0
+        backgroundColor: '#ffffff',
+        bodyFontColor: '#03A9F4',
+        cornerRadius: 8
       }
     }
     this.renderChart(this.chartData, options)

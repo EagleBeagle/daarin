@@ -6,7 +6,7 @@
           v-if="$store.state.isUserLoggedIn"
           flat
           fab
-          class="px-0 ma-0"
+          class="px-0 ma-0 hidden-sm-and-down"
           @click="openUploadDialog">
           <v-icon>fas fa-file-upload</v-icon>
         </v-btn> <!-- ezt itt átmegoldani -->
@@ -70,55 +70,7 @@
         </v-btn>
       </v-toolbar-items>
     </v-toolbar>
-    <v-dialog v-model="dialog"  transition="scale-transition" origin="center center" width="30%">
-      <v-card>
-        <v-toolbar flat dark class="light-blue accent-2">
-          <v-btn icon @click.native="onClose" dark>
-            <v-icon>close</v-icon>
-          </v-btn>
-          <v-toolbar-title>Upload a Post</v-toolbar-title>
-          <v-spacer></v-spacer>
-          <v-toolbar-items>
-            <v-btn dark flat @click="submitImage">Save</v-btn>
-          </v-toolbar-items>
-        </v-toolbar>
-        <div class="pl-5 pr-5 pt-3 pb-4">
-            <form
-              name ="register-form"
-              autocomplete="off">
-              <v-text-field
-                label="Title"
-                :rules="[required]"
-                v-model="title"
-              ></v-text-field>
-              <v-layout justify-center fill-height>
-                <v-btn class="light-blue accent-2" @click="onClickUpload">Choose File</v-btn>
-                <br>
-                <div class="pt-2" >
-                  <h2>{{ filename }}</h2>
-                </div>
-              </v-layout>
-              <input
-                type="file"
-                style="display: none"
-                ref="fileInput"
-                accept="image/*"
-                @change="onFileChosen">
-            </form>
-        </div>
-        <div class="danger-alert pb-2" v-html="error"/>
-        <!-- <v-img :src="imageUrl"/> -->
-        <!-- <v-card-actions>
-          <v-layout justify-center>
-          <v-btn flat dark class="red">category1</v-btn>
-          <v-btn flat class="orange">category2</v-btn>
-          <v-btn flat class="yellow">category3</v-btn>
-          <v-btn flat class="green">category4</v-btn>
-          <v-btn flat class="blue">category5</v-btn>
-          </v-layout>
-        </v-card-actions> -->
-      </v-card>
-    </v-dialog>
+    <UploadDialog v-model="dialog" />
     <v-dialog v-model="authDialog" transition="scale-transition" origin="center center" width="30%">
       <v-card>
         <v-card-title
@@ -148,18 +100,13 @@
 </template>
 
 <script>
-import PostService from '@/services/PostService'
+import UploadDialog from './UploadDialog'
 import {mapState} from 'vuex'
 export default {
   data () {
     return {
       dialog: null,
-      authDialog: null,
-      filename: null,
-      title: null,
-      image: null,
-      error: null,
-      required: (value) => !!value || 'Required.'
+      authDialog: null
     }
   },
   async mounted () {
@@ -186,50 +133,11 @@ export default {
       } else if (!this.user.confirmed) {
         this.$store.dispatch('setSnackbarText', 'Confirm your email to upload posts.')
       }
-    },
-    onClickUpload () {
-      this.$refs.fileInput.click()
-    },
-    async onFileChosen (event) {
-      const files = event.target.files
-      this.filename = files[0].name
-      if (this.filename.lastIndexOf('.') <= 0) {
-        return alert('The given file is not valid') //  TODO
-      }
-      this.image = files[0]
-    },
-    onClose () {
-      this.dialog = false
-      this.filename = null
-      this.imageUrl = null
-      this.image = null
-      this.title = null
-      //  this.error = null
-    },
-    async submitImage () {
-      this.error = null
-      this.imageUrl = null
-      this.filename = null
-      let formData = new FormData()
-      formData.append('image', this.image)
-      formData.append('title', this.title)
-      formData.append('createdBy', this.$store.state.user._id)
-      try {
-        let result = await PostService.upload(formData)
-        this.dialog = false
-        let postId = result.data._id
-        this.$router.push({ name: 'postPage', params: { postId: postId } })
-        this.$store.dispatch('setSnackbarText', 'Post uploaded successfully.')
-      } catch (error) {
-        this.error = error.response.data.error
-        return
-      }
-      this.image = null
-      //  this.dialog = false
-      this.title = null
     }
+  },
+  components: {
+    UploadDialog
   }
-
 }
 </script>
 
