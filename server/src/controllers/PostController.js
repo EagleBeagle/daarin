@@ -394,6 +394,7 @@ module.exports = {
         title: req.body.title,
         slug: uniqueSlug(req.body._id),
         createdBy: req.body.createdBy,
+        tags: [...new Set(JSON.parse(req.body.tags))],
         url: result.url
       }
       console.log(result)

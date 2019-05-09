@@ -70,7 +70,7 @@
         </v-btn>
       </v-toolbar-items>
     </v-toolbar>
-    <UploadDialog v-model="dialog" />
+    <UploadDialog v-model="dialog"/>
     <v-dialog v-model="authDialog" transition="scale-transition" origin="center center" width="30%">
       <v-card>
         <v-card-title
@@ -108,8 +108,6 @@ export default {
       dialog: null,
       authDialog: null
     }
-  },
-  async mounted () {
   },
   computed: {
     ...mapState([

@@ -3,9 +3,9 @@
     <v-card>
       <v-layout row justify-center>
         <v-flex xs12>
-          <div class="display-1 blue--text font-weight-bold py-1">{{ post.title }}</div>
+          <div class="display-1 blue--text font-weight-bold py-1 postTitle">{{ post.title }}</div>
         </v-flex>
-        <v-flex align-self-center>
+        <v-flex>
         <v-menu
           v-if="user"
           absolute
@@ -19,7 +19,7 @@
             :ripple="false"
             fab
             small
-            class="mr-0 pr-0 pl-4 pb-3 optionsButton"
+            class="mr-0 pr-0 pl-4 pb-3 pt-3 optionsButton"
             :id="'optionsButton-' + post._id">
             <v-icon class="grey--text">fas fa-ellipsis-h</v-icon>
           </v-btn>
@@ -407,5 +407,10 @@ export default {
 
 .shareIcon {
   cursor: pointer;
+}
+
+.postTitle {
+  padding: 40px;
+  word-break:break-all;
 }
 </style>

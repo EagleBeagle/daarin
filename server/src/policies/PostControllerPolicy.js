@@ -3,19 +3,18 @@ const Joi = require('joi')
 const imageType = require('image-type')
 
 module.exports = {
-  upload (req, res, next) { //  TODO: CreatedBy (authenticatio)
+  upload (req, res, next) {
     const schema = {
-      title: Joi.string().invalid(['null']).required().max(250),
-      createdBy: Joi.string().alphanum().length(24)
+      title: Joi.string().invalid(['null']).required().max(50),
+      createdBy: Joi.string().alphanum().length(24),
+      tags: Joi.array().items(Joi.string().regex(/^[a-zA-Z0-9_-]*$/)).max(4)
     }
+    const { error, value } = Joi.validate(req.body, schema) //  eslint-disable-line
     if (!req.body) {
       res.status(400).send({
         error: 'No data provided'
       })
-    }
-    const { error, value } = Joi.validate(req.body, schema) //  eslint-disable-line
-
-    if (error) {
+    } else if (error) {
       switch (error.details[0].context.key) {
         case 'title':
           res.status(400).send({
@@ -27,12 +26,19 @@ module.exports = {
             error: 'Invalid author information'
           })
           break
+        case 'tags':
+          res.status(400).send({
+            error: 'Bad tag format'
+          })
+          break
         default:
           console.log(error.details)
           res.status(400).send({
             error: 'Invalid upload information'
           })
       }
+    } else if (String(req.user._id) !== String(req.body.createdBy)) {
+      res.status(403).send()
     } else {
       next()
     }
