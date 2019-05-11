@@ -57,7 +57,8 @@ export default {
       'eventSource',
       'eventSourceChanged',
       'deletedPost',
-      'requestSnackbar'
+      'requestSnackbar',
+      'search'
     ]),
     sortedReactions: function () {
       if (this.posts && this.posts[0] && this.posts[0].reactions) {
@@ -83,6 +84,14 @@ export default {
             data: val
           }
         ]
+      }
+    },
+    '$route.query.query': {
+      immediate: true,
+      async handler (text) {
+        if (text) {
+          await this.searchPosts(text)
+        }
       }
     },
     async eventSourceChanged (val, oldVal) {
@@ -113,6 +122,7 @@ export default {
           this.canLoadMorePosts = true
         }, 1000)
       }
+
       if (from.name === 'userPage' && to.name !== 'postPage') {
         this.post = []
       }
@@ -158,7 +168,7 @@ export default {
       }, 600)
     },
     async deletedPost (newVal, oldVal) {
-      if (oldVal && newVal && oldVal !== newVal) {
+      if (newVal && (oldVal !== newVal)) {
         if (this.$route.name !== 'postPage') {
           this.posts = this.posts.filter(post => post._id !== this.deletedPost)
         } else {
@@ -247,7 +257,7 @@ export default {
     async getPosts () {
       console.log('getPosts')
       try {
-        let result = await PostService.index()
+        let result = await PostService.getPosts()
         this.posts = result.data
       } catch (error) {
         console.log(error)
@@ -259,7 +269,7 @@ export default {
         let lastPost = this.posts[Object.keys(this.posts).length - 1]
         let morePosts = null
         if (this.$route.name === 'home') {
-          morePosts = (await PostService.index(lastPost, 5)).data
+          morePosts = (await PostService.getPosts(lastPost, 5)).data
         } else if (this.$route.name === 'userPage') {
           if (this.userPageTab === 0) {
             morePosts = (await PostService.getPostsOfUser({
@@ -276,6 +286,11 @@ export default {
               userId: this.$route.params.userId,
               lastPost: lastPost
             })).data
+          }
+        } else if (this.$route.name === 'search') {
+          let text = this.$route.query.query
+          if (text) {
+            morePosts = (await PostService.searchPosts(text, lastPost)).data
           }
         }
         for (let newPost of morePosts) {
@@ -302,6 +317,28 @@ export default {
       this.posts.push(post)
       // document.getElementsByTagName('html')[0].style.overflow = 'auto'
       // postElement.style.width = 'inherit'
+    },
+    async searchPosts () {
+      console.log('searchPosts')
+      let postElements = document.getElementsByClassName('post')
+      for (let element of postElements) {
+        element.style.width = element.clientWidth + 'px'
+      }
+      try {
+        this.posts = null
+        let response = null
+        let text = this.$route.query.query
+        response = await PostService.searchPosts(text, this.lastPost)
+        this.posts = response.data
+      } catch (err) {
+        console.log(err)
+      }
+      setTimeout(() => {
+        let postElements = document.getElementsByClassName('post')
+        for (let element of postElements) {
+          element.style.width = ''
+        }
+      }, 600)
     },
     async getPostsOfUser (type) {
       console.log('getPostsOfUser')

@@ -6,41 +6,40 @@
           <div class="display-1 blue--text font-weight-bold py-1 postTitle">{{ post.title }}</div>
         </v-flex>
         <v-flex>
-        <v-menu
-          v-if="user"
-          absolute
-          transition="scale-transition"
-          class="postMenu">
-          <v-btn
+          <v-menu
+            v-if="user"
             absolute
-            slot="activator"
-            right
-            flat
-            :ripple="false"
-            fab
-            small
-            class="mr-0 pr-0 pl-4 pb-3 pt-3 optionsButton"
-            :id="'optionsButton-' + post._id">
-            <v-icon class="grey--text">fas fa-ellipsis-h</v-icon>
-          </v-btn>
-      <v-list class="postMenuList">
-        <v-list-tile
-          @click="reportPost">
-          <v-list-tile-title>
-            Report
-          </v-list-tile-title>
-        </v-list-tile>
-        <v-list-tile
-          @click="deletePost"
-          v-if="user && user._id === post.createdBy._id">
-          <v-list-tile-title>
-            Delete
-          </v-list-tile-title>
-        </v-list-tile>
-      </v-list>
-    </v-menu>
-    </v-flex>
-
+            transition="scale-transition"
+            class="postMenu">
+            <v-btn
+              absolute
+              slot="activator"
+              right
+              flat
+              :ripple="false"
+              fab
+              small
+              class="mr-0 pr-0 pl-4 pb-3 pt-3 optionsButton"
+              :id="'optionsButton-' + post._id">
+              <v-icon class="grey--text">fas fa-ellipsis-h</v-icon>
+            </v-btn>
+            <v-list class="postMenuList">
+              <v-list-tile
+                @click="reportPost">
+                <v-list-tile-title>
+                  Report
+                </v-list-tile-title>
+              </v-list-tile>
+              <v-list-tile
+                @click="deletePost"
+                v-if="user && user._id === post.createdBy._id">
+                <v-list-tile-title>
+                  Delete
+                </v-list-tile-title>
+              </v-list-tile>
+            </v-list>
+          </v-menu>
+        </v-flex>
       </v-layout>
       <div>
         <div

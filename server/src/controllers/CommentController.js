@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const Comment = require('../models/Comment.js')
+const User = require('../models/User.js')
 // const Post = require('../models/Post.js')
 const SSEConnectionHandler = require('../utils/SSEConnectionHandler.js')
 
@@ -271,6 +272,17 @@ module.exports = {
     }
   },
 
+  async getCommentsAdmin (req, res) {
+    try {
+      let comments = await Comment.find({}, { text: 1, reports: 1, createdBy: 1, createdAt: 1, to: 1 }).populate('createdBy', 'username')
+      res.status(200).send(comments)
+    } catch (err) {
+      res.status(500).send({
+        error: 'An error has occured while fetching the comments.'
+      })
+    }
+  },
+
   async upvote (req, res) {
     try {
       await Comment.findOneAndUpdate({ '_id': req.params.commentId }, { $addToSet: { 'likes': req.user.id } })
@@ -333,6 +345,67 @@ module.exports = {
       } else {
         res.status(500).send({
           error: 'An error occured trying to remove the downvote'
+        })
+      }
+    }
+  },
+  async report (req, res) {
+    let userId = req.user._id
+    let commentId = req.params.commentId
+    if (!commentId || commentId.length !== 24) {
+      res.status(400).send()
+    } else {
+      try {
+        let comment = await Comment.findOne({ _id: commentId })
+        if (comment) {
+          let stringReports = comment.reports.map(report => String(report))
+          if (!stringReports.includes(String(userId))) {
+            await comment.update({ $addToSet: { reports: userId } })
+            await User.findOneAndUpdate({ _id: comment.createdBy }, { $inc: { reportCount: 1 } })
+          }
+          res.status(200).send({
+            success: true
+          })
+        } else {
+          res.status(400).send()
+        }
+      } catch (err) {
+        console.log(err)
+        if (err.name === 'MongoError') {
+          res.status(400).send({
+            error: 'You already reported this post.'
+          })
+        } else {
+          res.status(500).send({
+            error: 'An error occured during the report.'
+          })
+        }
+      }
+    }
+  },
+  async delete (req, res) {
+    let userId = req.user._id
+    let commentId = req.params.commentId
+    if (!commentId || commentId.length !== 24) {
+      res.status(400).send()
+    } else {
+      try {
+        let comment = await Comment.findOne({ _id: commentId })
+        if (comment && String(comment.createdBy === String(userId))) {
+          await comment.delete()
+          await Comment.deleteMany({ replyTo: comment._id })
+          if (comment.replyTo) {
+            await Comment.findOneAndUpdate({ _id: comment.replyTo }, { $inc: { replyCount: -1 } })
+          }
+          res.status(200).send({
+            success: true
+          })
+        } else {
+          res.status(400).send()
+        }
+      } catch (err) {
+        res.status(500).send({
+          error: 'An error occured during the deletion.'
         })
       }
     }

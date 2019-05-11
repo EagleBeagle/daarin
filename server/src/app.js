@@ -4,7 +4,7 @@ const bodyParser = require('body-parser')
 const cors = require('cors')
 const morgan = require('morgan')
 const mongoose = require('mongoose')
-const history = require('connect-history-api-fallback')
+// const history = require('connect-history-api-fallback')
 const mongoSanitize = require('express-mongo-sanitize')
 const config = require('./config/config')
 
@@ -27,7 +27,7 @@ if (process.env.NODE_ENV !== 'test') {
   app.use(morgan('combined'))
 }
 
-app.use(history())
+// app.use(histoy())
 app.use(mongoSanitize())
 app.use(bodyParser.json())
 app.use(cors())

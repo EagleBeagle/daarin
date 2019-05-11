@@ -1,4 +1,6 @@
 const User = require('../models/User.js')
+const Post = require('../models/Post.js')
+const Comment = require('../models/Comment.js')
 const mongoose = require('mongoose')
 const SSEConnectionHandler = require('../utils/SSEConnectionHandler.js')
 const Datauri = require('datauri')
@@ -55,6 +57,62 @@ module.exports = {
     } catch (err) {
       res.status(500).send({
         error: 'An error has occured while fetching the user.'
+      })
+    }
+  },
+
+  async getUsersAdmin (req, res) {
+    try {
+      let users = await User.find({}, { username: 1, email: 1, confirmed: 1, admin: 1, reportCount: 1 })
+      res.status(200).send({
+        users: users,
+        active: Object.keys(SSEConnectionHandler.connections).length
+      })
+    } catch (err) {
+      res.status(500).send({
+        error: 'An error has occured while fetching the user.'
+      })
+    }
+  },
+
+  async deleteUser (req, res) {
+    try {
+      await User.deleteOne({ _id: req.params.userId })
+      await Post.deleteMany({ createdBy: req.params.userId })
+      await Comment.deleteMany({ createdBy: req.params.userId })
+      res.status(200).send({
+        success: true
+      })
+    } catch (err) {
+      console.log(err)
+      res.status(500).send({
+        error: 'An error has occured during deletion.'
+      })
+    }
+  },
+
+  async setAsAdmin (req, res) {
+    try {
+      await User.findOneAndUpdate({ _id: req.params.userId }, { admin: true })
+      res.status(200).send({
+        success: true
+      })
+    } catch (err) {
+      res.status(500).send({
+        error: 'An unexpected error has happened.'
+      })
+    }
+  },
+
+  async unsetAdmin (req, res) {
+    try {
+      await User.findOneAndUpdate({ _id: req.params.userId }, { admin: false })
+      res.status(200).send({
+        success: true
+      })
+    } catch (err) {
+      res.status(500).send({
+        error: 'An unexpected error has happened.'
       })
     }
   },

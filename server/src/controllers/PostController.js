@@ -5,6 +5,7 @@ const path = require('path')
 const mongoose = require('mongoose')
 const Post = require('../models/Post.js')
 const User = require('../models/User.js')
+const Comment = require('../models/Comment.js')
 const Reaction = require('../models/Reaction.js')
 const SSEConnectionHandler = require('../utils/SSEConnectionHandler.js')
 
@@ -19,7 +20,7 @@ module.exports = {
     let posts = null
     let sseId = req.user ? req.user.sseId : null
     try {
-      if (!req.query.user && (!req.query.created || !req.query.limit)) { // TODO esetek
+      if (!req.query.created || !req.query.limit) { // TODO esetek
         posts = await Post.find()
           .populate('createdBy', 'username')
           .sort('-createdAt')
@@ -48,14 +49,13 @@ module.exports = {
         /* let sseQuery = Post.find({}, 'likes dislikes')
           .sort('-createdAt')
           .limit(5) */
-        SSEConnectionHandler.flushQuery('comment', sseId)
+        SSEConnectionHandler.flushQuery('post', sseId)
         SSEConnectionHandler.buildAndSetConnectionQuery('post', sseId, posts)
       } else {
-        posts = await Post.find({ 'createdAt': { $lt: req.query.created } })
+        /* posts = await Post.find({ 'createdAt': { $lt: req.query.created } })
           .populate('createdBy', 'username')
           .sort('-createdAt')
-          .limit(Number(req.query.limit))
-
+          .limit(Number(req.query.limit)) */
         posts = await Post
           .aggregate([
             {
@@ -91,6 +91,95 @@ module.exports = {
       console.log(err)
       res.status(500).send({
         error: 'an error has occured trying to fetch the posts'
+      })
+    }
+  },
+
+  async search (req, res) {
+    let sseId = req.user ? req.user.sseId : null
+    let text = req.query.query
+    let createdAt = req.query.created
+    try {
+      if (!createdAt) {
+        let results = await Post
+          .aggregate([
+            {
+              $match: {
+                $or: [
+                  {
+                    title: new RegExp(`${text}`)
+                  },
+                  {
+                    tags: new RegExp(`${text}`)
+                  }
+                ]
+              }
+            },
+            {
+              $sort: {
+                createdAt: -1
+              }
+            },
+            {
+              $limit: 5
+            },
+            {
+              $lookup: {
+                from: 'reactions',
+                localField: '_id',
+                foreignField: 'to',
+                as: 'reactions'
+              }
+            }
+          ])
+        results = await Post.populate(results, { path: 'createdBy', select: 'username' })
+        SSEConnectionHandler.flushQuery('post', sseId)
+        SSEConnectionHandler.buildAndSetConnectionQuery('post', sseId, results)
+        res.status(200).send(results)
+      } else {
+        let results = await Post
+          .aggregate([
+            {
+              $match: {
+                createdAt: { $lt: new Date(createdAt) },
+                $or: [
+                  {
+                    title: new RegExp(`${text}`)
+                  },
+                  {
+                    tags: new RegExp(`${text}`)
+                  }
+                ]
+              }
+            },
+            {
+              $sort: {
+                createdAt: -1
+              }
+            },
+            {
+              $limit: 5
+            },
+            {
+              $lookup: {
+                from: 'reactions',
+                localField: '_id',
+                foreignField: 'to',
+                as: 'reactions'
+              }
+            }
+          ])
+        results = await Post.populate(results, { path: 'createdBy', select: 'username' })
+        let lastPost = results[Object.keys(results).length - 1] // ha üres akkor nincs több post
+        if (lastPost) {
+          SSEConnectionHandler.buildAndSetConnectionQuery('post', sseId, results)
+        }
+        res.status(200).send(results)
+      }
+    } catch (err) {
+      console.log(err)
+      res.status(500).send({
+        error: 'An error happened during the search.'
       })
     }
   },
@@ -382,6 +471,18 @@ module.exports = {
     }
   },
 
+  async getPostsAdmin (req, res) {
+    try {
+      let posts = await Post.find({}, { title: 1, reports: 1, createdAt: 1 })
+      res.status(200).send(posts)
+    } catch (err) {
+      console.log(err)
+      res.status(500).send({
+        error: 'an error has occured trying to fetch the posts'
+      })
+    }
+  },
+
   async upload (req, res) {
     const dUri = new Datauri()
     dUri.format(path.extname(req.file.originalname).toString(), req.file.buffer)
@@ -462,10 +563,19 @@ module.exports = {
       res.status(400).send()
     } else {
       try {
-        await Post.findOneAndUpdate({ _id: postId }, { $addToSet: { reports: userId } })
-        res.status(200).send({
-          success: true
-        })
+        let post = await Post.findOne({ _id: postId })
+        if (post) {
+          let stringReports = post.reports.map(report => String(report))
+          if (!stringReports.includes(String(userId))) {
+            await post.update({ $addToSet: { reports: userId } })
+            await User.findOneAndUpdate({ _id: post.createdBy }, { $inc: { reportCount: 1 } })
+          }
+          res.status(200).send({
+            success: true
+          })
+        } else {
+          res.status(400).send()
+        }
       } catch (err) {
         console.log(err)
         if (err.name === 'MongoError') {
@@ -489,8 +599,9 @@ module.exports = {
     } else {
       try {
         let post = await Post.findOne({ _id: postId })
-        if (post && String(post.createdBy) === String(userId)) {
+        if (post && (String(post.createdBy) === String(userId) || req.user.admin)) {
           await post.delete()
+          await Comment.deleteMany({ to: post._id })
           let reactionResult = await Reaction.deleteMany({ to: post._id })
           console.log(reactionResult)
           let deletedReactionCount = reactionResult.n

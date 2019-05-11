@@ -9,7 +9,7 @@ const UserSchema = new Schema({
   confirmed: { type: Boolean, default: false },
   confirmationId: { type: String },
   avatar: String,
-  rank: String,
+  reportCount: { type: Number, default: 0 },
   reactionCount: { type: Number, default: 0 },
   likedComments: [
     { type: Schema.Types.ObjectId, ref: 'Comment' }

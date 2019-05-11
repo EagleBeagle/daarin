@@ -25,6 +25,15 @@ module.exports = (app) => {
     IsAuthenticated.attachUser,
     PostController.getPost)
 
+  app.get('/admin/posts',
+    IsAuthenticated.restrict,
+    IsAuthenticated.admin,
+    PostController.getPostsAdmin)
+
+  app.get('/search',
+    IsAuthenticated.attachUser,
+    PostController.search)
+
   app.get('/posts/user/:userId',
     IsAuthenticated.attachUser,
     PostController.getPostsOfUser)
@@ -49,6 +58,20 @@ module.exports = (app) => {
     IsAuthenticated.restrict,
     CommentController.createComment)
 
+  app.put('/comments/:commentId/report',
+    IsAuthenticated.restrict,
+    IsAuthenticated.restrictUnverified,
+    CommentController.report)
+
+  app.delete('/comments/:commentId',
+    IsAuthenticated.restrict,
+    CommentController.delete)
+
+  app.get('/admin/comments',
+    IsAuthenticated.restrict,
+    IsAuthenticated.admin,
+    CommentController.getCommentsAdmin)
+
   app.post('/register',
     AuthenticationControllerPolicy.register,
     AuthenticationController.register)
@@ -62,6 +85,21 @@ module.exports = (app) => {
   app.get('/users/:userId',
     IsAuthenticated.attachUser,
     UserController.getUser)
+
+  app.put('/users/:userId/admin',
+    IsAuthenticated.restrict,
+    IsAuthenticated.admin,
+    UserController.setAsAdmin)
+
+  app.delete('/users/:userId/admin',
+    IsAuthenticated.restrict,
+    IsAuthenticated.admin,
+    UserController.unsetAdmin)
+
+  app.delete('/users/:userId',
+    IsAuthenticated.restrict,
+    IsAuthenticated.admin,
+    UserController.deleteUser)
 
   app.get('/users/:userId/settings', // TODO tiltani más usereket
     IsAuthenticated.restrict,
@@ -77,6 +115,11 @@ module.exports = (app) => {
     IsAuthenticated.restrict,
     UserControllerPolicy.changeUserSettings,
     UserController.changeUserSettings)
+
+  app.get('/admin/users',
+    IsAuthenticated.restrict,
+    IsAuthenticated.admin,
+    UserController.getUsersAdmin)
 
   app.post('/upload',
     upload.single('image'),

@@ -8,9 +8,46 @@
         </v-avatar>
       </v-flex>
       <v-flex xs9 align-self-start text-xs-left px-0>
-        <span class="title pl-3 pb-1">{{ comment.createdBy.username }}</span>
-        <span class="grey--text">•</span>
-        <span class="grey--text">{{ comment.sinceCreated }}</span>
+        <v-layout row>
+          <v-flex xs9>
+            <span class="title pl-3 pb-1">{{ comment.createdBy.username }}</span>
+            <span class="grey--text">•</span>
+            <span class="grey--text">{{ comment.sinceCreated }}</span>
+          </v-flex>
+          <v-flex xs7>
+            <v-menu
+                v-if="user"
+                absolute
+                transition="scale-transition"
+                :class="comment.replyTo ? 'pl-0' : 'pl-2'">
+                <v-btn
+                  absolute
+                  slot="activator"
+                  flat
+                  :ripple="false"
+                  fab
+                  small
+                  class="pl-5 ml-5 optionsButton">
+                  <v-icon class="grey--text">fas fa-ellipsis-h</v-icon>
+                </v-btn>
+                <v-list class="postMenuList">
+                  <v-list-tile
+                    @click="reportComment">
+                    <v-list-tile-title>
+                      Report
+                    </v-list-tile-title>
+                  </v-list-tile>
+                  <v-list-tile
+                    @click="deleteComment"
+                    v-if="user && user._id === comment.createdBy._id">
+                    <v-list-tile-title>
+                      Delete
+                    </v-list-tile-title>
+                  </v-list-tile>
+                </v-list>
+              </v-menu>
+            </v-flex>
+        </v-layout>
         <v-layout row wrap>
           <v-flex xs11>
             <div
@@ -59,7 +96,7 @@
                   <span v-if="comment.replyCount > 1">
                   see {{ comment.replyCount }} replies
                   </span>
-                  <span v-else>
+                  <span v-if="comment.replyCount === 1">
                     see {{ comment.replyCount }} reply
                   </span>
                 </span>
@@ -120,7 +157,6 @@
     <transition name="commentSlide">
       <div v-if="showingReplies">
         <ReplyContainer :postId="comment.to" :replyTo="comment"/>
-        <v-divider class="mx-5 my-2"/>
       </div>
     </transition>
   </v-container>
@@ -181,6 +217,11 @@ export default {
       } else {
         this.scoreDirection = 'scoreDown'
       }
+    },
+    'comment.replyCount' (val) {
+      if (val === 0) {
+        this.showingReplies = false
+      }
     }
   },
   mounted () {
@@ -208,9 +249,10 @@ export default {
         }
         let reply = response.data.comment
         console.log(reply)
+        this.showingReplies = true
         this.$store.dispatch('setLocalReply', reply)
       } catch (error) {
-        console.log('BAJ VAN: ' + error)
+        this.$store.dispatch('setSnackbarText', 'An error has occured while creating your comment.')
       }
     },
     async upvote () {
@@ -231,7 +273,7 @@ export default {
           await CommentService.upvote(this.comment.to, this.comment._id)
         }
       } catch (err) {
-        console.log(err)
+        this.$store.dispatch('setSnackbarText', 'An error has occured during the upvote.')
       }
     },
     async downvote () {
@@ -250,7 +292,28 @@ export default {
           await CommentService.downvote(this.comment.to, this.comment._id)
         }
       } catch (err) {
-        console.log(err)
+        this.$store.dispatch('setSnackbarText', 'An error has occured during the downvote.')
+      }
+    },
+    async reportComment () {
+      try {
+        await CommentService.report(this.comment._id)
+        this.$store.dispatch('setSnackbarText', 'Comment reported succesfully.')
+      } catch (err) {
+        this.$store.dispatch('setSnackbarText', err.response.data.error)
+      }
+    },
+    async deleteComment () {
+      try {
+        await CommentService.delete(this.comment._id)
+        this.$store.dispatch('setSnackbarText', 'Comment deleted successfully.')
+        if (!this.comment.replyTo) {
+          this.$store.dispatch('setDeletedComment', this.comment._id)
+        } else {
+          this.$store.dispatch('setDeletedReply', this.comment._id)
+        }
+      } catch (err) {
+        this.$store.dispatch('setSnackbarText', 'An error occured during deletion.')
       }
     }
   },
@@ -340,5 +403,13 @@ export default {
 
 .scoreFlex {
   overflow: visible;
+}
+
+.optionsButton, .postMenu, .postMenuList {
+  z-index: 0;
+}
+
+.optionsButton--active:before, .optionsButton:focus:before, .optionsButton:hover:before {
+    background-color: transparent;
 }
 </style>

@@ -13,6 +13,7 @@
               type="password"
               label="Password"
               v-model="password"
+              v-on:keyup.enter="login"
             ></v-text-field>
           </form>
           <v-btn

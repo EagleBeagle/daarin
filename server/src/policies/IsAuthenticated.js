@@ -23,6 +23,15 @@ module.exports = {
       next()
     }
   },
+  admin: function (req, res, next) {
+    if (!req.user.admin) {
+      res.status(403).send({
+        error: 'You do not have access to this action.'
+      })
+    } else {
+      next()
+    }
+  },
   attachUser: function (req, res, next) {
     passport.authenticate('jwt', function (err, user) {
       if (err) {

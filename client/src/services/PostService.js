@@ -2,7 +2,7 @@ import Api from '@/services/Api'
 import querystring from 'querystring'
 
 export default {
-  index (lastPost, limit) {
+  getPosts (lastPost, limit) {
     let query = ''
     if (lastPost) {
       let createdAt = querystring.stringify({ created: lastPost.createdAt })
@@ -12,6 +12,17 @@ export default {
   },
   getPost (postId) {
     return Api().get(`/posts/${postId}`)
+  },
+  getPostsAdmin () {
+    return Api().get(`/admin/posts`)
+  },
+  searchPosts (text, lastPost) {
+    let query = `?${querystring.stringify({ query: text })}`
+    if (lastPost) {
+      let createdAt = querystring.stringify({ created: lastPost.createdAt })
+      query += `&${createdAt}`
+    }
+    return Api().get(`/search${query}`)
   },
   getPostsOfUser (postData) {
     let query = ''

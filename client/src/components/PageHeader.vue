@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container class="pageHeader">
     <v-toolbar fixed class="light-blue accent-2 pageHeader" flat dark>
       <v-toolbar-items>
         <v-btn
@@ -31,6 +31,21 @@
       </v-toolbar-title>
       <v-spacer></v-spacer>
       <v-toolbar-items>
+        <v-flex align-self-center mr-3 hidden-sm-and-down>
+          <v-text-field
+            prepend-inner-icon="fas fa-search mr-2"
+            clearable
+            single-line
+            color="light-blue"
+            :label="searchLabel"
+            solo
+            light
+            flat
+            hide-details
+            v-model="searchText"
+            v-on:keyup.enter="search">
+          </v-text-field>
+        </v-flex>
         <v-btn
           v-if="!$store.state.isUserLoggedIn"
           flat
@@ -49,7 +64,7 @@
           }">
           Sign Up
         </v-btn>
-        <v-flex v-if="isUserLoggedIn">
+        <v-flex v-if="isUserLoggedIn" align-self-center>
           <v-btn
             flat
             fab
@@ -61,12 +76,21 @@
             </v-avatar>
           </v-btn>
         </v-flex>
+        <v-flex v-if="isUserLoggedIn && user.admin" align-self-center>
+          <v-btn
+            flat
+            fab
+            @click="$router.push({ name: 'adminPage' })">
+            <v-icon>fas fa-user-shield</v-icon>
+          </v-btn>
+        </v-flex>
         <v-btn
           v-if="isUserLoggedIn"
           flat
+          fab
           dark
           @click="logout">
-          Log Out
+          <v-icon>fas fa-sign-out-alt</v-icon>
         </v-btn>
       </v-toolbar-items>
     </v-toolbar>
@@ -106,7 +130,9 @@ export default {
   data () {
     return {
       dialog: null,
-      authDialog: null
+      authDialog: null,
+      searchText: null,
+      searchLabel: 'Search'
     }
   },
   computed: {
@@ -115,6 +141,16 @@ export default {
       'user',
       'closeComments'
     ])
+  },
+  watch: {
+    $route (to) {
+      if (to.name !== 'search') {
+        this.searchLabel = 'Search'
+      } else {
+        this.searchLabel = 'Results for "' + to.query.query + '"'
+      }
+      this.searchText = null
+    }
   },
   methods: {
     async logout () {
@@ -130,6 +166,17 @@ export default {
         this.dialog = true
       } else if (!this.user.confirmed) {
         this.$store.dispatch('setSnackbarText', 'Confirm your email to upload posts.')
+      }
+    },
+    search () {
+      // this.$store.dispatch('search', this.searchText)
+      if (this.searchText) {
+        this.$router.push({
+          name: 'search',
+          query: {
+            query: this.searchText
+          }
+        })
       }
     }
   },

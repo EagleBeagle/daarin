@@ -23,8 +23,11 @@ export default new Vuex.Store({
     replyStreamData: null,
     localReply: null,
     deletedPost: null,
+    deletedComment: null,
+    deletedReply: null,
     requestSnackbar: false,
-    snackbarText: null
+    snackbarText: null,
+    search: null
   },
   mutations: {
     setToken (state, token) {
@@ -47,11 +50,20 @@ export default new Vuex.Store({
     setDeletedPost (state, postId) {
       state.deletedPost = postId
     },
+    setDeletedComment (state, commentId) {
+      state.deletedComment = commentId
+    },
+    setDeletedReply (state, replyId) {
+      state.deletedReply = replyId
+    },
     requestSnackbar (state) {
       state.requestSnackbar = !state.requestSnackbar
     },
     setSnackbarText (state, text) {
       state.snackbarText = text
+    },
+    search (state, text) {
+      state.search = text
     },
     closeComments (state) {
       state.closeComments = !state.closeComments
@@ -100,9 +112,18 @@ export default new Vuex.Store({
     setDeletedPost ({commit}, postId) {
       commit('setDeletedPost', postId)
     },
+    setDeletedComment ({commit}, commentId) {
+      commit('setDeletedComment', commentId)
+    },
+    setDeletedReply ({commit}, replyId) {
+      commit('setDeletedReply', replyId)
+    },
     setSnackbarText ({commit}, text) {
       commit('setSnackbarText', text)
       commit('requestSnackbar')
+    },
+    search ({commit}, text) {
+      commit('search', text)
     },
     closeComments ({commit}) {
       commit('closeComments')

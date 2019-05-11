@@ -56,9 +56,10 @@ module.exports = {
             console.log('\tpopup')
             res.sseSend('popup', popupData)
           }
+          res.sseSend('heartbeat', ':')
         } else {
           console.log('null')
-          res.sseSend('message', null)
+          res.sseSend('message', ':')
         }
       } catch (err) {
         errorData = {

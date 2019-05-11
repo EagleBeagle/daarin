@@ -23,6 +23,7 @@
               :rules="passwordRules"
               label="Password"
               v-model="password"
+              v-on:keyup.enter="register"
             ></v-text-field>
           </v-form>
           <br>

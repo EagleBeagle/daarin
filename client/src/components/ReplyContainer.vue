@@ -40,7 +40,8 @@ export default {
       'eventSource',
       'replyStreamExists',
       'replyStreamData',
-      'localReply'
+      'localReply',
+      'deletedReply'
     ])
   },
   watch: {
@@ -80,7 +81,8 @@ export default {
         let localReply = JSON.parse(JSON.stringify(reply))
         localReply.createdBy = {
           username: this.user.username,
-          avatar: this.user.avatar
+          avatar: this.user.avatar,
+          _id: this.user._id
         }
         localReply.sinceCreated = this.timeDifference(localReply.createdAt)
         let re = new RegExp('^@\\w+')
@@ -92,6 +94,11 @@ export default {
         this.locallyAddedReplies.push(localReply._id)
         this.replies = [...this.replies, localReply]
         console.log(this.replies)
+      }
+    },
+    deletedReply (newVal, oldVal) {
+      if (newVal && (oldVal !== newVal)) {
+        this.replies = this.replies.filter(reply => reply._id !== this.deletedReply)
       }
     }
   },

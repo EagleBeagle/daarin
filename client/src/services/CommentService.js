@@ -38,6 +38,9 @@ export default {
     }
     return Api().get(`/posts/${postId}/comments/${commentId}/replies${query}`)
   },
+  getCommentsAdmin () {
+    return Api().get(`/admin/comments`)
+  },
   upvote (postId, commentId) {
     console.log(commentId)
     return Api().put(`/posts/${postId}/comments/${commentId}/upvote`)
@@ -51,5 +54,11 @@ export default {
   },
   unDownvote (postId, commentId) {
     return Api().delete(`/posts/${postId}/comments/${commentId}/downvote`)
+  },
+  report (commentId) {
+    return Api().put(`/comments/${commentId}/report`)
+  },
+  delete (commentId) {
+    return Api().delete(`/comments/${commentId}`)
   }
 }

@@ -5,6 +5,7 @@ import Register from '@/components/RegisterPage'
 import Login from '@/components/LoginPage'
 import UserSettings from '@/components/UserSettings'
 import VerifyAccount from '@/components/VerifyAccount'
+import AdminPage from '@/components/AdminPage'
 import store from '@/store/store'
 // import PostPage from '@/components/PostPage'
 
@@ -16,6 +17,11 @@ const router = new Router({
     {
       path: '/home',
       name: 'home',
+      component: Home
+    },
+    {
+      path: '/search',
+      name: 'search',
       component: Home
     },
     {
@@ -44,6 +50,11 @@ const router = new Router({
       component: UserSettings
     },
     {
+      path: '/admin',
+      name: 'adminPage',
+      component: AdminPage
+    },
+    {
       path: '/verify',
       name: 'verifyAccount',
       component: VerifyAccount
@@ -63,11 +74,16 @@ router.beforeEach(async (to, from, next) => {
   }
   let restrictedPages = []
   if (store.state.user) {
-    if (to.name === 'userSettings' && to.params.userId !== store.state.user._id) {
+    if ((to.name === 'userSettings' && to.params.userId !== store.state.user._id) || (to.name === 'adminPage' && !store.state.user.admin)) {
       return next('/home')
     }
     restrictedPages = ['/login', '/register']
+  } else {
+    if (to.name === 'adminPage' || to.name === 'userSettings') {
+      return next('/home')
+    }
   }
+
   const unauthorized = restrictedPages.includes(to.path)
   if (unauthorized) {
     return next('/home')

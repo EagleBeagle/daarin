@@ -96,6 +96,7 @@
             placeholder="Add a comment..."
             hide-details
             v-model="commentText"
+            @keydown.enter.prevent="createComment"
             >
           </v-textarea>
         </v-flex>
@@ -147,7 +148,8 @@ export default {
       'isUserLoggedIn',
       'user',
       'eventSource',
-      'closeComments'
+      'closeComments',
+      'deletedComment'
     ])
   },
   watch: {
@@ -159,6 +161,11 @@ export default {
     async relevantShowed () {
       this.comments = []
       await this.getComments()
+    },
+    deletedComment (newVal, oldVal) {
+      if (newVal && (oldVal !== newVal)) {
+        this.comments = this.comments.filter(comment => comment._id !== this.deletedComment)
+      }
     }
   },
   beforeDestroy () {
@@ -197,25 +204,28 @@ export default {
       }
     },
     async createComment () { // TODO: error handling
-      let commentContainer = document.getElementById(this.postId + '-comments')
-      try {
-        let response = await CommentService.createComment(this.postId, {
-          text: this.commentText
-        })
-        let comment = response.data.comment
-        comment.createdBy = {
-          username: this.user.username,
-          avatar: this.user.avatar
+      if (this.commentText) {
+        let commentContainer = document.getElementById(this.postId + '-comments')
+        try {
+          let response = await CommentService.createComment(this.postId, {
+            text: this.commentText
+          })
+          let comment = response.data.comment
+          comment.createdBy = {
+            username: this.user.username,
+            avatar: this.user.avatar,
+            _id: this.user._id
+          }
+          comment.sinceCreated = this.timeDifference(comment.createdAt)
+          this.comments = [comment, ...this.comments]
+          this.locallyAddedComments.push(comment._id)
+          console.log(comment.createdAt)
+          this.commentText = ''
+          if (this.comments.length > 5) commentContainer.scrollTo(0, 0)
+          // await this.getComments() SSE-vel nem kell
+        } catch (error) {
+          console.log('BAJ VAN: ' + error)
         }
-        comment.sinceCreated = this.timeDifference(comment.createdAt)
-        this.comments = [comment, ...this.comments]
-        this.locallyAddedComments.push(comment._id)
-        console.log(comment.createdAt)
-        this.commentText = ''
-        if (this.comments.length > 5) commentContainer.scrollTo(0, 0)
-        // await this.getComments() SSE-vel nem kell
-      } catch (error) {
-        console.log('BAJ VAN: ' + error)
       }
     },
     async getComments () {

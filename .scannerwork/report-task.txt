@@ -1,0 +1,6 @@
+projectKey=daarin-analyze
+serverUrl=http://localhost:9000
+serverVersion=7.7.0.23042
+dashboardUrl=http://localhost:9000/dashboard?id=daarin-analyze
+ceTaskId=AWqmZU5Ps7iZa0s_iIFK
+ceTaskUrl=http://localhost:9000/api/ce/task?id=AWqmZU5Ps7iZa0s_iIFK

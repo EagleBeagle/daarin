@@ -7,6 +7,9 @@ const CommentSchema = new Schema({
   createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
   replyTo: { type: Schema.Types.ObjectId, ref: 'Comment' },
   replyCount: { type: Number, default: 0 },
+  reports: [
+    { type: Schema.Types.ObjectId, ref: 'User' }
+  ],
   likes: [
     { type: Schema.Types.ObjectId, ref: 'User' }
   ],

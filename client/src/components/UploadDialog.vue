@@ -8,9 +8,9 @@
         <v-toolbar-title>Create a New Post</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn v-if="!uploadLoading" dark flat @click="submitImage">Save</v-btn>
+          <v-btn v-if="!uploadLoading && image" dark flat @click="submitImage">Save</v-btn>
           <v-progress-circular
-              v-else
+              v-if="uploadLoading"
               :size="32"
               :width="3"
               color="white"
