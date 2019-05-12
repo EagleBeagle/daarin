@@ -29,7 +29,6 @@ module.exports = {
         if (lastCommentToBeLoaded) {
           await SSEConnectionHandler.buildAndSetConnectionQuery('comment', sseId, comments)
         }
-        console.log(comments)
         setTimeout(() => {
           res.status(200).send(comments)
         }, 2000)
@@ -90,7 +89,6 @@ module.exports = {
           res.status(200).send(comments)
         }, 1000)
       } else if (lowestLoaded && oldestLoaded && !highestLoaded && !newestLoaded) {
-        console.log(new Date(oldestLoaded))
         comments = await Comment
           .aggregate([
             {
@@ -188,15 +186,11 @@ module.exports = {
     let postId = req.params.postId
     let replyTo = req.body.replyTo
     let sseId = req.user ? req.user.sseId : null
-    console.log('ENNEK VÁLASZOLUNK: ' + replyTo)
 
     try {
       if (replyTo) {
         let parent = await Comment.findOne({ '_id': replyTo })
-        console.log(parent)
-        console.log('szülő válasz erre: ' + parent.replyTo)
         if (parent.replyTo) { // nem mükszik
-          console.log('ittvaguynk')
           res.status(400).send({
             error: 'you cannot reply to a reply'
           })

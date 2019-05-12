@@ -16,6 +16,12 @@
               v-on:keyup.enter="login"
             ></v-text-field>
           </form>
+          <div
+            class="body-1 light-blue--text font-weight-bold pb-2"
+            @click="$router.push('forgotPassword')"
+            style="cursor: pointer">
+            I forgot my password
+          </div>
           <v-btn
             dark
             class="light-blue accent-2"
@@ -42,14 +48,12 @@ export default {
     return {
       username: null,
       password: null,
-      error: null,
       alert: false,
       alertMessage: null
     }
   },
   methods: {
     async login () {
-      this.error = null
       const areAllFieldsFilledIn = (this.username && this.password)
       if (!areAllFieldsFilledIn) {
         this.alertMessage = 'Please fill in all the required fields'

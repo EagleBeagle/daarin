@@ -6,6 +6,8 @@ import Login from '@/components/LoginPage'
 import UserSettings from '@/components/UserSettings'
 import VerifyAccount from '@/components/VerifyAccount'
 import AdminPage from '@/components/AdminPage'
+import ForgotPassword from '@/components/ForgotPassword'
+import ResetPassword from '@/components/ResetPassword'
 import store from '@/store/store'
 // import PostPage from '@/components/PostPage'
 
@@ -33,6 +35,16 @@ const router = new Router({
       path: '/login',
       name: 'login',
       component: Login
+    },
+    {
+      path: '/forgotpassword',
+      name: 'forgotPassword',
+      component: ForgotPassword
+    },
+    {
+      path: '/resetpassword',
+      name: 'resetPassword',
+      component: ResetPassword
     },
     {
       path: '/post/:postId',
@@ -77,7 +89,7 @@ router.beforeEach(async (to, from, next) => {
     if ((to.name === 'userSettings' && to.params.userId !== store.state.user._id) || (to.name === 'adminPage' && !store.state.user.admin)) {
       return next('/home')
     }
-    restrictedPages = ['/login', '/register']
+    restrictedPages = ['/login', '/register', '/forgotpassword', '/resetpassword']
   } else {
     if (to.name === 'adminPage' || to.name === 'userSettings') {
       return next('/home')

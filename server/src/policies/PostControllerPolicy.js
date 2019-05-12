@@ -1,20 +1,77 @@
 const Joi = require('joi')
-//  const readChunk = require('read-chunk')
 const imageType = require('image-type')
 
 module.exports = {
+  index (req, res, next) {
+    const schema = {
+      created: Joi.date(),
+      limit: Joi.number().min(5).max(20)
+    }
+    const { error } = Joi.validate(req.query, schema)
+    if (error) {
+      res.status(400).send({
+        error: 'Invalid parameters.'
+      })
+    } else {
+      next()
+    }
+  },
+
+  search (req, res, next) {
+    const schema = {
+      query: Joi.string().regex(/^(?!\$).*/).max(100),
+      created: Joi.date()
+    }
+    const { error } = Joi.validate(req.query, schema)
+    if (error) {
+      res.status(400).send({
+        error: 'An error has happened during search.'
+      })
+    } else {
+      next()
+    }
+  },
+
+  getPost (req, res, next) {
+    const schema = {
+      postId: Joi.string().alphanum().length(24)
+    }
+    const { error } = Joi.validate(req.params, schema)
+    if (error) {
+      res.status(400).send({
+        error: 'Invalid parameters.'
+      })
+    } else {
+      next()
+    }
+  },
+
+  getPostsOfUser (req, res, next) {
+    const paramSchema = {
+      userId: Joi.string().alphanum().length(24)
+    }
+    const querySchema = {
+      created: Joi.date()
+    }
+    const paramResult = Joi.validate(req.params, paramSchema)
+    const queryResult = Joi.validate(req.query, querySchema)
+    if (paramResult.error || queryResult.error) {
+      res.status(400).send({
+        error: 'Invalid parameters.'
+      })
+    } else {
+      next()
+    }
+  },
+
   upload (req, res, next) {
     const schema = {
-      title: Joi.string().invalid(['null']).required().max(50),
+      title: Joi.string().invalid(['null']).required().regex(/^(?!\$).*/).max(50),
       createdBy: Joi.string().alphanum().length(24),
-      tags: Joi.array().items(Joi.string().regex(/^[a-zA-Z0-9_-]*$/)).max(4)
+      tags: Joi.array().items(Joi.string().regex(/^[a-zA-Z0-9_-]*$/).regex(/^(?!\$).*/)).max(4)
     }
-    const { error, value } = Joi.validate(req.body, schema) //  eslint-disable-line
-    if (!req.body) {
-      res.status(400).send({
-        error: 'No data provided'
-      })
-    } else if (error) {
+    const { error } = Joi.validate(req.body, schema) //  eslint-disable-line
+    if (error) {
       switch (error.details[0].context.key) {
         case 'title':
           res.status(400).send({
@@ -39,16 +96,8 @@ module.exports = {
       }
     } else if (String(req.user._id) !== String(req.body.createdBy)) {
       res.status(403).send()
-    } else {
-      next()
-    }
-  },
-
-  imageValidation (req, res, next) {
-    if (!req.file) {
-      res.status(400).send({
-        error: 'You must choose a file to upload'
-      })
+    } else if (!req.file) {
+      res.status(400).send()
     } else {
       const VALID_IMAGETYPES = ['png', 'jpg', 'jpeg', 'gif']
       const SIZE_LIMIT = 5 * 1024 * 1024
@@ -65,6 +114,19 @@ module.exports = {
       } else {
         next()
       }
+    }
+  },
+
+  react (req, res, next) {
+    const schema = {
+      type: Joi.number().min(0).max(6),
+      postId: Joi.string().alphanum().length(24)
+    }
+    const { error } = Joi.validate(req.params, schema)
+    if (error) {
+      res.status(400).send()
+    } else {
+      next()
     }
   }
 }

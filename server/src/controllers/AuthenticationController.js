@@ -49,8 +49,6 @@ module.exports = {
 
   async verify (req, res) {
     let id = req.query.id
-    console.log('--------------------------------------')
-    console.log(id)
     if (!id) {
       res.status(400).send()
     } else {
@@ -107,6 +105,52 @@ module.exports = {
       console.log(err)
       res.status(500).send({
         error: 'An error has occured trying to log in'
+      })
+    }
+  },
+
+  async forgotPassword (req, res) {
+    let email = req.body.email
+    try {
+      let resetId = uuidv4()
+      let user = await User.findOneAndUpdate({ email: email }, { resetPasswordId: resetId })
+      if (!user) {
+        res.status(400).send({
+          error: 'No user exists with the provided email.'
+        })
+      } else {
+        let resetLink = `http://${req.get('host')}/resetpassword?id=${resetId}`
+        let mailOptions = {
+          to: email,
+          subject: `Daarin: password reset`,
+          html: `Greetings, ${user.username}!<br>Click <a href="${resetLink}">here</a> to reset your Daarin password.`
+        }
+        await smtpTransport.sendMail(mailOptions)
+        res.status(200).send({
+          success: true
+        })
+      }
+    } catch (err) {
+      res.status(500).send({
+        error: 'An error has happened during password reset.'
+      })
+    }
+  },
+
+  async resetPassword (req, res) {
+    let id = req.query.id
+    let password = req.body.password
+    try {
+      let user = await User.findOne({ resetPasswordId: id })
+      user.password = password
+      user.resetPasswordId = null
+      await user.save()
+      res.status(200).send({
+        success: true
+      })
+    } catch (err) {
+      res.status(500).send({
+        error: 'Invalid Link.'
       })
     }
   }

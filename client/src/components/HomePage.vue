@@ -331,7 +331,8 @@ export default {
         response = await PostService.searchPosts(text, this.lastPost)
         this.posts = response.data
       } catch (err) {
-        console.log(err)
+        this.$store.dispatch('setSnackbarText', 'An error has happened during search.')
+        this.$router.push('home')
       }
       setTimeout(() => {
         let postElements = document.getElementsByClassName('post')

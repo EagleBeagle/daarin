@@ -9,5 +9,15 @@ export default {
   },
   verify (id) {
     return Api().post(`/verify?id=${id}`)
+  },
+  forgotPassword (email) {
+    return Api().post(`/forgotpassword`, {
+      email: email
+    })
+  },
+  resetPassword (id, newPassword) {
+    return Api().post(`/resetpassword?id=${id}`, {
+      password: newPassword
+    })
   }
 }

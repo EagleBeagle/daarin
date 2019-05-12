@@ -34,7 +34,7 @@
             </v-layout>
           </v-container>
         </v-flex>
-        <v-flex xs6 align-self-top pl-4 pb-3>
+        <v-flex xs6 align-self-top pl-4 pb-3 style="min-height: 420px">
           <v-card>
             <v-card-title class="font-weight-bold py-0 my-0">
               Members
@@ -104,6 +104,7 @@
                   {{ props.item._id }}
                 </td>
                 <td class="text-xs-right">{{ props.item.title }}</td>
+                <td class="text-xs-right">{{ props.item.createdBy.username }}</td>
                 <td class="text-xs-right" v-if="props.item.reports">{{ props.item.reports.length }}</td>
                 <td class="text-xs-right" v-else>0</td>
                 <td class="text-xs-right">{{ new Date(props.item.createdAt).toLocaleString() }}</td>
@@ -181,6 +182,7 @@ export default {
           value: '_id'
         },
         { text: 'Title', value: 'title' },
+        { text: 'Creator', value: 'creator' },
         { text: 'Reports', value: 'reports' },
         { text: 'Date Created', value: 'createdAt' },
         { text: 'Delete', value: 'Delete' }
@@ -234,7 +236,7 @@ export default {
         let result = (await PostService.getPostsAdmin()).data
         this.posts = result
       } catch (err) {
-        console.log(err)
+        this.$store.dispatch('setSnackbarText', 'An error has occured while fetching posts.')
       }
     },
     async getUsers () {
@@ -243,7 +245,7 @@ export default {
         this.users = result.users
         this.currentlyOnline = result.active
       } catch (err) {
-        console.log(err)
+        this.$store.dispatch('setSnackbarText', 'An error has occured while fetching users.')
       }
     },
     async getComments () {
@@ -251,7 +253,7 @@ export default {
         let result = (await CommentService.getCommentsAdmin()).data
         this.comments = result
       } catch (err) {
-        console.log(err)
+        this.$store.dispatch('setSnackbarText', 'An error has occured while fetching comments.')
       }
     },
     async deletePost (postId) {

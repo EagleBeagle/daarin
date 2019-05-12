@@ -473,7 +473,7 @@ module.exports = {
 
   async getPostsAdmin (req, res) {
     try {
-      let posts = await Post.find({}, { title: 1, reports: 1, createdAt: 1 })
+      let posts = await Post.find({}, { title: 1, reports: 1, createdAt: 1, createdBy: 1 }).populate('createdBy', 'username')
       res.status(200).send(posts)
     } catch (err) {
       console.log(err)
@@ -491,11 +491,17 @@ module.exports = {
       let result = await cloudinary.v2.uploader.upload(dUri.content, {
         folder: 'posts'
       })
+      let tags
+      if (req.body.tags) {
+        tags = [...new Set(JSON.parse(req.body.tags))]
+      } else {
+        tags = []
+      }
       let newPost = {
         title: req.body.title,
         slug: uniqueSlug(req.body._id),
         createdBy: req.body.createdBy,
-        tags: [...new Set(JSON.parse(req.body.tags))],
+        tags: tags,
         url: result.url
       }
       console.log(result)

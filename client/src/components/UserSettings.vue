@@ -20,6 +20,7 @@
           </v-flex>
           <v-flex xs6 align-self-center>
             <div class="title leftText">{{ user.username }}</div>
+            <div class="body-2 leftText mb-1">{{ user.email }}</div>
             <form>
               <div
                 class="body-1 font-weight-bold light-blue--text leftText clickText"
@@ -44,12 +45,8 @@
               <v-text-field
                 v-model="usernameField"
                 :rules="usernameRules"
-                label="Username">
-              </v-text-field>
-                <v-text-field
-                  v-model="emailField"
-                  :rules="emailRules"
-                  label="Email">
+                label="Username"
+                class="mx-2">
               </v-text-field>
               <div
                 v-if="!changingPassword"
@@ -63,19 +60,21 @@
                   type="password"
                   :rules="oldPasswordRules"
                   label="Old Password"
-                  class="mt-2">
+                  class="mt-2 mx-2">
                 </v-text-field>
                 <v-text-field
                   type="password"
                   v-model="newPasswordField"
                   :rules="newPasswordRules"
-                  label="New Password">
+                  label="New Password"
+                  class="mx-2">
                 </v-text-field>
                 <v-text-field
                   type="password"
                   v-model="confirmPasswordField"
                   :rules="confirmPasswordRules"
-                  label="Confirm New Password">
+                  label="Confirm New Password"
+                  class="mx-2">
                 </v-text-field>
               </div>
             </v-flex>
@@ -120,7 +119,6 @@ export default {
       valid: true,
       changingPassword: false,
       usernameField: null,
-      emailField: null,
       oldPasswordField: null,
       newPasswordField: null,
       confirmPasswordField: null,
@@ -132,10 +130,6 @@ export default {
         v => !!v || "Username can't stay empty.",
         v => (v && v.length > 3) || 'The username has to be at least 4 characters long.',
         v => (v && v.length < 16) || "The username can't be longer than 15 characters."
-      ],
-      emailRules: [
-        v => !!v || "Email can't stay empty.",
-        v => /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/igm.test(v) || 'E-mail must be valid.'
       ],
       oldPasswordRules: [
         v => !!v || "This field can't stay empty.",
@@ -159,7 +153,6 @@ export default {
   },
   mounted () {
     this.usernameField = this.user.username
-    this.emailField = this.user.email
   },
   methods: {
     onClickUpload () {
@@ -174,23 +167,24 @@ export default {
         let user = await UserService.changeAvatar(formData, this.user._id)
         this.$store.dispatch('changeUserAvatar', user.data.avatar)
       } catch (err) {
-        console.log(err)
+        this.$store.dispatch('setSnackbarText', err.response.data.error)
       }
       this.avatarLoading = false
     },
     async submitSettings () {
       if (this.$refs.form.validate()) {
         try {
-          await UserService.changeUserSettings(this.user._id, {
+          let settings = {
             username: this.usernameField,
-            email: this.emailField,
-            oldPassword: this.oldPasswordField,
-            newPassword: this.newPasswordField,
-            confirmPassword: this.confirmPasswordField
-          })
+          }
+          if (this.oldPasswordField && this.newPasswordField && this.confirmPasswordField) {
+            settings.oldPassword = this.oldPasswordField
+            settings.newPassword = this.newPasswordField
+            settings.confirmPassword = this.confirmPasswordField
+          }
+          await UserService.changeUserSettings(this.user._id, settings)
           this.$store.dispatch('changeUserCredentials', {
             username: this.usernameField,
-            email: this.emailField
           })
           this.alertMessage = 'Your changes have been saved.'
           this.errorAlert = false
@@ -204,7 +198,7 @@ export default {
           this.successAlert = false
           this.errorAlert = true
           setTimeout(() => {
-            this.successAlert = false
+            this.errorAlert = false
           }, 3000)
         }
       }

@@ -133,7 +133,6 @@ module.exports = {
   async changeUserSettings (req, res) {
     let userId = req.params.userId
     let username = req.body.username
-    let email = req.body.email
     let oldPassword = req.body.oldPassword
     let newPassword = req.body.newPassword
     let confirmPassword = req.body.confirmPassword
@@ -148,7 +147,6 @@ module.exports = {
           user.comparePassword(oldPassword, async function (err, isMatch) {
             if (isMatch && !err) {
               user.username = username
-              user.email = email
               user.password = newPassword
               await user.save()
               res.status(200).send({
@@ -163,8 +161,7 @@ module.exports = {
         }
       } else {
         await User.findOneAndUpdate({ _id: userId }, {
-          username: username,
-          email: email
+          username: username
         })
         res.status(200).send({
           success: true

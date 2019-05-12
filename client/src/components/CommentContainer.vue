@@ -122,7 +122,7 @@ export default {
   data () {
     return {
       commentText: null,
-      comments: null,
+      comments: [],
       commentsAvailable: false,
       firstTimeEntered: true,
       firstTimeLeft: true,
@@ -224,7 +224,7 @@ export default {
           if (this.comments.length > 5) commentContainer.scrollTo(0, 0)
           // await this.getComments() SSE-vel nem kell
         } catch (error) {
-          console.log('BAJ VAN: ' + error)
+          this.$store.dispatch('setSnackbarText', 'An error has occured during comment creation.')
         }
       }
     },
@@ -254,7 +254,7 @@ export default {
           this.commentsAvailable = true
         }
       } catch (error) {
-        console.log('BAJ VAN:' + error)
+        this.$store.dispatch('setSnackbarText', 'An error has occured while fetching comments.')
         this.loadingInitial = false
         this.loadingWhenVisible = false
       }
@@ -287,7 +287,7 @@ export default {
         })
         this.comments = [...newComments, ...this.comments]
       } catch (error) {
-        console.log('BAJ VAN: ' + error)
+        this.$store.dispatch('setSnackbarText', 'An error has occured while fetching comments.')
       }
     },
     async getLowerComments () {
@@ -319,7 +319,7 @@ export default {
         })
         this.comments = [...this.comments, ...newComments]
       } catch (error) {
-        console.log('BAJ VAN: ' + error)
+        this.$store.dispatch('setSnackbarText', 'An error has occured while fetching comments.')
       }
     },
     async viewHandler (e) {
@@ -341,7 +341,8 @@ export default {
             this.eventSource.removeEventListener(this.commentStreamEvent, this.commentStreamCb)
           }
           this.$store.dispatch('removeReplyListener')
-          // this.commentContainerHeight = `height: ${commentContainer.clientHeight}px`
+          let commentContainer = document.getElementById(this.postId + '-comments')
+          this.commentContainerHeight = `height: ${commentContainer.clientHeight - 5}px`
           this.visible = false
           this.comments = 'empty'
         }

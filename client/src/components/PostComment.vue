@@ -263,14 +263,14 @@ export default {
         if (this.upvoted) {
           // console.log (this.post.likes)
           // this.upvoted = false
-          this.comment.likes = this.comment.likes.filter(upvoter => upvoter !== this.user._id) // azonnali eredmény
           await CommentService.unUpvote(this.comment.to, this.comment._id)
+          this.comment.likes = this.comment.likes.filter(upvoter => upvoter !== this.user._id) // azonnali eredmény
         } else {
           if (this.downvoted) {
             await this.downvote()
           }
-          this.comment.likes.push(this.user._id)
           await CommentService.upvote(this.comment.to, this.comment._id)
+          this.comment.likes.push(this.user._id)
         }
       } catch (err) {
         this.$store.dispatch('setSnackbarText', 'An error has occured during the upvote.')
@@ -282,14 +282,14 @@ export default {
       }
       try {
         if (this.downvoted) {
-          this.comment.dislikes = this.comment.dislikes.filter(downvoter => downvoter !== this.user._id) // azonnali eredmény
           await CommentService.unDownvote(this.comment.to, this.comment._id)
+          this.comment.dislikes = this.comment.dislikes.filter(downvoter => downvoter !== this.user._id) // azonnali eredmény
         } else {
           if (this.upvoted) {
             await this.upvote()
           }
-          this.comment.dislikes.push(this.user._id)
           await CommentService.downvote(this.comment.to, this.comment._id)
+          this.comment.dislikes.push(this.user._id)
         }
       } catch (err) {
         this.$store.dispatch('setSnackbarText', 'An error has occured during the downvote.')

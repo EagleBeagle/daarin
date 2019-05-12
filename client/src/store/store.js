@@ -45,7 +45,6 @@ export default new Vuex.Store({
     },
     changeUserCredentials (state, credentials) {
       state.user.username = credentials.username
-      state.user.email = credentials.email
     },
     setDeletedPost (state, postId) {
       state.deletedPost = postId

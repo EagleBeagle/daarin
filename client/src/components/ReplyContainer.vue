@@ -93,7 +93,6 @@ export default {
         }
         this.locallyAddedReplies.push(localReply._id)
         this.replies = [...this.replies, localReply]
-        console.log(this.replies)
       }
     },
     deletedReply (newVal, oldVal) {
@@ -165,7 +164,7 @@ export default {
           this.lastLoadedReply = this.replies[this.replies.length - 1]
         }
       } catch (error) {
-        console.log('BAJ VAN: ' + error)
+        this.$store.dispatch('setSnackbarText', 'An error has occured while fetching comments.')
       }
     },
     async getNewerReplies () {
@@ -194,7 +193,7 @@ export default {
         this.replies = [...this.replies, ...newReplies]
         this.isMoreAvailable = false
       } catch (error) {
-        console.log('BAJ VAN: ' + error)
+        this.$store.dispatch('setSnackbarText', 'An error has occured while fetching comments.')
       }
     },
     timeDifference (createdAt) {
