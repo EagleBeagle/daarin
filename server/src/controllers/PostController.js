@@ -107,10 +107,10 @@ module.exports = {
               $match: {
                 $or: [
                   {
-                    title: new RegExp(`${text}`)
+                    title: new RegExp(text, 'i')
                   },
                   {
-                    tags: new RegExp(`${text}`)
+                    tags: new RegExp(text, 'i')
                   }
                 ]
               }

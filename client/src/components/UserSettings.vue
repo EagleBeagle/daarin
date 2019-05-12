@@ -175,7 +175,7 @@ export default {
       if (this.$refs.form.validate()) {
         try {
           let settings = {
-            username: this.usernameField,
+            username: this.usernameField
           }
           if (this.oldPasswordField && this.newPasswordField && this.confirmPasswordField) {
             settings.oldPassword = this.oldPasswordField
@@ -184,7 +184,7 @@ export default {
           }
           await UserService.changeUserSettings(this.user._id, settings)
           this.$store.dispatch('changeUserCredentials', {
-            username: this.usernameField,
+            username: this.usernameField
           })
           this.alertMessage = 'Your changes have been saved.'
           this.errorAlert = false

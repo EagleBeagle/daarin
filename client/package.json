@@ -21,6 +21,7 @@
     "material-design-icons-iconfont": "^4.0.3",
     "v-clipboard": "^2.2.2",
     "vue": "^2.6.10",
+    "vue-affix": "^0.5.2",
     "vue-chartjs": "^3.4.2",
     "vue-charts": "^0.2.1",
     "vue-check-view": "^0.3.0",

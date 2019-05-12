@@ -7,7 +7,7 @@
         </v-flex>
         <v-flex>
           <v-menu
-            v-if="user"
+            v-if="user && !small"
             absolute
             transition="scale-transition"
             class="postMenu">
@@ -55,7 +55,7 @@
         id="postImage"
         @click="goToPostPage"/>
       <v-divider/>
-      <v-card-actions class="px-0 py-0">
+      <v-card-actions class="px-0 py-0" v-if="!small">
         <v-container pa-0 ma-0>
           <v-layout justify-center class="py-1 px-0" row wrap>
               <v-flex>
@@ -199,7 +199,8 @@ import CommentContainer from './CommentContainer'
 // import goTo from 'vuetify/lib/components/Vuetify/goTo'
 export default {
   props: [
-    'post'
+    'post',
+    'small'
   ],
   data () {
     return {

@@ -1,5 +1,5 @@
 <template>
-  <v-container>
+  <v-container px-0 align-content-center>
     <v-layout class="userInfo"></v-layout>
     <transition name ="fade">
       <UserPage class="userInfo" v-if="onUserPage" @switchedTab="getPostsOfUser"/>
@@ -7,12 +7,22 @@
     <v-layout justify-center>
       <v-flex v-show="showPostInfo" md3 lg4 hidden-sm-and-down>
       </v-flex>
+      <v-flex v-show="!showPostInfo" md3 lg4 hidden-sm-and-down>
+        <affix class="popupContainer" relative-element-selector="#postFeed" style="width: 300px">
+        <div id="leftSide">
+          <AppPost class="post" :id="'post-' + posts[0]._id" :post="posts[0]" :small="true"/>
+        </div>
+        </affix>
+      </v-flex>
       <v-flex xs12 sm12 md6 lg4>
       <PostFeed
         :posts="posts"
         :isNewPostAvailable="isNewPostAvailable"
         @reachedBottom="loadMorePosts"
-        @filter-post="filterPost"/>
+        @filter-post="filterPost"
+        id="postFeed"/>
+      </v-flex>
+      <v-flex v-show="!showPostInfo" md3 lg4 hidden-sm-and-down>
       </v-flex>
       <v-flex v-show="showPostInfo" md3 lg4 hidden-sm-and-down>
         <transition name="fadeRight">
@@ -27,6 +37,7 @@
 import {mapState} from 'vuex'
 import PostService from '@/services/PostService'
 import PostFeed from './PostFeed'
+import AppPost from './AppPost'
 import UserPage from './UserPage'
 import PieChart from '../PieChart.js'
 export default {
@@ -195,6 +206,7 @@ export default {
       await this.getPosts()
     }
     await this.addSSEListeners()
+    this.animatePopups()
     // }
     // if (!this.posts) {
     // }
@@ -376,10 +388,13 @@ export default {
           element.style.width = ''
         }
       }, 600)
+    },
+    animatePopups () {
     }
   },
   components: {
     PostFeed,
+    AppPost,
     UserPage,
     PieChart
   }
@@ -405,5 +420,51 @@ export default {
 
 .fade-enter, .fade-leave-to {
   max-height: 0;
+}
+
+#leftSide {
+  position: relative;
+  transform: scale(1);
+  opacity: 0;
+  animation: floatFrames 14s infinite;
+}
+
+@keyframes floatFrames {
+  0% {
+    opacity: 0.2;
+    top: 110vh;
+    left: 0vw;
+    animation-timing-function: linear;
+  }
+  20% {
+    opacity: 1;
+    top: 70vh;
+    left: 20vw;
+    animation-timing-function: linear;
+  }
+  40% {
+    opacity: 1;
+    top: 50vh;
+    left: 0vw;
+    animation-timing-function: linear;
+  }
+  60% {
+    opacity: 1;
+    top: 30vh;
+    left: 20vw;
+    animation-timing-function: linear;
+  }
+  80% {
+    opacity: 1;
+    top: 10vh;
+    left: 0vw;
+    animation-timing-function: linear;
+  }
+  100% {
+    opacity: 0.2;
+    top: -20vh;
+    left: 20vw;
+    animation-timing-function: linear;
+  }
 }
 </style>

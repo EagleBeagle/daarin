@@ -15,6 +15,7 @@ import vue2Animate from 'vue2-animate/dist/vue2-animate.min.css'
 import '@fortawesome/fontawesome-free/css/all.css'
 import SocialSharing from 'vue-social-sharing'
 import VueClipboard from 'vue-clipboard2'
+import Affix from 'vue-affix'
 
 Vue.config.productionTip = false
 
@@ -27,6 +28,7 @@ Vue.use(checkView)
 Vue.use(vue2Animate)
 Vue.use(SocialSharing)
 Vue.use(VueClipboard)
+Vue.use(Affix)
 
 Vue.component('panel', Panel)
 
