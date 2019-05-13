@@ -57,6 +57,7 @@ export default {
       popupStreamCb: null,
       popupStreamEvent: null,
       popUpInterval: null,
+      startedShowingPopups: false,
       isNewPostAvailable: false,
       hiddenPosts: [],
       filteredPost: null,
@@ -165,6 +166,13 @@ export default {
         this.showPopups()
       }
 
+      if ((from.name === 'newest' || from.name === 'trending' || from.name === 'recommended') && to.name !== 'newest' && to.name !== 'trending' && to.name !== 'recommended') {
+        clearInterval(this.popupInterval)
+        this.leftSide = false
+        this.rightSide = false
+        this.showPopups()
+      }
+
       if (from.name === 'postPage' && to.name !== 'postPage' && to.name !== 'userPage' && this.posts && this.posts[0] && this.hiddenPosts[this.filteredPostIndex] && this.hiddenPosts[this.filteredPostIndex]._id === this.posts[0]._id && this.hiddenPosts.length > 1) {
         // this.hiddenPosts.splice(this.filteredPostIndex, 0, this.posts[0])
         // let copy = JSON.parse(JSON.stringify(this.hiddenPosts))
@@ -236,7 +244,6 @@ export default {
       await this.getPosts()
     }
     await this.addSSEListeners()
-    this.showPopups()
     // }
     // if (!this.posts) {
     // }
@@ -280,6 +287,10 @@ export default {
           if (streamedPosts && streamedPosts.length === 2) {
             this.popups.push(streamedPosts[0])
             this.popups.push(streamedPosts[1])
+            if (!this.startedShowingPopups) {
+              this.showPopups()
+              this.startedShowingPopups = true
+            }
           }
         }
         this.postStreamEvent = 'post'
@@ -459,22 +470,26 @@ export default {
         }
       }, 600)
     },
-    showPopups () {
-      this.popupInterval = setInterval(() => {
-        if (this.popups && this.popups.length > 0) {
-          this.leftSide = false
-          this.leftPopup = this.popups.pop()
+    setPopups () {
+      if (this.popups && this.popups.length > 0) {
+        this.leftSide = false
+        this.leftPopup = this.popups.pop()
+        setTimeout(() => {
+          this.leftSide = true
+        }, 10)
+        setTimeout(() => {
+          this.rightSide = false
+          this.rightPopup = this.popups.pop()
           setTimeout(() => {
-            this.leftSide = true
+            this.rightSide = true
           }, 10)
-          setTimeout(() => {
-            this.rightSide = false
-            this.rightPopup = this.popups.pop()
-            setTimeout(() => {
-              this.rightSide = true
-            }, 10)
-          }, 3000)
-        }
+        }, 3000)
+      }
+    },
+    showPopups () {
+      this.setPopups()
+      this.popupInterval = setInterval(() => {
+        this.setPopups()
       }, 15000)
     }
   },
