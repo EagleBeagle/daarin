@@ -10,7 +10,7 @@
       <v-flex v-show="!showPostInfo && !onUserPage" md3 lg4 hidden-sm-and-down>
         <affix class="popupContainer" relative-element-selector="#postFeed" style="width: 300px">
           <div id="leftSide" v-if="leftSide">
-            <AppPost class="post" :id="'post-' + leftPopup._id" :post="leftPopup" :small="true"/>
+            <AppPost class="post" :id="'popup-' + leftPopup._id" :post="leftPopup" :small="true"/>
           </div>
         </affix>
       </v-flex>
@@ -25,7 +25,7 @@
       <v-flex v-show="!showPostInfo && !onUserPage" md3 lg4 hidden-sm-and-down>
         <affix class="popupContainer" relative-element-selector="#postFeed" style="width: 300px">
           <div id="rightSide" v-if="rightSide">
-            <AppPost class="post" :id="'post-' + rightPopup._id" :post="rightPopup" :small="true"/>
+            <AppPost class="post" :id="'popup-' + rightPopup._id" :post="rightPopup" :small="true"/>
           </div>
         </affix>
       </v-flex>
