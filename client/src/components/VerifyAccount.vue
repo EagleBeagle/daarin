@@ -17,7 +17,7 @@ export default {
     } catch (err) {
       this.$store.dispatch('setSnackbarText', 'Error during account verification.')
     }
-    this.$router.push('/home')
+    this.$router.push('/trending')
   }
 }
 </script>

@@ -67,7 +67,7 @@ export default {
         try {
           await AuthenticationService.resetPassword(this.$route.query.id, this.newPasswordField)
           this.$store.dispatch('setSnackbarText', 'You have succesfully reset your password.')
-          this.$router.push('home')
+          this.$router.push('trending')
         } catch (err) {
           this.alertMessage = err.response.data.error
           this.alert = true

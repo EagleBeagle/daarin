@@ -17,7 +17,8 @@ cloudinary.config({
 })
 
 module.exports = {
-  async index (req, res) { // SSE-t megcsinálni
+  async newest (req, res) { // SSE-t megcsinálni
+    let userId = req.user._id
     let posts = null
     let sseId = req.user ? req.user.sseId : null
     try {
@@ -51,6 +52,9 @@ module.exports = {
           .sort('-createdAt')
           .limit(5) */
         SSEConnectionHandler.flushQuery('post', sseId)
+        if (userId) {
+          SSEConnectionHandler.buildAndSetConnectionQuery('popup', sseId, userId)
+        }
         SSEConnectionHandler.buildAndSetConnectionQuery('post', sseId, posts)
       } else {
         /* posts = await Post.find({ 'createdAt': { $lt: req.query.created } })
@@ -157,6 +161,7 @@ module.exports = {
           .limit(5) */
         SSEConnectionHandler.flushQuery('post', sseId)
         SSEConnectionHandler.buildAndSetConnectionQuery('post', sseId, posts)
+        SSEConnectionHandler.buildAndSetConnectionQuery('popup', sseId, userId)
         res.status(200).send(posts)
       } else if (oldestLoaded && lowestLoaded) {
         let posts = await Recommendation
@@ -222,6 +227,93 @@ module.exports = {
           ])
         posts = await Post.populate(posts, { path: 'createdBy', select: 'username' })
         let lastPost = posts[Object.keys(posts).length - 1] // ha üres akkor nincs több post
+        if (lastPost) {
+          SSEConnectionHandler.buildAndSetConnectionQuery('post', sseId, posts)
+        }
+        res.status(200).send(posts)
+      } else {
+        res.status(400).send({
+          error: 'Invalid query format.'
+        })
+      }
+    } catch (err) {
+      console.log(err)
+      res.status(500).send({
+        error: 'an error has occured trying to fetch the posts'
+      })
+    }
+  },
+
+  async trending (req, res) {
+    let sseId = req.user ? req.user.sseId : null
+    let userId = req.user._id
+    let oldestLoaded = req.query.oldest
+    let lowestLoaded = req.query.lowest
+    try {
+      if (!oldestLoaded && !lowestLoaded) {
+        let posts = await Post
+          .aggregate([
+            {
+              $sort: {
+                score: -1,
+                createdAt: -1
+              }
+            },
+            {
+              $limit: 5
+            },
+            {
+              $lookup: {
+                from: 'reactions',
+                localField: '_id',
+                foreignField: 'to',
+                as: 'reactions'
+              }
+            }
+          ])
+        posts = await Post.populate(posts, { path: 'createdBy', select: 'username' })
+        SSEConnectionHandler.flushQuery('post', sseId)
+        if (userId) {
+          SSEConnectionHandler.buildAndSetConnectionQuery('popup', sseId, userId)
+        }
+        SSEConnectionHandler.buildAndSetConnectionQuery('post', sseId, posts)
+        res.status(200).send(posts)
+      } else if (oldestLoaded && lowestLoaded) {
+        let posts = await Post
+          .aggregate([
+            {
+              $match: {
+                $or: [
+                  {
+                    score: Number(lowestLoaded),
+                    createdAt: { $lt: new Date(oldestLoaded) }
+                  },
+                  {
+                    score: { $lt: Number(lowestLoaded) }
+                  }
+                ]
+              }
+            },
+            {
+              $sort: {
+                score: -1,
+                createdAt: -1
+              }
+            },
+            {
+              $limit: 5
+            },
+            {
+              $lookup: {
+                from: 'reactions',
+                localField: '_id',
+                foreignField: 'to',
+                as: 'reactions'
+              }
+            }
+          ])
+        posts = await Post.populate(posts, { path: 'createdBy', select: 'username' })
+        let lastPost = posts[Object.keys(posts).length - 1]
         if (lastPost) {
           SSEConnectionHandler.buildAndSetConnectionQuery('post', sseId, posts)
         }

@@ -9,9 +9,9 @@
       </v-flex>
       <v-flex v-show="!showPostInfo && !onUserPage" md3 lg4 hidden-sm-and-down>
         <affix class="popupContainer" relative-element-selector="#postFeed" style="width: 300px">
-        <div id="leftSide" v-if="posts">
-          <AppPost class="post" :id="'post-' + posts[0]._id" :post="posts[0]" :small="true"/>
-        </div>
+          <div id="leftSide" v-if="leftSide">
+            <AppPost class="post" :id="'post-' + leftPopup._id" :post="leftPopup" :small="true"/>
+          </div>
         </affix>
       </v-flex>
       <v-flex xs12 sm12 md6 lg4>
@@ -23,6 +23,11 @@
         id="postFeed"/>
       </v-flex>
       <v-flex v-show="!showPostInfo && !onUserPage" md3 lg4 hidden-sm-and-down>
+        <affix class="popupContainer" relative-element-selector="#postFeed" style="width: 300px">
+          <div id="rightSide" v-if="rightSide">
+            <AppPost class="post" :id="'post-' + rightPopup._id" :post="rightPopup" :small="true"/>
+          </div>
+        </affix>
       </v-flex>
       <v-flex v-show="showPostInfo" md3 lg4 hidden-sm-and-down>
         <transition name="fadeRight">
@@ -45,8 +50,14 @@ export default {
     return {
       posts: null,
       postStreamCb: null,
-      postStreamEvent: null, // később több is lehet belőle
-      isNewPostAvailable: false, // TODO
+      postStreamEvent: null,
+      popups: [],
+      leftPopup: null,
+      rightPopup: null,
+      popupStreamCb: null,
+      popupStreamEvent: null,
+      popUpInterval: null,
+      isNewPostAvailable: false,
       hiddenPosts: [],
       filteredPost: null,
       filteredPostIndex: null,
@@ -55,11 +66,14 @@ export default {
       showPostInfo: false,
       chartData: null,
       canLoadMorePosts: true,
-      userPageTab: 0
+      userPageTab: 0,
+      leftSide: false,
+      rightSide: false
     }
   },
   beforeDestroy () {
     this.eventSource.removeEventListener(this.postStreamEvent, this.postStreamCb)
+    this.eventSource.removeEventListener(this.popupStreamEvent, this.popupStreamCb)
   },
   computed: {
     ...mapState([
@@ -134,11 +148,6 @@ export default {
         }, 1000)
       }
 
-      if (to.name === 'recommended') {
-        this.posts = []
-        await this.getRecommendedPosts()
-      }
-
       if (from.name === 'userPage' && to.name !== 'postPage') {
         this.post = []
       }
@@ -149,6 +158,11 @@ export default {
             this.onUserPage = true
           }, 1)
         }
+      }
+
+      if (from.name !== 'newest' && from.name !== 'trending' && from.name !== 'recommended' && (to.name === 'newest' || to.name === 'trending' || to.name === 'recommended')) {
+        clearInterval(this.popupInterval)
+        this.showPopups()
       }
 
       if (from.name === 'postPage' && to.name !== 'postPage' && to.name !== 'userPage' && this.posts && this.posts[0] && this.hiddenPosts[this.filteredPostIndex] && this.hiddenPosts[this.filteredPostIndex]._id === this.posts[0]._id && this.hiddenPosts.length > 1) {
@@ -164,17 +178,24 @@ export default {
         this.posts = JSON.parse(JSON.stringify(this.hiddenPosts))
         this.hiddenPosts = []
       } else if (from.name !== 'postPage' && to.name === 'postPage' && this.hiddenPosts[this.filteredPostIndex] && this.hiddenPosts[this.filteredPostIndex]._id === this.posts[0]._id) {
-      } else if (from.name !== 'postPage' && to.name === 'home') {
+      } else if (from.name !== 'postPage' && to.name === 'trending') {
         this.posts = []
-        await this.getPosts()
+        await this.getTrendingPosts()
       } else if (from.name !== 'postPage' && to.name === 'postPage') {
         await this.getPost()
       } else if (from.name === 'postPage' && to.name === 'postPage') {
         if (from.params.postId !== to.params.postId) {
           await this.getPost()
         }
-      } else if (from.name !== 'home' && to.name === 'home') {
+      } else if (from.name !== 'trending' && to.name === 'trending') {
+        this.posts = []
+        await this.getTrendingPosts()
+      } else if (from.name !== 'newest' && to.name === 'newest') {
+        this.posts = []
         await this.getPosts()
+      } else if (from.name !== 'recommended' && to.name === 'recommended') {
+        this.posts = []
+        await this.getRecommendedPosts()
       }
       setTimeout(() => {
         let postElements = document.getElementsByClassName('post')
@@ -188,7 +209,7 @@ export default {
         if (this.$route.name !== 'postPage') {
           this.posts = this.posts.filter(post => post._id !== this.deletedPost)
         } else {
-          this.$router.push('/home')
+          this.$router.push('/trending')
           this.posts = []
           await this.getPosts()
         }
@@ -209,11 +230,13 @@ export default {
       // await this.getPostsOfUser('own')
     } else if (this.$route.name === 'recommended') {
       await this.getRecommendedPosts()
+    } else if (this.$route.name === 'trending') {
+      await this.getTrendingPosts()
     } else { // külön method
       await this.getPosts()
     }
     await this.addSSEListeners()
-    this.animatePopups()
+    this.showPopups()
     // }
     // if (!this.posts) {
     // }
@@ -252,7 +275,16 @@ export default {
             console.log('VAN ÚJ')
           } */
         }
+        this.popupStreamCb = (event) => {
+          let streamedPosts = JSON.parse(event.data)
+          if (streamedPosts && streamedPosts.length === 2) {
+            this.popups.push(streamedPosts[0])
+            this.popups.push(streamedPosts[1])
+          }
+        }
         this.postStreamEvent = 'post'
+        this.popupStreamEvent = 'popup'
+        this.eventSource.addEventListener(this.popupStreamEvent, this.popupStreamCb)
         this.eventSource.addEventListener(this.postStreamEvent, this.postStreamCb)
       } else {
         this.postStreamCb = (event) => {
@@ -287,7 +319,7 @@ export default {
       if (this.posts && this.canLoadMorePosts) {
         let lastPost = this.posts[Object.keys(this.posts).length - 1]
         let morePosts = null
-        if (this.$route.name === 'home') {
+        if (this.$route.name === 'newest') {
           morePosts = (await PostService.getPosts(lastPost, 5)).data
         } else if (this.$route.name === 'userPage') {
           if (this.userPageTab === 0) {
@@ -313,6 +345,11 @@ export default {
           }
         } else if (this.$route.name === 'recommended') {
           morePosts = (await PostService.getRecommendedPosts({
+            oldest: lastPost.createdAt,
+            lowest: lastPost.score
+          })).data
+        } else if (this.$route.name === 'trending') {
+          morePosts = (await PostService.getTrendingPosts({
             oldest: lastPost.createdAt,
             lowest: lastPost.score
           })).data
@@ -353,6 +390,16 @@ export default {
       }
     },
 
+    async getTrendingPosts () {
+      console.log('getTrendingPosts')
+      try {
+        let result = await PostService.getTrendingPosts()
+        this.posts = result.data
+      } catch (error) {
+        console.log(error)
+      }
+    },
+
     async searchPosts () {
       console.log('searchPosts')
       let postElements = document.getElementsByClassName('post')
@@ -367,7 +414,7 @@ export default {
         this.posts = response.data
       } catch (err) {
         this.$store.dispatch('setSnackbarText', 'An error has happened during search.')
-        this.$router.push('home')
+        this.$router.push('/trending')
       }
       setTimeout(() => {
         let postElements = document.getElementsByClassName('post')
@@ -412,7 +459,23 @@ export default {
         }
       }, 600)
     },
-    animatePopups () {
+    showPopups () {
+      this.popupInterval = setInterval(() => {
+        if (this.popups && this.popups.length > 0) {
+          this.leftSide = false
+          this.leftPopup = this.popups.pop()
+          setTimeout(() => {
+            this.leftSide = true
+          }, 10)
+          setTimeout(() => {
+            this.rightSide = false
+            this.rightPopup = this.popups.pop()
+            setTimeout(() => {
+              this.rightSide = true
+            }, 10)
+          }, 3000)
+        }
+      }, 15000)
     }
   },
   components: {
@@ -449,20 +512,66 @@ export default {
   position: relative;
   transform: scale(1);
   opacity: 0;
-  animation: floatFrames 14s infinite;
+  animation: floatFramesLeft 12s;
 }
 
-@keyframes floatFrames {
+@keyframes floatFramesLeft {
   0% {
     opacity: 0.2;
-    top: 110vh;
+    top: 100vh;
+    left: -3vw;
+    animation-timing-function: linear;
+  }
+  20% {
+    opacity: 1;
+    top: 70vh;
+    left: 15vw;
+    animation-timing-function: linear;
+  }
+  40% {
+    opacity: 1;
+    top: 50vh;
+    left: -3vw;
+    animation-timing-function: linear;
+  }
+  60% {
+    opacity: 1;
+    top: 30vh;
+    left: 15vw;
+    animation-timing-function: linear;
+  }
+  80% {
+    opacity: 1;
+    top: 10vh;
+    left: -3vw;
+    animation-timing-function: linear;
+  }
+  100% {
+    opacity: 0.2;
+    top: -40vh;
+    left: 15vw;
+    animation-timing-function: linear;
+  }
+}
+
+#rightSide {
+  position: relative;
+  transform: scale(1);
+  opacity: 0;
+  animation: floatFramesRight 12s;
+}
+
+@keyframes floatFramesRight {
+  0% {
+    opacity: 0.2;
+    top: 100vh;
     left: 0vw;
     animation-timing-function: linear;
   }
   20% {
     opacity: 1;
     top: 70vh;
-    left: 20vw;
+    left: 18vw;
     animation-timing-function: linear;
   }
   40% {
@@ -474,7 +583,7 @@ export default {
   60% {
     opacity: 1;
     top: 30vh;
-    left: 20vw;
+    left: 18vw;
     animation-timing-function: linear;
   }
   80% {
@@ -485,8 +594,8 @@ export default {
   }
   100% {
     opacity: 0.2;
-    top: -20vh;
-    left: 20vw;
+    top: -40vh;
+    left: 18vw;
     animation-timing-function: linear;
   }
 }

@@ -1,11 +1,25 @@
 <template>
-  <v-container xs12 class="pb-5" :id="post.title">
+  <v-container xs12 class="pb-5" :id="post.title" v-if="!hidden">
     <v-card>
       <v-layout row justify-center>
         <v-flex xs12>
           <div class="display-1 blue--text font-weight-bold py-1 postTitle">{{ post.title }}</div>
         </v-flex>
         <v-flex>
+          <v-btn
+            v-if="small"
+            absolute
+            slot="activator"
+            right
+            flat
+            :ripple="false"
+            fab
+            small
+            class="mr-0 pr-0 pl-5 pb-3 pt-1 optionsButton"
+            @click="hidden = true"
+            :id="'optionsButton-' + post._id">
+            <v-icon class="grey--text">fas fa-times</v-icon>
+          </v-btn>
           <v-menu
             v-if="user && !small"
             absolute
@@ -185,6 +199,11 @@
           </v-layout>
         </v-container>
       </v-card-actions>
+      <v-card-actions v-else>
+        <v-flex>
+          <span :class="typeClass">{{ type }}</span>
+        </v-flex>
+      </v-card-actions>
       <transition name="commentSlide">
         <CommentContainer :postId="post._id" v-if="showingComments"/>
       </transition>
@@ -206,11 +225,17 @@ export default {
     return {
       showingComments: false,
       scoreDirection: null,
-      postLink: null
+      postLink: null,
+      hidden: false,
+      type: 'Fresh',
+      typeClass: 'headline font-weight-bold grey--text'
     }
   },
   mounted () {
     this.postLink = `http://www.${window.location.host}/post/${this.post._id}`
+    if (this.small) {
+      this.setType()
+    }
   },
   computed: {
     ...mapState([
@@ -329,6 +354,50 @@ export default {
       if (this.$route.params.postId !== this.post._id) {
         this.$router.push({ name: 'postPage', params: { postId: this.post._id } })
         this.$emit('filter-post', this.post)
+      }
+    },
+    setType () {
+      let reactionCount = [0, 0, 0, 0, 0, 0, 0]
+      this.post.reactions.forEach(reaction => {
+        reactionCount[reaction.type] += 1
+      })
+      let highest = 0
+      for (let i = 0; i < 7; i++) {
+        if (reactionCount[i] > reactionCount[highest]) {
+          highest = i
+        }
+      }
+      if (highest !== 0) {
+        switch (highest) {
+          case 0:
+            this.type = 'Funny'
+            this.typeClass = 'headline font-weight-bold amber--text amber--darken-4'
+            break
+          case 1:
+            this.type = 'Informative'
+            this.typeClass = 'headline font-weight-bold light-green--text text--darken-2'
+            break
+          case 2:
+            this.type = 'Smart'
+            this.typeClass = 'headline font-weight-bold brown--text text--darken-1'
+            break
+          case 3:
+            this.type = 'Cute'
+            this.typeClass = 'headline font-weight-bold pink--text text--darken-1'
+            break
+          case 4:
+            this.type = 'Controversial'
+            this.typeClass = 'headline font-weight-bold red--text text--darken-2'
+            break
+          case 5:
+            this.type = 'Creative'
+            this.typeClass = 'headline font-weight-bold deep-purple--text text--darken-2'
+            break
+          case 6:
+            this.type = 'Entertaining'
+            this.typeClass = 'headline font-weight-bold blue--text text--darken-1'
+            break
+        }
       }
     }
   },

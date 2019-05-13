@@ -23,7 +23,7 @@
         <router-link
           flat
           class="font-weight-light display-2"
-          :to="{ name: 'home' }"
+          :to="{ name: 'trending' }"
           :style="{ cursor: 'pointer' }"
           tag="span">
           daarin
@@ -34,17 +34,19 @@
         <v-btn
           v-if="user"
           flat
-          @click="$router.push('/recommended')">
-          RECOMMENDED
-        </v-btn>
-        <v-btn
-          v-if="user"
-          flat>
+          @click="$router.push('/trending')">
           TRENDING
         </v-btn>
         <v-btn
           v-if="user"
-          flat>
+          flat
+          @click="$router.push('/recommended')">
+          FOR YOU
+        </v-btn>
+        <v-btn
+          v-if="user"
+          flat
+          @click="$router.push('/newest')">
           NEWEST
         </v-btn>
       </v-toolbar-items>
@@ -177,7 +179,7 @@ export default {
       this.$store.dispatch('setUser', null)
       await this.$store.dispatch('updateEventSource')
       this.$router.push({
-        name: 'home'
+        name: 'trending'
       })
     },
     openUploadDialog () {

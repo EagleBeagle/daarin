@@ -87,7 +87,7 @@ export default {
           this.$store.dispatch('setUser', response.data.user)
           await this.$store.dispatch('updateEventSource')
           this.$router.push({
-            name: 'home'
+            name: 'trending'
           })
         } catch (error) {
           this.alertMessage = error.response.data.error

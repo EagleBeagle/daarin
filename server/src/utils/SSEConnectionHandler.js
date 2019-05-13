@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const Comment = require('../models/Comment.js')
 const Reaction = require('../models/Reaction.js')
+const Recommendation = require('../models/Recommendation.js')
 
 let connections = {}
 
@@ -45,6 +46,7 @@ module.exports = {
           break
         case 'popup':
           connections[sseId].popupQuery = query
+          console.log('popup addolva')
           break
         default:
       }
@@ -100,6 +102,61 @@ module.exports = {
             .find({
               '_id': { $in: Array.from(connections[sseId].replyIDs) }
             })
+          this.setConnectionQuery(type, sseId, query)
+          break
+        case 'popup':
+          if (!connections[sseId].popupQuery) {
+            query = Recommendation
+              .aggregate([
+                {
+                  $match: {
+                    userId: mongoose.Types.ObjectId(data)
+                  }
+                },
+                {
+                  $lookup: {
+                    from: 'posts',
+                    localField: 'postId',
+                    foreignField: '_id',
+                    as: 'post'
+                  }
+                },
+                {
+                  $lookup: {
+                    from: 'reactions',
+                    localField: 'postId',
+                    foreignField: 'to',
+                    as: 'reactions'
+                  }
+                },
+                {
+                  $unwind: '$post'
+                },
+                {
+                  $project: {
+                    _id: '$post._id',
+                    title: '$post.title',
+                    tags: '$post.tags',
+                    createdBy: '$post.createdBy',
+                    createdAt: '$post.createdAt',
+                    url: '$post.url',
+                    score: 1,
+                    reactions: '$reactions'
+                  }
+                },
+                {
+                  $sort: {
+                    score: -1
+                  }
+                },
+                {
+                  $limit: 20
+                },
+                {
+                  $sample: { size: 2 }
+                }
+              ])
+          }
           this.setConnectionQuery(type, sseId, query)
           break
         default:

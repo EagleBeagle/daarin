@@ -15,15 +15,19 @@ const upload = multer({
 })
 
 module.exports = (app) => {
-  app.get('/home',
+  app.get('/newest',
     IsAuthenticated.attachUser,
-    PostControllerPolicy.index,
-    PostController.index)
+    PostControllerPolicy.newest,
+    PostController.newest)
 
   app.get('/recommended',
     IsAuthenticated.restrict,
     IsAuthenticated.restrictUnverified,
     PostController.recommended)
+
+  app.get('/trending',
+    IsAuthenticated.attachUser,
+    PostController.trending)
 
   app.get('/stream',
     SSEController.stream)

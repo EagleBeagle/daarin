@@ -1,5 +1,5 @@
 const { setIntervalSync } = require('../utils/common.js')
-// let connections = {}
+const Post = require('../models/Post')
 const SSEConnectionHandler = require('../utils/SSEConnectionHandler')
 
 /* const createNewSSEConnection = function (sseId) {
@@ -53,6 +53,7 @@ module.exports = {
           }
           if (connection.popupQuery) {
             popupData = await connection.popupQuery.exec()
+            popupData = await Post.populate(popupData, { path: 'createdBy', select: 'username' })
             console.log('\tpopup')
             res.sseSend('popup', popupData)
           }
@@ -70,7 +71,7 @@ module.exports = {
         SSEConnectionHandler.deleteConnection(sseId)
         res.end()
       }
-    }, 2000)
+    }, 3000)
 
     req.on('close', async () => {
       await intervalClear()

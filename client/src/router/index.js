@@ -17,13 +17,18 @@ const router = new Router({
   mode: 'history',
   routes: [
     {
-      path: '/home',
-      name: 'home',
+      path: '/newest',
+      name: 'newest',
       component: Home
     },
     {
       path: '/recommended',
       name: 'recommended',
+      component: Home
+    },
+    {
+      path: '/trending',
+      name: 'trending',
       component: Home
     },
     {
@@ -78,7 +83,7 @@ const router = new Router({
     },
     {
       path: '*',
-      redirect: '/home'
+      redirect: '/trending'
     }
   ]
 })
@@ -92,22 +97,22 @@ router.beforeEach(async (to, from, next) => {
   let restrictedPages = []
   if (store.state.user) {
     if ((to.name === 'userSettings' && to.params.userId !== store.state.user._id) || (to.name === 'adminPage' && !store.state.user.admin)) {
-      return next('/home')
+      return next('/trending')
     }
     restrictedPages = ['/login', '/register', '/forgotpassword', '/resetpassword']
     if (!store.state.user.confirmed) {
       store.dispatch('setSnackbarText', 'Confirm your account to access personalized recommendations!')
-      return next('/home')
+      return next('/trending')
     }
   } else {
     if (to.name === 'adminPage' || to.name === 'userSettings' || to.name === 'recommended') {
-      return next('/home')
+      return next('/trending')
     }
   }
 
   const unauthorized = restrictedPages.includes(to.path)
   if (unauthorized) {
-    return next('/home')
+    return next('/trending')
   }
 
   next()

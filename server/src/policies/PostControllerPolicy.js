@@ -2,7 +2,7 @@ const Joi = require('joi')
 const imageType = require('image-type')
 
 module.exports = {
-  index (req, res, next) {
+  newest (req, res, next) {
     const schema = {
       created: Joi.date(),
       limit: Joi.number().min(5).max(20)

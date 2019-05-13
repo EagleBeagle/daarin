@@ -6,14 +6,13 @@ const PostSchema = new Schema({
   url: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
   createdBy: { type: Schema.Types.ObjectId, ref: 'User' },
+  reactionCount: { type: Number },
+  score: { type: Number },
   reports: [
     { type: Schema.Types.ObjectId, ref: 'User' }
   ],
   tags: [
     { type: String }
-  ],
-  categories: [
-    { type: Schema.Types.ObjectId, ref: 'Post' }
   ]
 })
 

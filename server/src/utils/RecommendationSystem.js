@@ -11,11 +11,16 @@ function extractReactionsCount (reactions) {
   return reactionsCount
 }
 
-function calculatePercentages (reactionsCount) {
+function reactionSum (reactions) {
   let sum = 0
-  for (let i of reactionsCount) {
+  for (let i of reactions) {
     sum += i
   }
+  return sum
+}
+
+function calculatePercentages (reactionsCount) {
+  let sum = reactionSum(reactionsCount)
   if (sum === 0) {
     return reactionsCount.map(count => -99999)
   } else {
@@ -97,6 +102,7 @@ async function updateUserRecommendations () {
         let postReactionsCount = extractReactionsCount(post.reactions)
         let postReactionPercentages = calculatePercentages(postReactionsCount)
         let score = 1 / calculateEucledianDistance(userReactionPercentages, postReactionPercentages)
+        score *= reactionSum(postReactionsCount)
         await Recommendation.updateOne({ userId: user._id, postId: post._id }, { score: score }, { upsert: true })
       })
       console.log('Added recommendations for ' + user.username)
@@ -106,10 +112,93 @@ async function updateUserRecommendations () {
   }
 }
 
+async function updatePostSimilarity () {
+  try {
+    let dateNow = new Date()
+    dateNow.setMonth(dateNow.getMonth() - 1)
+    let updatedPosts = []
+    let posts = await Post.aggregate([
+      {
+        $match: {
+          createdAt: { $gt: dateNow }
+        }
+      },
+      {
+        $lookup: {
+          from: 'reactions',
+          localField: '_id',
+          foreignField: 'to',
+          as: 'reactions'
+        }
+      }
+    ])
+    posts.forEach(post => {
+      let postReactionsCount = extractReactionsCount(post.reactions)
+      let postReactionPercentages = calculatePercentages(postReactionsCount)
+      posts.forEach(async otherPost => {
+        if (!updatedPosts.includes(otherPost) && post._id !== otherPost._id) {
+          let otherPostReactionsCount = extractReactionsCount(otherPost.reactions)
+          let otherPostReactionPercentages = calculatePercentages(otherPostReactionsCount)
+          let score = 1 / calculateEucledianDistance(postReactionPercentages, otherPostReactionPercentages)
+          if (score === Infinity) {
+            score = 0.00000001
+          }
+          await Recommendation.deleteOne({ $or: [ { postId: post._id, postId2: otherPost._id }, { postId: otherPost._id, postId2: post._id } ] })
+          await Recommendation.create({ postId: post._id, postId2: otherPost._id, score: score })
+        }
+      })
+      updatedPosts.push(post)
+    })
+  } catch (err) {
+    console.log(err)
+  }
+}
+
+async function updateTrendingPosts () {
+  let dateNow = new Date()
+  dateNow.setDate(dateNow.getDate() - 7)
+  let posts = await Post.aggregate([
+    {
+      $match: {
+        createdAt: { $gt: dateNow }
+      }
+    },
+    {
+      $lookup: {
+        from: 'reactions',
+        localField: '_id',
+        foreignField: 'to',
+        as: 'reactions'
+      }
+    }
+  ])
+  posts.forEach(async post => {
+    let distinctReactionCount = 0
+    let reactingUsers = new Set()
+    post.reactions.forEach(reaction => {
+      if (!reactingUsers.has(String(reaction.user))) {
+        distinctReactionCount += 1
+        reactingUsers.add(String(reaction.user))
+      }
+    })
+    let dateNow = new Date()
+    let timeDifference = (dateNow - post.createdAt) / (60 * 60 * 1000)
+    console.log(timeDifference + ' ' + post.createdAt + ' ' + distinctReactionCount)
+    let score = distinctReactionCount / Math.pow(timeDifference, 1.8)
+    await Post.findOneAndUpdate({ _id: post._id }, { score: score })
+  })
+}
+
 module.exports = {
   start () {
     setIntervalSync(async function () {
-      updateUserRecommendations()
-    }, 10000)
+      await updateUserRecommendations()
+    }, 1000 * 60 * 15)
+    setIntervalSync(async function () {
+      await updatePostSimilarity()
+    }, 1000 * 60 * 15)
+    setIntervalSync(async function () {
+      await updateTrendingPosts()
+    }, 1000 * 60 * 10)
   }
 }

@@ -54,7 +54,7 @@ export default {
       try {
         await AuthenticationService.forgotPassword(this.email)
         this.$store.dispatch('setSnackbarText', 'An email has been sent to you with a link to reset your password.')
-        this.$router.push('home')
+        this.$router.push('/trending')
       } catch (err) {
         this.alertMessage = err.response.data.error
         this.alert = true

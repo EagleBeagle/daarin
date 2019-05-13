@@ -8,7 +8,7 @@ export default {
       let createdAt = querystring.stringify({ created: lastPost.createdAt })
       query = `?${createdAt}&limit=${limit}`
     }
-    return Api().get(`/home${query}`)
+    return Api().get(`/newest${query}`)
   },
   getRecommendedPosts (postData) {
     let query = ''
@@ -18,6 +18,15 @@ export default {
       query = `?${oldestCreated}&${lowestScored}`
     }
     return Api().get(`/recommended${query}`)
+  },
+  getTrendingPosts (postData) {
+    let query = ''
+    if (postData) {
+      let oldestCreated = querystring.stringify({ oldest: postData.oldest })
+      let lowestScored = querystring.stringify({ lowest: postData.lowest })
+      query = `?${oldestCreated}&${lowestScored}`
+    }
+    return Api().get(`/trending${query}`)
   },
   getPost (postId) {
     return Api().get(`/posts/${postId}`)
