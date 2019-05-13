@@ -10,6 +10,15 @@ export default {
     }
     return Api().get(`/home${query}`)
   },
+  getRecommendedPosts (postData) {
+    let query = ''
+    if (postData) {
+      let oldestCreated = querystring.stringify({ oldest: postData.oldest })
+      let lowestScored = querystring.stringify({ lowest: postData.lowest })
+      query = `?${oldestCreated}&${lowestScored}`
+    }
+    return Api().get(`/recommended${query}`)
+  },
   getPost (postId) {
     return Api().get(`/posts/${postId}`)
   },

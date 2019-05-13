@@ -20,6 +20,11 @@ module.exports = (app) => {
     PostControllerPolicy.index,
     PostController.index)
 
+  app.get('/recommended',
+    IsAuthenticated.restrict,
+    IsAuthenticated.restrictUnverified,
+    PostController.recommended)
+
   app.get('/stream',
     SSEController.stream)
 

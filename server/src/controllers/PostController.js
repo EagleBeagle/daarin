@@ -7,6 +7,7 @@ const Post = require('../models/Post.js')
 const User = require('../models/User.js')
 const Comment = require('../models/Comment.js')
 const Reaction = require('../models/Reaction.js')
+const Recommendation = require('../models/Recommendation.js')
 const SSEConnectionHandler = require('../utils/SSEConnectionHandler.js')
 
 cloudinary.config({
@@ -87,6 +88,149 @@ module.exports = {
         }
       }
       res.status(200).send(posts)
+    } catch (err) {
+      console.log(err)
+      res.status(500).send({
+        error: 'an error has occured trying to fetch the posts'
+      })
+    }
+  },
+
+  async recommended (req, res) {
+    let userId = req.user._id
+    let sseId = req.user.sseId
+    let oldestLoaded = req.query.oldest
+    let lowestLoaded = req.query.lowest
+    try {
+      if (!oldestLoaded && !lowestLoaded) {
+        let posts = await Recommendation
+          .aggregate([
+            {
+              $match: {
+                userId: mongoose.Types.ObjectId(userId)
+              }
+            },
+            {
+              $lookup: {
+                from: 'posts',
+                localField: 'postId',
+                foreignField: '_id',
+                as: 'post'
+              }
+            },
+            {
+              $lookup: {
+                from: 'reactions',
+                localField: 'postId',
+                foreignField: 'to',
+                as: 'reactions'
+              }
+            },
+            {
+              $unwind: '$post'
+            },
+            {
+              $project: {
+                _id: '$post._id',
+                title: '$post.title',
+                tags: '$post.tags',
+                createdBy: '$post.createdBy',
+                createdAt: '$post.createdAt',
+                url: '$post.url',
+                score: 1,
+                reactions: '$reactions'
+              }
+            },
+            {
+              $sort: {
+                score: -1,
+                createdAt: -1
+              }
+            },
+            {
+              $limit: 5
+            }
+          ])
+        posts = await Post.populate(posts, { path: 'createdBy', select: 'username' })
+        /* let sseQuery = Post.find({}, 'likes dislikes')
+          .sort('-createdAt')
+          .limit(5) */
+        SSEConnectionHandler.flushQuery('post', sseId)
+        SSEConnectionHandler.buildAndSetConnectionQuery('post', sseId, posts)
+        res.status(200).send(posts)
+      } else if (oldestLoaded && lowestLoaded) {
+        let posts = await Recommendation
+          .aggregate([
+            {
+              $match: {
+                userId: mongoose.Types.ObjectId(userId)
+              }
+            },
+            {
+              $lookup: {
+                from: 'posts',
+                localField: 'postId',
+                foreignField: '_id',
+                as: 'post'
+              }
+            },
+            {
+              $lookup: {
+                from: 'reactions',
+                localField: 'postId',
+                foreignField: 'to',
+                as: 'reactions'
+              }
+            },
+            {
+              $unwind: '$post'
+            },
+            {
+              $project: {
+                _id: '$post._id',
+                title: '$post.title',
+                tags: '$post.tags',
+                createdBy: '$post.createdBy',
+                createdAt: '$post.createdAt',
+                url: '$post.url',
+                score: 1,
+                reactions: '$reactions'
+              }
+            },
+            {
+              $match: {
+                $or: [
+                  {
+                    score: Number(lowestLoaded),
+                    createdAt: { $lt: new Date(oldestLoaded) }
+                  },
+                  {
+                    score: { $lt: Number(lowestLoaded) }
+                  }
+                ]
+              }
+            },
+            {
+              $sort: {
+                score: -1,
+                createdAt: -1
+              }
+            },
+            {
+              $limit: 5
+            }
+          ])
+        posts = await Post.populate(posts, { path: 'createdBy', select: 'username' })
+        let lastPost = posts[Object.keys(posts).length - 1] // ha üres akkor nincs több post
+        if (lastPost) {
+          SSEConnectionHandler.buildAndSetConnectionQuery('post', sseId, posts)
+        }
+        res.status(200).send(posts)
+      } else {
+        res.status(400).send({
+          error: 'Invalid query format.'
+        })
+      }
     } catch (err) {
       console.log(err)
       res.status(500).send({

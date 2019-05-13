@@ -7,9 +7,9 @@
     <v-layout justify-center>
       <v-flex v-show="showPostInfo" md3 lg4 hidden-sm-and-down>
       </v-flex>
-      <v-flex v-show="!showPostInfo" md3 lg4 hidden-sm-and-down>
+      <v-flex v-show="!showPostInfo && !onUserPage" md3 lg4 hidden-sm-and-down>
         <affix class="popupContainer" relative-element-selector="#postFeed" style="width: 300px">
-        <div id="leftSide">
+        <div id="leftSide" v-if="posts">
           <AppPost class="post" :id="'post-' + posts[0]._id" :post="posts[0]" :small="true"/>
         </div>
         </affix>
@@ -22,7 +22,7 @@
         @filter-post="filterPost"
         id="postFeed"/>
       </v-flex>
-      <v-flex v-show="!showPostInfo" md3 lg4 hidden-sm-and-down>
+      <v-flex v-show="!showPostInfo && !onUserPage" md3 lg4 hidden-sm-and-down>
       </v-flex>
       <v-flex v-show="showPostInfo" md3 lg4 hidden-sm-and-down>
         <transition name="fadeRight">
@@ -134,6 +134,11 @@ export default {
         }, 1000)
       }
 
+      if (to.name === 'recommended') {
+        this.posts = []
+        await this.getRecommendedPosts()
+      }
+
       if (from.name === 'userPage' && to.name !== 'postPage') {
         this.post = []
       }
@@ -202,6 +207,8 @@ export default {
     } else if (this.$route.params.userId) {
       this.onUserPage = true
       // await this.getPostsOfUser('own')
+    } else if (this.$route.name === 'recommended') {
+      await this.getRecommendedPosts()
     } else { // külön method
       await this.getPosts()
     }
@@ -304,6 +311,11 @@ export default {
           if (text) {
             morePosts = (await PostService.searchPosts(text, lastPost)).data
           }
+        } else if (this.$route.name === 'recommended') {
+          morePosts = (await PostService.getRecommendedPosts({
+            oldest: lastPost.createdAt,
+            lowest: lastPost.score
+          })).data
         }
         for (let newPost of morePosts) {
           this.posts.push(newPost)
@@ -330,6 +342,17 @@ export default {
       // document.getElementsByTagName('html')[0].style.overflow = 'auto'
       // postElement.style.width = 'inherit'
     },
+
+    async getRecommendedPosts () {
+      console.log('getRecommendedPosts')
+      try {
+        let result = await PostService.getRecommendedPosts()
+        this.posts = result.data
+      } catch (error) {
+        console.log(error)
+      }
+    },
+
     async searchPosts () {
       console.log('searchPosts')
       let postElements = document.getElementsByClassName('post')

@@ -68,7 +68,7 @@ module.exports = {
     const schema = {
       title: Joi.string().invalid(['null']).required().regex(/^(?!\$).*/).max(50),
       createdBy: Joi.string().alphanum().length(24),
-      tags: Joi.array().items(Joi.string().regex(/^[a-zA-Z0-9_-]*$/).regex(/^(?!\$).*/)).max(4)
+      tags: Joi.array().items(Joi.string().regex(/^[a-zA-Z0-9_-]*$/).regex(/^(?!\$).*/).max(15)).max(4)
     }
     const { error } = Joi.validate(req.body, schema) //  eslint-disable-line
     if (error) {

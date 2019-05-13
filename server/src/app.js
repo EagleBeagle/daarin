@@ -7,6 +7,7 @@ const mongoose = require('mongoose')
 // const history = require('connect-history-api-fallback')
 const mongoSanitize = require('express-mongo-sanitize')
 const rateLimit = require('express-rate-limit')
+const RecommendationSystem = require('./utils/RecommendationSystem')
 const config = require('./config/config')
 
 const app = express()
@@ -21,6 +22,7 @@ mongoose.connect('mongodb://localhost:27017/daarindb', {
   .then(() => {
     if (process.env.NODE_ENV !== 'test') {
       console.log('MongoDB connection succesful')
+      RecommendationSystem.start()
     }
   })
   .catch((err) => console.error(err))

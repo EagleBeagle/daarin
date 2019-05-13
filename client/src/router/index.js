@@ -22,6 +22,11 @@ const router = new Router({
       component: Home
     },
     {
+      path: '/recommended',
+      name: 'recommended',
+      component: Home
+    },
+    {
       path: '/search',
       name: 'search',
       component: Home
@@ -90,8 +95,12 @@ router.beforeEach(async (to, from, next) => {
       return next('/home')
     }
     restrictedPages = ['/login', '/register', '/forgotpassword', '/resetpassword']
+    if (!store.state.user.confirmed) {
+      store.dispatch('setSnackbarText', 'Confirm your account to access personalized recommendations!')
+      return next('/home')
+    }
   } else {
-    if (to.name === 'adminPage' || to.name === 'userSettings') {
+    if (to.name === 'adminPage' || to.name === 'userSettings' || to.name === 'recommended') {
       return next('/home')
     }
   }

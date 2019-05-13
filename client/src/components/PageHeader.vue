@@ -29,6 +29,25 @@
           daarin
           </router-link>
       </v-toolbar-title>
+      <v-divider vertical/>
+      <v-toolbar-items>
+        <v-btn
+          v-if="user"
+          flat
+          @click="$router.push('/recommended')">
+          RECOMMENDED
+        </v-btn>
+        <v-btn
+          v-if="user"
+          flat>
+          TRENDING
+        </v-btn>
+        <v-btn
+          v-if="user"
+          flat>
+          NEWEST
+        </v-btn>
+      </v-toolbar-items>
       <v-spacer></v-spacer>
       <v-toolbar-items>
         <v-flex align-self-center mr-3 hidden-sm-and-down>

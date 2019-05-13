@@ -233,7 +233,11 @@ export default {
     },
     score: function () {
       if (this.post && this.post.reactions) {
-        return this.post.reactions.length
+        let users = new Set()
+        this.post.reactions.forEach(reaction => {
+          users.add(reaction.user)
+        })
+        return users.size
       } else {
         return 0
       }
