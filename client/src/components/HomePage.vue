@@ -56,7 +56,7 @@ export default {
       rightPopup: null,
       popupStreamCb: null,
       popupStreamEvent: null,
-      popUpInterval: null,
+      popupInterval: null,
       startedShowingPopups: false,
       isNewPostAvailable: false,
       hiddenPosts: [],
@@ -162,15 +162,17 @@ export default {
       }
 
       if (from.name !== 'newest' && from.name !== 'trending' && from.name !== 'recommended' && (to.name === 'newest' || to.name === 'trending' || to.name === 'recommended')) {
+        console.log(this.popupInterval)
         clearInterval(this.popupInterval)
-        this.showPopups()
+        console.log(this.popupInterval)
+        this.startedShowingPopups = false
       }
 
       if ((from.name === 'newest' || from.name === 'trending' || from.name === 'recommended') && to.name !== 'newest' && to.name !== 'trending' && to.name !== 'recommended') {
+        console.log(this.popupInterval)
         clearInterval(this.popupInterval)
-        this.leftSide = false
-        this.rightSide = false
-        this.showPopups()
+        console.log(this.popupInterval)
+        this.startedShowingPopups = false
       }
 
       if (from.name === 'postPage' && to.name !== 'postPage' && to.name !== 'userPage' && this.posts && this.posts[0] && this.hiddenPosts[this.filteredPostIndex] && this.hiddenPosts[this.filteredPostIndex]._id === this.posts[0]._id && this.hiddenPosts.length > 1) {
@@ -477,20 +479,18 @@ export default {
         setTimeout(() => {
           this.leftSide = true
         }, 10)
+        this.rightSide = false
+        this.rightPopup = this.popups.pop()
         setTimeout(() => {
-          this.rightSide = false
-          this.rightPopup = this.popups.pop()
-          setTimeout(() => {
-            this.rightSide = true
-          }, 10)
-        }, 3000)
+          this.rightSide = true
+        }, 10)
       }
     },
     showPopups () {
-      this.setPopups()
       this.popupInterval = setInterval(() => {
         this.setPopups()
-      }, 15000)
+        console.log('megyeget')
+      }, 16000)
     }
   },
   components: {
@@ -574,6 +574,7 @@ export default {
   transform: scale(1);
   opacity: 0;
   animation: floatFramesRight 12s;
+  animation-delay: 3s;
 }
 
 @keyframes floatFramesRight {
