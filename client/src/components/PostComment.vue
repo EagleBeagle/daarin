@@ -9,12 +9,12 @@
       </v-flex>
       <v-flex xs9 align-self-start text-xs-left px-0>
         <v-layout row>
-          <v-flex xs9>
+          <v-flex x7 sm9 md9 lg9>
             <span class="title pl-3 pb-1">{{ comment.createdBy.username }}</span>
             <span class="grey--text">•</span>
             <span class="grey--text">{{ comment.sinceCreated }}</span>
           </v-flex>
-          <v-flex xs7>
+          <v-flex xs5 sm7 md7 lg7>
             <v-menu
                 v-if="user"
                 absolute

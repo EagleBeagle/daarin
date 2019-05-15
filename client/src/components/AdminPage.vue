@@ -10,8 +10,8 @@
       </div>
     </v-layout>
     <transition name="fade">
-      <v-layout v-if="posts && users && comments && !loading" justify-space-around row wrap>
-        <v-flex xs6>
+      <v-layout v-if="posts && users && comments && !loading" justify-center row wrap>
+        <v-flex lg6 md12>
           <v-container pt-3 mt-0>
             <v-layout justify-center row wrap>
               <v-flex align-self-center xs12>
@@ -34,7 +34,7 @@
             </v-layout>
           </v-container>
         </v-flex>
-        <v-flex xs6 align-self-top pl-4 pb-3 style="min-height: 420px">
+        <v-flex lg6 md12 align-self-top pl-4 pb-3 style="min-height: 420px">
           <v-card>
             <v-card-title class="font-weight-bold py-0 my-0">
               Members
@@ -77,7 +77,7 @@
             </v-data-table>
           </v-card>
         </v-flex>
-        <v-flex xs6 align-self-top>
+        <v-flex lg6 md12 align-self-top pb-3>
           <v-card>
             <v-card-title class="font-weight-bold py-0 my-0">
               Posts
@@ -115,7 +115,7 @@
             </v-data-table>
           </v-card>
         </v-flex>
-        <v-flex xs6 align-self-top pl-4>
+        <v-flex lg6 md12 align-self-top pl-4 pb-3>
           <v-card>
             <v-card-title class="font-weight-bold py-0 my-0">
               Comments
@@ -203,7 +203,7 @@ export default {
         {
           text: 'Creator',
           align: 'left',
-          value: 'createdBy'
+          value: 'username'
         },
         { text: 'Post', value: 'to' },
         { text: 'Text', value: 'text' },
@@ -211,9 +211,9 @@ export default {
         { text: 'Date Created', value: 'createdAt' },
         { text: 'Delete', value: 'Delete' }
       ],
-      posts: null,
-      users: null,
-      comments: null,
+      posts: [],
+      users: [],
+      comments: [],
       currentlyOnline: null,
       loading: false
     }

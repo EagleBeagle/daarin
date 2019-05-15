@@ -6,7 +6,7 @@
           v-if="$store.state.isUserLoggedIn"
           flat
           fab
-          class="px-0 ma-0 hidden-sm-and-down"
+          class="px-0 ma-0"
           @click="openUploadDialog">
           <v-icon>fas fa-file-upload</v-icon>
         </v-btn> <!-- ezt itt átmegoldani -->
@@ -20,19 +20,19 @@
         </v-btn>
       </v-toolbar-items>
       <v-toolbar-title dark class="mr-4">
-        <router-link
-          flat
-          class="font-weight-light display-2"
-          :to="{ name: 'trending' }"
-          :style="{ cursor: 'pointer' }"
-          tag="span">
-          daarin
-          </router-link>
-      </v-toolbar-title>
-      <v-divider vertical/>
-      <v-toolbar-items>
+          <router-link
+            flat
+            class="font-weight-light"
+            :class="titleSize"
+            :to="{ name: 'trending' }"
+            :style="{ cursor: 'pointer' }"
+            tag="span">
+            daarin
+            </router-link>
+        </v-toolbar-title>
+      <v-divider vertical class="hidden-xs-only"/>
+      <v-toolbar-items class="hidden-sm-and-down">
         <v-btn
-          v-if="user"
           flat
           @click="$router.push('/trending')">
           TRENDING
@@ -44,7 +44,6 @@
           FOR YOU
         </v-btn>
         <v-btn
-          v-if="user"
           flat
           @click="$router.push('/newest')">
           NEWEST
@@ -116,7 +115,7 @@
       </v-toolbar-items>
     </v-toolbar>
     <UploadDialog v-model="dialog"/>
-    <v-dialog v-model="authDialog" transition="scale-transition" origin="center center" width="30%">
+    <v-dialog v-model="authDialog" transition="scale-transition" origin="center center" :width="dialogWidth">
       <v-card>
         <v-card-title
           class="headline light-blue accent-2"
@@ -161,7 +160,19 @@ export default {
       'isUserLoggedIn',
       'user',
       'closeComments'
-    ])
+    ]),
+    dialogWidth () {
+      switch (this.$vuetify.breakpoint.name) {
+        case 'xs': return '90%'
+        default: return '30%'
+      }
+    },
+    titleSize () {
+      switch (this.$vuetify.breakpoint.name) {
+        case 'xs': return 'headline'
+        default: return 'display-2'
+      }
+    }
   },
   watch: {
     $route (to) {

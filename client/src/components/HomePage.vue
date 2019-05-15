@@ -5,7 +5,10 @@
       <UserPage class="userInfo" v-if="onUserPage" @switchedTab="getPostsOfUser"/>
     </transition>
     <v-layout justify-center>
-      <v-flex v-show="showPostInfo" md3 lg4 hidden-sm-and-down>
+      <v-flex v-show="showPostInfo" lg4 hidden-md-and-down>
+        <transition name="fadeDown">
+          <SimilarPosts v-if="showPostInfo && posts && posts[0]" :postId="posts[0]._id"/>
+        </transition>
       </v-flex>
       <v-flex v-show="!showPostInfo && !onUserPage" md3 lg4 hidden-sm-and-down>
         <affix class="popupContainer" relative-element-selector="#postFeed" style="width: 300px">
@@ -29,7 +32,7 @@
           </div>
         </affix>
       </v-flex>
-      <v-flex v-show="showPostInfo" md3 lg4 hidden-sm-and-down>
+      <v-flex v-show="showPostInfo" lg4 hidden-md-and-down>
         <transition name="fadeRight">
             <PieChart class="postChart" v-if="showPostInfo && posts && posts[0] && posts[0].reactions" :chart-data="chartData" />
         </transition>
@@ -45,6 +48,7 @@ import PostFeed from './PostFeed'
 import AppPost from './AppPost'
 import UserPage from './UserPage'
 import PieChart from '../PieChart.js'
+import SimilarPosts from './SimilarPosts'
 export default {
   data () {
     return {
@@ -57,6 +61,7 @@ export default {
       popupStreamCb: null,
       popupStreamEvent: null,
       popupInterval: null,
+      similarPosts: this.posts,
       startedShowingPopups: false,
       isNewPostAvailable: false,
       hiddenPosts: [],
@@ -162,18 +167,14 @@ export default {
       }
 
       if (from.name !== 'newest' && from.name !== 'trending' && from.name !== 'recommended' && (to.name === 'newest' || to.name === 'trending' || to.name === 'recommended')) {
-        console.log(this.popupInterval)
         clearInterval(this.popupInterval)
-        console.log(this.popupInterval)
         setTimeout(() => {
           this.startedShowingPopups = false
         }, 1000)
       }
 
       if ((from.name === 'newest' || from.name === 'trending' || from.name === 'recommended') && to.name !== 'newest' && to.name !== 'trending' && to.name !== 'recommended') {
-        console.log(this.popupInterval)
         clearInterval(this.popupInterval)
-        console.log(this.popupInterval)
         setTimeout(() => {
           this.startedShowingPopups = false
         }, 1000)
@@ -291,8 +292,10 @@ export default {
         this.popupStreamCb = (event) => {
           let streamedPosts = JSON.parse(event.data)
           if (streamedPosts && streamedPosts.length === 2) {
-            this.popups.push(streamedPosts[0])
-            this.popups.push(streamedPosts[1])
+            if (this.popups.length < 20) {
+              this.popups.push(streamedPosts[0])
+              this.popups.push(streamedPosts[1])
+            }
             if (!this.startedShowingPopups) {
               this.showPopups()
               this.startedShowingPopups = true
@@ -302,13 +305,6 @@ export default {
         this.postStreamEvent = 'post'
         this.popupStreamEvent = 'popup'
         this.eventSource.addEventListener(this.popupStreamEvent, this.popupStreamCb)
-        this.eventSource.addEventListener(this.postStreamEvent, this.postStreamCb)
-      } else {
-        this.postStreamCb = (event) => {
-          let data = JSON.parse(event.data)
-          console.log(data)
-        }
-        this.postStreamEvent = 'message'
         this.eventSource.addEventListener(this.postStreamEvent, this.postStreamCb)
       }
       // this.$store.dispatch('closeEventSource')
@@ -477,7 +473,8 @@ export default {
       }, 600)
     },
     setPopups () {
-      if (this.popups && this.popups.length > 0) {
+      if (this.popups && this.popups.length > 1) {
+        console.log(this.popups.length)
         this.leftSide = false
         this.leftPopup = this.popups.pop()
         setTimeout(() => {
@@ -491,17 +488,15 @@ export default {
       }
     },
     showPopups () {
-      this.popupInterval = setInterval(() => {
-        this.setPopups()
-        console.log('megyeget')
-      }, 16000)
+      this.popupInterval = setInterval(this.setPopups, 20000)
     }
   },
   components: {
     PostFeed,
     AppPost,
     UserPage,
-    PieChart
+    PieChart,
+    SimilarPosts
   }
 }
 </script>

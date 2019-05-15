@@ -1,25 +1,11 @@
 <template>
-  <v-container xs12 class="pb-5" :id="post.title" v-if="!hidden">
+  <v-container xs12 :class="[ small ? 'pa-0 ma-0' : 'pb-5 px-0' ]" :id="post.title" v-if="!hidden">
     <v-card>
       <v-layout row justify-center>
         <v-flex xs12>
-          <div class="display-1 blue--text font-weight-bold py-1 postTitle">{{ post.title }}</div>
+          <div class="blue--text font-weight-bold py-1 postTitle" :class="[ small ? 'body-1': 'display-1' ]">{{ post.title }}</div>
         </v-flex>
         <v-flex>
-          <v-btn
-            v-if="small"
-            absolute
-            slot="activator"
-            right
-            flat
-            :ripple="false"
-            fab
-            small
-            class="mr-0 pr-0 pl-5 pb-3 pt-1 optionsButton"
-            @click="hidden = true"
-            :id="'optionsButton-' + post._id">
-            <v-icon class="grey--text">fas fa-times</v-icon>
-          </v-btn>
           <v-menu
             v-if="user && !small"
             absolute
@@ -71,7 +57,7 @@
       <v-divider/>
       <v-card-actions class="px-0 py-0" v-if="!small">
         <v-container pa-0 ma-0>
-          <v-layout justify-center class="py-1 px-0" row wrap>
+          <v-layout justify-space-around class="py-1 px-0" row wrap>
               <v-flex>
                 <v-btn
                   flat

@@ -31,6 +31,9 @@ export default {
   getPost (postId) {
     return Api().get(`/posts/${postId}`)
   },
+  getSimilarPosts (postId) {
+    return Api().get(`/posts/${postId}/similar`)
+  },
   getPostsAdmin () {
     return Api().get(`/admin/posts`)
   },

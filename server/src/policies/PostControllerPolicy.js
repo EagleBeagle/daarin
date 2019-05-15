@@ -17,6 +17,21 @@ module.exports = {
     }
   },
 
+  recommendedAndTrending (req, res, next) {
+    const schema = {
+      oldest: Joi.date(),
+      lowest: Joi.number()
+    }
+    const { error } = Joi.validate(req.query, schema)
+    if (error) {
+      res.status(400).send({
+        error: 'Invalid parameters.'
+      })
+    } else {
+      next()
+    }
+  },
+
   search (req, res, next) {
     const schema = {
       query: Joi.string().regex(/^(?!\$).*/).max(100),

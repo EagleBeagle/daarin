@@ -246,7 +246,7 @@ module.exports = {
 
   async trending (req, res) {
     let sseId = req.user ? req.user.sseId : null
-    let userId = req.user._id
+    let userId = req.user ? req.user._id : null
     let oldestLoaded = req.query.oldest
     let lowestLoaded = req.query.lowest
     try {
@@ -489,12 +489,20 @@ module.exports = {
             }
           },
           {
+            $lookup: {
+              from: 'reactions',
+              localField: '_id',
+              foreignField: 'to',
+              as: 'reactions'
+            }
+          },
+          {
             $sort: {
               score: -1
             }
           },
           {
-            $limit: 9
+            $limit: 3
           }
         ])
 
@@ -527,32 +535,55 @@ module.exports = {
             }
           },
           {
+            $lookup: {
+              from: 'reactions',
+              localField: '_id',
+              foreignField: 'to',
+              as: 'reactions'
+            }
+          },
+          {
             $sort: {
               score: -1
             }
           },
           {
-            $limit: 9
+            $limit: 3
           }
         ])
       let posts = []
       let i = 0
       let j = 0
-      while (i < posts1.length && j < posts1.length) {
-        if (posts1[i].score > posts2[j].score) {
-          posts.push(posts1[i])
-          i += 1
-        } else {
-          posts.push(posts2[j])
-          j += 1
+      if (posts1.length === 0) {
+        posts = posts2
+      } else if (posts2.length === 0) {
+        posts = posts1
+      } else {
+        while (i < posts1.length || j < posts2.length) {
+          if (posts1[i].score > posts2[j].score) {
+            posts.push(posts1[i])
+            i += 1
+            if (i === posts1.length) {
+              posts.concat(posts2.slice(j, posts2.length))
+              break
+            }
+          } else {
+            posts.push(posts2[j])
+            j += 1
+            if (j === posts2.length) {
+              posts.concat(posts1.slice(i, posts1.length))
+              break
+            }
+          }
         }
       }
-      if (posts.length > 9) {
-        posts = posts.slice(0, 9)
+      if (posts.length > 3) {
+        posts = posts.slice(0, 3)
       }
       posts = await Post.populate(posts, { path: 'createdBy', select: 'username' })
       res.status(200).send(posts)
     } catch (err) {
+      console.log(err)
       res.status(500).send({
         error: 'An error has occured trying to fetch posts.'
       })

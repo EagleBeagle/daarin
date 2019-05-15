@@ -18,67 +18,71 @@ module.exports = {
     let sseId = req.query.id
     if (sseId) {
       SSEConnectionHandler.createNewConnection(sseId)
-    }
-    let postData = null
-    let userData = null
-    let commentData = null
-    let replyData = null
-    let popupData = null
-    let errorData = null
+      let postData = null
+      let userData = null
+      let commentData = null
+      let replyData = null
+      let popupData = null
+      let errorData = null
 
-    const intervalClear = setIntervalSync(async function () {
-      try {
-        if (sseId) {
-          console.log(sseId)
-          let connection = SSEConnectionHandler.connections[sseId]
-          if (connection.postQuery) {
-            postData = await connection.postQuery.exec()
-            console.log('\tpost')
-            res.sseSend('post', postData)
+      const intervalClear = setIntervalSync(async function () {
+        try {
+          if (sseId) {
+            console.log(sseId)
+            let connection = SSEConnectionHandler.connections[sseId]
+            if (connection.postQuery) {
+              postData = await connection.postQuery.exec()
+              console.log('\tpost')
+              res.sseSend('post', postData)
+            }
+            if (connection.userQuery) {
+              userData = await connection.userQuery.exec()
+              console.log('\tuser')
+              res.sseSend('user', userData)
+            }
+            if (connection.commentQuery) {
+              commentData = await connection.commentQuery.exec()
+              console.log('\tcomment')
+              res.sseSend('comment', commentData)
+            }
+            if (connection.replyQuery) {
+              replyData = await connection.replyQuery.exec()
+              console.log('\treply')
+              res.sseSend('reply', replyData)
+            }
+            if (connection.popupQuery) {
+              popupData = await connection.popupQuery.exec()
+              popupData = await Post.populate(popupData, { path: 'createdBy', select: 'username' })
+              console.log('\tpopup')
+              res.sseSend('popup', popupData)
+            }
+            res.sseSend('heartbeat', ':')
+          } else {
+            console.log('null')
+            res.sseSend('message', ':')
           }
-          if (connection.userQuery) {
-            userData = await connection.userQuery.exec()
-            console.log('\tuser')
-            res.sseSend('user', userData)
+        } catch (err) {
+          errorData = {
+            error: 'an error has occured while streaming data'
           }
-          if (connection.commentQuery) {
-            commentData = await connection.commentQuery.exec()
-            console.log('\tcomment')
-            res.sseSend('comment', commentData)
-          }
-          if (connection.replyQuery) {
-            replyData = await connection.replyQuery.exec()
-            console.log('\treply')
-            res.sseSend('reply', replyData)
-          }
-          if (connection.popupQuery) {
-            popupData = await connection.popupQuery.exec()
-            popupData = await Post.populate(popupData, { path: 'createdBy', select: 'username' })
-            console.log('\tpopup')
-            res.sseSend('popup', popupData)
-          }
-          res.sseSend('heartbeat', ':')
-        } else {
-          console.log('null')
-          res.sseSend('message', ':')
+          res.sseSend('error', errorData)
+          await intervalClear()
+          SSEConnectionHandler.deleteConnection(sseId)
+          res.end()
         }
-      } catch (err) {
-        errorData = {
-          error: 'an error has occured while streaming data'
-        }
-        res.sseSend('error', errorData)
+      }, 3000)
+
+      req.on('close', async () => {
         await intervalClear()
         SSEConnectionHandler.deleteConnection(sseId)
+        console.log('SSE Connection closed')
         res.end()
-      }
-    }, 3000)
-
-    req.on('close', async () => {
-      await intervalClear()
-      SSEConnectionHandler.deleteConnection(sseId)
-      console.log('SSE Connection closed')
-      res.end()
-    })
+      })
+    } else {
+      res.status(403).send({
+        error: 'You have no access to this action.'
+      })
+    }
   }
 
   /* sseConnectionExists(sseId) {

@@ -29,9 +29,7 @@ module.exports = {
         if (lastCommentToBeLoaded) {
           await SSEConnectionHandler.buildAndSetConnectionQuery('comment', sseId, comments)
         }
-        setTimeout(() => {
-          res.status(200).send(comments)
-        }, 2000)
+        res.status(200).send(comments)
       } else if (oldestLoaded && !newestLoaded && !lowestLoaded && !highestLoaded) {
         comments = await Comment
           .find({
@@ -46,9 +44,7 @@ module.exports = {
         if (lastCommentToBeLoaded) {
           await SSEConnectionHandler.buildAndSetConnectionQuery('comment', sseId, comments)
         }
-        setTimeout(() => {
-          res.status(200).send(comments)
-        }, 2000)
+        res.status(200).send(comments)
       } else if (highestLoaded && newestLoaded && !oldestLoaded && !lowestLoaded) {
         comments = await Comment
           .aggregate([
@@ -85,9 +81,7 @@ module.exports = {
         if (lastCommentToBeLoaded) {
           await SSEConnectionHandler.buildAndSetConnectionQuery('comment', sseId, comments)
         }
-        setTimeout(function () {
-          res.status(200).send(comments)
-        }, 1000)
+        res.status(200).send(comments)
       } else if (lowestLoaded && oldestLoaded && !highestLoaded && !newestLoaded) {
         comments = await Comment
           .aggregate([
@@ -124,9 +118,7 @@ module.exports = {
         if (lastCommentToBeLoaded) {
           await SSEConnectionHandler.buildAndSetConnectionQuery('comment', sseId, comments)
         }
-        setTimeout(function () {
-          res.status(200).send(comments)
-        }, 1000)
+        res.status(200).send(comments)
       } else if (!oldestLoaded && !newestLoaded && !lowestLoaded && !highestLoaded && (sortBy === 'date' || sortBy === 'relevancy')) {
         if (sortBy === 'date') {
           comments = await Comment
@@ -165,9 +157,7 @@ module.exports = {
           SSEConnectionHandler.flushQuery('comment', sseId)
           SSEConnectionHandler.flushQuery('reply', sseId)
           await SSEConnectionHandler.buildAndSetConnectionQuery('comment', sseId, comments)
-          setTimeout(function () {
-            res.status(200).send(comments)
-          }, 1000)
+          res.status(200).send(comments)
         }
       } else {
         res.status(400).send({

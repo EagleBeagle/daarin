@@ -1,10 +1,10 @@
 <template>
-  <v-container>
+  <v-container pa-0 ma-0>
     <!-- <h1 v-if="isNewPostAvailable" class="bold blue--text">See new posts</h1> -->
     <transition-group :name="transition" tag="div">
     <!-- <transition-group v-if="filtered" name="slideUp" tag="div"> -->
       <div v-for="post in posts" :key="post._id">
-        <div :style="'width: ${}'">
+        <div>
           <post class="post" :id="'post-' + post._id" :post="post" @filter-post="filterPost"/>
         </div>
       </div>

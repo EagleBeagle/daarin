@@ -4,6 +4,7 @@
         <v-layout justify-center row-wrap mx-0 px-0>
         <v-flex ml-5 pl-5 xs12 sm12 md4 lg6>
           <v-avatar
+            v-if="shownUser.avatar"
             size="170">
             <v-img v-if="shownUser.avatar" id="avatar" :src="shownUser.avatar"></v-img>
             <v-icon v-else id="avatar-icon">fas fa-user-circle</v-icon>
@@ -22,18 +23,18 @@
                 class="ml-2 settingsButton"
                 fab>
                 <v-icon
-                  class="grey--text"
+                  class="grey--text mb-2"
                   >settings
                 </v-icon>
               </v-btn>
             </v-flex>
-            <v-flex xs6 class="userInfoFlex">
+            <v-flex xs12 md6 class="userInfoFlex">
               <transition :name="postCountDirection" mode="out-in">
                 <span :key="postCount" class="title light-blue--text font-weight-bold light-blue--lighten-2">{{ postCount }}</span>
               </transition>
               <span class="body-1">posts</span>
             </v-flex>
-            <v-flex xs6 class="userInfoFlex">
+            <v-flex xs12 md6 class="userInfoFlex">
               <transition :name="reactionCountDirection" mode="out-in">
                 <span :key="reactionCount" class="title light-blue--text font-weight-bold light-blue--lighten-2">{{ reactionCount }}</span>
               </transition>

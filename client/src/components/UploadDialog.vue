@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="show"  transition="scale-transition" origin="center center" width="30%">
+  <v-dialog v-model="show"  transition="scale-transition" origin="center center" :width="dialogWidth">
     <v-card>
       <v-toolbar flat dark class="light-blue accent-2">
         <v-btn icon @click.native="onClose" dark>
@@ -93,6 +93,12 @@ export default {
       },
       set (value) {
         this.$emit('input', value)
+      }
+    },
+    dialogWidth () {
+      switch (this.$vuetify.breakpoint.name) {
+        case 'xs': return '90%'
+        default: return '30%'
       }
     }
   },
