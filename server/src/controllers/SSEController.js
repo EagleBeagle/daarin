@@ -70,7 +70,7 @@ module.exports = {
           SSEConnectionHandler.deleteConnection(sseId)
           res.end()
         }
-      }, 3000)
+      }, 10000)
 
       req.on('close', async () => {
         await intervalClear()

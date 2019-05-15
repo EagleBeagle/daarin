@@ -533,37 +533,37 @@ export default {
   0% {
     opacity: 0.2;
     top: 100vh;
-    left: -3vw;
+    left: -1vw;
     animation-timing-function: linear;
   }
   20% {
     opacity: 1;
     top: 70vh;
-    left: 15vw;
+    left: 13vw;
     animation-timing-function: linear;
   }
   40% {
     opacity: 1;
     top: 50vh;
-    left: -3vw;
+    left: -1vw;
     animation-timing-function: linear;
   }
   60% {
     opacity: 1;
     top: 30vh;
-    left: 15vw;
+    left: 13vw;
     animation-timing-function: linear;
   }
   80% {
     opacity: 1;
     top: 10vh;
-    left: -3vw;
+    left: -1vw;
     animation-timing-function: linear;
   }
   100% {
     opacity: 0.2;
     top: -40vh;
-    left: 15vw;
+    left: 13vw;
     animation-timing-function: linear;
   }
 }
@@ -580,37 +580,37 @@ export default {
   0% {
     opacity: 0.2;
     top: 100vh;
-    left: 0vw;
+    left: 3vw;
     animation-timing-function: linear;
   }
   20% {
     opacity: 1;
     top: 70vh;
-    left: 18vw;
+    left: 16vw;
     animation-timing-function: linear;
   }
   40% {
     opacity: 1;
     top: 50vh;
-    left: 0vw;
+    left: 3vw;
     animation-timing-function: linear;
   }
   60% {
     opacity: 1;
     top: 30vh;
-    left: 18vw;
+    left: 16vw;
     animation-timing-function: linear;
   }
   80% {
     opacity: 1;
     top: 10vh;
-    left: 0vw;
+    left: 3vw;
     animation-timing-function: linear;
   }
   100% {
     opacity: 0.2;
     top: -40vh;
-    left: 18vw;
+    left: 16vw;
     animation-timing-function: linear;
   }
 }

@@ -134,9 +134,9 @@ export default new Vuex.Store({
         commit('closeEventSource')
       }
       if (this.state.user) {
-        eventSource = await new EventSource(`http://172.16.17.219:8081/stream?id=${this.state.user.sseId}`)
+        eventSource = await new EventSource(`http://localhost:8081/stream?id=${this.state.user.sseId}`)
       } else {
-        eventSource = await new EventSource(`http://172.16.17.219:8081/stream`)
+        eventSource = await new EventSource(`http://localhost:8081/stream`)
       }
       commit('setEventSourceChanged')
       commit('updateEventSource', eventSource)
