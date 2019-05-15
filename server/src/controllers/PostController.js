@@ -457,6 +457,108 @@ module.exports = {
     }
   },
 
+  async getSimilarPosts (req, res) {
+    let postId = req.params.postId
+    try {
+      let posts1 = await Recommendation
+        .aggregate([
+          {
+            $match: {
+              postId: mongoose.Types.ObjectId(postId),
+              userId: null
+            }
+          },
+          {
+            $lookup: {
+              from: 'posts',
+              localField: 'postId2',
+              foreignField: '_id',
+              as: 'post'
+            }
+          },
+          {
+            $unwind: '$post'
+          },
+          {
+            $project: {
+              _id: '$post._id',
+              title: '$post.title',
+              createdBy: '$post.createdBy',
+              url: '$post.url',
+              score: 1
+            }
+          },
+          {
+            $sort: {
+              score: -1
+            }
+          },
+          {
+            $limit: 9
+          }
+        ])
+
+      let posts2 = await Recommendation
+        .aggregate([
+          {
+            $match: {
+              postId2: mongoose.Types.ObjectId(postId),
+              userId: null
+            }
+          },
+          {
+            $lookup: {
+              from: 'posts',
+              localField: 'postId',
+              foreignField: '_id',
+              as: 'post'
+            }
+          },
+          {
+            $unwind: '$post'
+          },
+          {
+            $project: {
+              _id: '$post._id',
+              title: '$post.title',
+              createdBy: '$post.createdBy',
+              url: '$post.url',
+              score: 1
+            }
+          },
+          {
+            $sort: {
+              score: -1
+            }
+          },
+          {
+            $limit: 9
+          }
+        ])
+      let posts = []
+      let i = 0
+      let j = 0
+      while (i < posts1.length && j < posts1.length) {
+        if (posts1[i].score > posts2[j].score) {
+          posts.push(posts1[i])
+          i += 1
+        } else {
+          posts.push(posts2[j])
+          j += 1
+        }
+      }
+      if (posts.length > 9) {
+        posts = posts.slice(0, 9)
+      }
+      posts = await Post.populate(posts, { path: 'createdBy', select: 'username' })
+      res.status(200).send(posts)
+    } catch (err) {
+      res.status(500).send({
+        error: 'An error has occured trying to fetch posts.'
+      })
+    }
+  },
+
   async getPostsOfUser (req, res) {
     console.log('ittvagyok')
     let sseId = req.user ? req.user.sseId : null

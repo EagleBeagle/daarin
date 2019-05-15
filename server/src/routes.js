@@ -47,6 +47,9 @@ module.exports = (app) => {
     PostControllerPolicy.search,
     PostController.search)
 
+  app.get('/posts/:postId/similar',
+    PostController.getSimilarPosts)
+
   app.get('/posts/user/:userId',
     IsAuthenticated.attachUser,
     PostControllerPolicy.getPostsOfUser,

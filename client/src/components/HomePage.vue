@@ -165,14 +165,18 @@ export default {
         console.log(this.popupInterval)
         clearInterval(this.popupInterval)
         console.log(this.popupInterval)
-        this.startedShowingPopups = false
+        setTimeout(() => {
+          this.startedShowingPopups = false
+        }, 1000)
       }
 
       if ((from.name === 'newest' || from.name === 'trending' || from.name === 'recommended') && to.name !== 'newest' && to.name !== 'trending' && to.name !== 'recommended') {
         console.log(this.popupInterval)
         clearInterval(this.popupInterval)
         console.log(this.popupInterval)
-        this.startedShowingPopups = false
+        setTimeout(() => {
+          this.startedShowingPopups = false
+        }, 1000)
       }
 
       if (from.name === 'postPage' && to.name !== 'postPage' && to.name !== 'userPage' && this.posts && this.posts[0] && this.hiddenPosts[this.filteredPostIndex] && this.hiddenPosts[this.filteredPostIndex]._id === this.posts[0]._id && this.hiddenPosts.length > 1) {
