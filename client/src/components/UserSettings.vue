@@ -83,6 +83,7 @@
           <v-layout justify-center>
             <v-btn
               :disabled="!valid"
+              dark
               color="light-blue lighten-2"
               @click="submitSettings">
               Save Settings

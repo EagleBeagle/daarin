@@ -8,7 +8,7 @@
         <v-toolbar-title>Create a New Post</v-toolbar-title>
         <v-spacer></v-spacer>
         <v-toolbar-items>
-          <v-btn v-if="!uploadLoading && image" dark flat @click="submitImage">Save</v-btn>
+          <v-btn id="submitBtn" v-if="!uploadLoading && image" dark flat @click="submitImage">Save</v-btn>
           <v-progress-circular
               v-if="uploadLoading"
               :size="32"
@@ -51,6 +51,7 @@
           <v-flex xs7 align-self-center>
             <v-text-field
               label="Title"
+              id="title"
               :rules="[required]"
               v-model="title">
             </v-text-field>

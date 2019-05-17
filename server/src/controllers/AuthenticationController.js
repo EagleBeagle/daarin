@@ -65,7 +65,8 @@ module.exports = {
           user.confirmed = true
           await user.save()
           res.status(200).send({
-            status: 'success'
+            status: 'success',
+            user: user._id
           })
         }
       } catch (err) {

@@ -53,6 +53,7 @@
         <v-flex pa-0 pb-1 ma-0 mb-1 xs11>
           <v-textarea
             solo
+            id="commentText"
             class="pa-0 ma-0"
             auto-grow
             rows="1"
@@ -65,6 +66,7 @@
         </v-flex>
         <v-flex xs1 align-self-center>
           <div
+            id="submitCommentBtn"
             :class="[ commentText ? 'title blue--text' : 'title grey--text' ]"
             v-on="commentText ? { click: createComment } : {}"
             style="cursor: pointer">Post</div>

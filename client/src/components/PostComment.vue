@@ -9,12 +9,17 @@
       </v-flex>
       <v-flex xs9 align-self-start text-xs-left px-0>
         <v-layout row>
-          <v-flex x7 sm9 md9 lg9>
-            <span class="title pl-3 pb-1">{{ comment.createdBy.username }}</span>
+          <v-flex xs9 sm9 md9 lg9>
+            <span
+              class="title pl-3 pb-1"
+              style="cursor: pointer"
+              @click="$router.push({ name: 'userPage', params: { userId: comment.createdBy._id } })">
+              {{ comment.createdBy.username }}
+            </span>
             <span class="grey--text">•</span>
             <span class="grey--text">{{ comment.sinceCreated }}</span>
           </v-flex>
-          <v-flex xs5 sm7 md7 lg7>
+          <span xs5 sm4 md7 lg6>
             <v-menu
                 v-if="user"
                 absolute
@@ -27,7 +32,7 @@
                   :ripple="false"
                   fab
                   small
-                  class="pl-5 ml-5 optionsButton">
+                  class="ml-4 optionsButton">
                   <v-icon class="grey--text">fas fa-ellipsis-h</v-icon>
                 </v-btn>
                 <v-list class="postMenuList">
@@ -46,7 +51,7 @@
                   </v-list-tile>
                 </v-list>
               </v-menu>
-            </v-flex>
+            </span>
         </v-layout>
         <v-layout row wrap>
           <v-flex xs11>

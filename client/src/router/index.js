@@ -101,8 +101,7 @@ router.beforeEach(async (to, from, next) => {
     }
     restrictedPages = ['/login', '/register', '/forgotpassword', '/resetpassword']
     if (!store.state.user.confirmed) {
-      store.dispatch('setSnackbarText', 'Confirm your account to access personalized recommendations!')
-      return next('/trending')
+      restrictedPages.push('/recommended')
     }
   } else {
     if (to.name === 'adminPage' || to.name === 'userSettings' || to.name === 'recommended') {

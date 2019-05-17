@@ -15,14 +15,14 @@ app.listen(config.port)
 app.enable('trust proxy')
 mongoose.Promise = require('bluebird')
 mongoose.set('useCreateIndex', true)
-mongoose.connect('mongodb://localhost:27017/daarindb', {
+mongoose.connect(process.env.MONGO || 'mongodb://localhost:27017/daarindb', {
   useNewUrlParser: true,
   promiseLibrary: require('bluebird')
 })
   .then(() => {
+    RecommendationSystem.start()
     if (process.env.NODE_ENV !== 'test') {
       console.log('MongoDB connection succesful')
-      RecommendationSystem.start()
     }
   })
   .catch((err) => console.error(err))

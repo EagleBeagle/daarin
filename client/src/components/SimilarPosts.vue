@@ -1,8 +1,8 @@
 <template>
-  <v-container pt-5 mt-5>
+  <v-container pt-5 mt-5 v-if="posts && posts[0]">
       <span class="headline font-weight-bold grey--text">Similar Posts</span>
       <v-divider class="mt-1"/>
-        <v-layout pt-3 row wrap v-if="posts && posts[0]">
+        <v-layout pt-3 row wrap>
           <v-flex v-if="loading">
             <v-progress-circular
               class="pb-4 pt-5"

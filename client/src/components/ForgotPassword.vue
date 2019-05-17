@@ -7,6 +7,7 @@
             name ="form"
             autocomplete="off">
             <v-text-field
+              id="email"
               label="Email"
               v-model="email"
               class="mx-5 px-5 my-3"
@@ -15,6 +16,7 @@
           <v-btn
             dark
             class="light-blue accent-2"
+            id="resetPwBtn"
             @click="reset">
             Reset Password
           </v-btn>

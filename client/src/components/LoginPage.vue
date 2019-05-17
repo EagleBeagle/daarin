@@ -6,10 +6,12 @@
             name ="login-form"
             autocomplete="on">
             <v-text-field
+              id="username"
               label="Username"
               v-model="username"
             ></v-text-field>
             <v-text-field
+              id="password"
               type="password"
               label="Password"
               v-model="password"
@@ -18,12 +20,13 @@
           </form>
           <div
             class="body-1 light-blue--text font-weight-bold pb-2"
-            @click="$router.push('forgotPassword')"
+            @click="$router.push('forgotpassword')"
             style="cursor: pointer">
             I forgot my password
           </div>
           <v-btn
             dark
+            id="loginBtn"
             class="light-blue accent-2"
             @click="login">
             Login

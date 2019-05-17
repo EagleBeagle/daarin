@@ -8,9 +8,9 @@ const path = require('path')
 const cloudinary = require('cloudinary')
 
 cloudinary.config({ // ezt valahol globalizálni
-  cloud_name: 'daarin',
-  api_key: '744822548765916',
-  api_secret: 'KTogd86JwWJzB0HJUYXI-puj084'
+  cloud_name: process.env.CLOUDINARY_NAME || 'daarin',
+  api_key: process.env.CLOUDINARY_KEY || '744822548765916',
+  api_secret: process.env.CLOUDINARY_SECRET || 'KTogd86JwWJzB0HJUYXI-puj084'
 })
 
 module.exports = {

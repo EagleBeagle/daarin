@@ -8,17 +8,20 @@
             lazy-validation
             autocomplete="off">
             <v-text-field
+              id="username"
               label="Username"
               :rules="usernameRules"
               v-model="username"
             ></v-text-field>
             <v-text-field
+              id="email"
               type="email"
               label="Email"
               :rules="emailRules"
               v-model="email"
             ></v-text-field>
             <v-text-field
+              id="password"
               type="password"
               :rules="passwordRules"
               label="Password"
@@ -29,6 +32,7 @@
           <br>
           <br>
           <v-btn
+            id="registerBtn"
             class="light-blue accent-2"
             @click="register">
             Register

@@ -46,6 +46,11 @@ export default new Vuex.Store({
     changeUserCredentials (state, credentials) {
       state.user.username = credentials.username
     },
+    setUserConfirmed (state, userId) {
+      if (state.user && String(state.user._id) === String(userId)) {
+        state.user.confirmed = true
+      }
+    },
     setDeletedPost (state, postId) {
       state.deletedPost = postId
     },
@@ -107,6 +112,9 @@ export default new Vuex.Store({
     },
     changeUserCredentials ({commit}, credentials) {
       commit('changeUserCredentials', credentials)
+    },
+    setUserConfirmed ({commit}, userId) {
+      commit('setUserConfirmed', userId)
     },
     setDeletedPost ({commit}, postId) {
       commit('setDeletedPost', postId)

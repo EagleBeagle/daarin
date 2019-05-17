@@ -8,7 +8,6 @@ const IsAuthenticated = require('./policies/IsAuthenticated')
 const SSEController = require('./controllers/SSEController')
 const UserController = require('./controllers/UserController')
 const UserControllerPolicy = require('./policies/UserControllerPolicy')
-const SSEControllerPolicy = require('./policies/SSEControllerPolicy')
 const multer = require('multer')
 const storage = multer.memoryStorage()
 const upload = multer({
@@ -33,7 +32,6 @@ module.exports = (app) => {
     PostController.trending)
 
   app.get('/stream',
-    SSEControllerPolicy.stream,
     SSEController.stream)
 
   app.get('/posts/:postId',

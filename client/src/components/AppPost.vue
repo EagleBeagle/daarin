@@ -52,7 +52,7 @@
       <v-img
         :src="post.url"
         width="100%"
-        id="postImage"
+        class="postImage"
         @click="goToPostPage"/>
       <v-divider/>
       <v-card-actions class="px-0 py-0" v-if="!small">
@@ -62,57 +62,64 @@
                 <v-btn
                   flat
                   fab
+                  class="reaction0"
                   color="amber"
                   @click="react(0)">
-                  <v-icon :class="[ reacted[0] ? 'amber--text amber--darken-4' : 'amber--text text--lighten-3' ]">sentiment_very_satisfied</v-icon></v-btn>
+                  <v-icon class="reaction0icon" :class="[ reacted[0] ? 'amber--text amber--darken-4' : 'amber--text text--lighten-3' ]">sentiment_very_satisfied</v-icon></v-btn>
               </v-flex>
               <v-flex>
                 <v-btn
                   flat
                   fab
+                  class="reaction1"
                   color="light-green"
                   @click="react(1)">
-                  <v-icon :class="[ reacted[1] ? 'light-green--text text--darken-2' : 'light-green--text text--lighten-3' ]">public</v-icon></v-btn>
+                  <v-icon class="reaction1icon" :class="[ reacted[1] ? 'light-green--text text--darken-2' : 'light-green--text text--lighten-3' ]">public</v-icon></v-btn>
               </v-flex>
               <v-flex>
                 <v-btn
                   flat
                   fab
+                  class="reaction2"
                   color="brown"
                   @click="react(2)">
-                  <v-icon :class="[ reacted[2] ? 'brown--text text--darken-1' : 'brown--text text--lighten-3' ]">school</v-icon></v-btn>
+                  <v-icon class="reaction2icon" :class="[ reacted[2] ? 'brown--text text--darken-1' : 'brown--text text--lighten-3' ]">school</v-icon></v-btn>
               </v-flex>
               <v-flex>
                 <v-btn
                   flat
                   fab
+                  class="reaction3"
                   color="pink"
                   @click="react(3)">
-                  <v-icon :class="[ reacted[3] ? 'pink--text text--darken-1' : 'pink--text text--lighten-3' ]">fas fa-cat</v-icon></v-btn>
+                  <v-icon class="reaction3icon" :class="[ reacted[3] ? 'pink--text text--darken-1' : 'pink--text text--lighten-3' ]">fas fa-cat</v-icon></v-btn>
               </v-flex>
               <v-flex>
                 <v-btn
                   flat
                   fab
+                  class="reaction4"
                   color="red"
                   @click="react(4)">
-                  <v-icon :class="[ reacted[4] ? 'red--text text--darken-2' : 'red--text text--lighten-3' ]">whatshot</v-icon></v-btn>
+                  <v-icon class="reaction4icon" :class="[ reacted[4] ? 'red--text text--darken-2' : 'red--text text--lighten-3' ]">whatshot</v-icon></v-btn>
               </v-flex>
               <v-flex>
                 <v-btn
                   flat
                   fab
+                  class="reaction5"
                   color="deep-purple"
                   @click="react(5)">
-                  <v-icon :class="[ reacted[5] ? 'deep-purple--text text--darken-2' : 'deep-purple--text text--lighten-3' ]">palette</v-icon></v-btn>
+                  <v-icon class="reaction5icon" :class="[ reacted[5] ? 'deep-purple--text text--darken-2' : 'deep-purple--text text--lighten-3' ]">palette</v-icon></v-btn>
               </v-flex>
               <v-flex>
                 <v-btn
                   flat
                   fab
+                  class="reaction6"
                   color="blue"
                   @click="react(6)">
-                  <v-icon :class="[ reacted[6] ? 'blue--text text--darken-1' : 'blue--text text--lighten-3' ]">live_tv</v-icon></v-btn>
+                  <v-icon class="reaction6icon" :class="[ reacted[6] ? 'blue--text text--darken-1' : 'blue--text text--lighten-3' ]">live_tv</v-icon></v-btn>
               </v-flex>
           </v-layout>
           <v-divider class="pa-0 ma-0"/>
@@ -122,6 +129,7 @@
                   flat
                   fab
                   small
+                  class="commentBtn"
                   @click="showComments">
                   <v-icon class="grey--text">comment</v-icon>
                 </v-btn>
@@ -452,7 +460,7 @@ export default {
   overflow: visible;
 }
 
-#postImage {
+.postImage {
   cursor: pointer;
 }
 

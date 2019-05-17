@@ -1,6 +1,5 @@
 const cloudinary = require('cloudinary')
 const Datauri = require('datauri')
-const uniqueSlug = require('unique-slug')
 const path = require('path')
 const mongoose = require('mongoose')
 const Post = require('../models/Post.js')
@@ -11,14 +10,14 @@ const Recommendation = require('../models/Recommendation.js')
 const SSEConnectionHandler = require('../utils/SSEConnectionHandler.js')
 
 cloudinary.config({
-  cloud_name: 'daarin',
-  api_key: '744822548765916',
-  api_secret: 'KTogd86JwWJzB0HJUYXI-puj084'
+  cloud_name: process.env.CLOUDINARY_NAME || 'daarin',
+  api_key: process.env.CLOUDINARY_KEY || '744822548765916',
+  api_secret: process.env.CLOUDINARY_SECRET || 'KTogd86JwWJzB0HJUYXI-puj084'
 })
 
 module.exports = {
   async newest (req, res) { // SSE-t megcsinálni
-    let userId = req.user._id
+    let userId = req.user ? req.user._id : null
     let posts = null
     let sseId = req.user ? req.user.sseId : null
     try {
@@ -868,7 +867,6 @@ module.exports = {
       }
       let newPost = {
         title: req.body.title,
-        slug: uniqueSlug(req.body._id),
         createdBy: req.body.createdBy,
         tags: tags,
         url: result.url

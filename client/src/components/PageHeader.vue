@@ -6,10 +6,11 @@
           v-if="$store.state.isUserLoggedIn"
           flat
           fab
+          id="uploadBtn"
           class="px-0 ma-0"
           @click="openUploadDialog">
           <v-icon>fas fa-file-upload</v-icon>
-        </v-btn> <!-- ezt itt átmegoldani -->
+        </v-btn>
         <v-btn
           v-else
           flat
@@ -38,7 +39,7 @@
           TRENDING
         </v-btn>
         <v-btn
-          v-if="user"
+          v-if="user && user.confirmed"
           flat
           @click="$router.push('/recommended')">
           FOR YOU
