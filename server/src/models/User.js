@@ -10,13 +10,9 @@ const UserSchema = new Schema({
   avatar: String,
   reportCount: { type: Number, default: 0 },
   reactionCount: { type: Number, default: 0 },
-  likedComments: [
-    { type: Schema.Types.ObjectId, ref: 'Comment' }
-  ],
   confirmationId: { type: String },
   sseId: { type: String },
-  resetPasswordId: { type: String },
-  changeEmailId: { type: String }
+  resetPasswordId: { type: String }
 })
 
 UserSchema.pre('save', function (next) {
